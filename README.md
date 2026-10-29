@@ -6,7 +6,75 @@ The final deliverable is a reproducible authentication test environment and expe
 
 ## Project status
 
-Planning stage. This repository currently contains the project context in [AGENTS.md](AGENTS.md) and this implementation backlog. No application, benchmark runner, or experimental results have been implemented yet. Setup and run commands will be added as the implementation lands.
+Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py) and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py): RSA/RS256 and Ed25519 JWT generation, verification, size reporting, and local cryptographic timings. Token generation prototypes for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are also available below. ECDSA, post-quantum benchmark integration, the combined benchmark runner, and web transport experiments remain on the backlog. Project context is in [AGENTS.md](AGENTS.md).
+
+## Run the RSA baseline
+
+Use the existing `crypto` conda environment and install the pinned Python dependencies:
+
+```bash
+conda activate crypto
+python -m pip install -r requirements.txt
+python scripts/rsa_jwt.py
+```
+
+If creating the environment on another machine, run `conda create -n crypto python=3.15 pip` first. The initial implementation was checked with Python 3.15.2.
+
+The script generates an ephemeral 2,048-bit RSA key, creates and verifies an RS256 JWT using [fixtures/claims.json](fixtures/claims.json), and prints only the token by default. Add `--verbose` (or `-v`) to print the full JSON report. Keys stay in memory. The fixed fixture has no expiration or other time-dependent claims so later algorithms can use the same payload. Verification still checks expiration when an `exp` claim is supplied. These fixtures are for experiments.
+
+Configure the run or save the report:
+
+```bash
+python scripts/rsa_jwt.py --verbose
+python scripts/rsa_jwt.py --iterations 1000 --warmup 100 --output results/rsa-2048.json
+python scripts/rsa_jwt.py --key-size 3072 --iterations 100
+python scripts/rsa_jwt.py --claims fixtures/claims.json
+python -m unittest discover -s tests -v
+```
+
+Run these commands from the repository root. The default fixture is resolved relative to the script, so it also works when launched from another directory. `--claims` and `--output` paths are relative to the working directory. `--output` always saves the full report; console output still follows `--verbose`. Supported key sizes are 2,048, 3,072, and 4,096 bits; measured iterations must be positive and warm-up may be zero.
+
+The report includes decoded payload bytes, raw signature bytes, complete JWT bytes, per-iteration signing/verification times in nanoseconds, median and nearest-rank p95 in milliseconds, and environment metadata. Timings cover raw RSA operations over the prepared JWT signing input. Key generation is reported separately; JWT serialization, parsing, claim validation, and file output are excluded from signing/verification timings. Every measured signature is verified. This is a local sequential benchmark; it does not measure HTTP latency or concurrent throughput.
+
+The implementation uses [PyJWT's RS256 support](https://pyjwt.readthedocs.io/en/stable/usage.html) and [cryptography's RSA primitives](https://cryptography.io/en/stable/hazmat/primitives/asymmetric/rsa/). Correctness checks cover valid tokens, payload/signature tampering, wrong keys, disallowed algorithms, and expired claims.
+
+## Run the Ed25519 baseline
+
+Use the same `crypto` environment and dependencies as RSA:
+
+```bash
+python scripts/ed25519_jwt.py
+python scripts/ed25519_jwt.py --verbose
+python scripts/ed25519_jwt.py --iterations 1000 --warmup 100 --output results/ed25519.json
+python -m unittest discover -s tests -p 'test_ed25519_jwt.py' -v
+```
+
+The script uses [PyJWT's EdDSA support](https://pyjwt.readthedocs.io/en/stable/usage.html#encoding-decoding-tokens-with-eddsa-ed25519) with an Ed25519 key and the same claims fixture as RSA. It prints only the token by default; `--verbose` (or `-v`) prints the full report, and `--output` saves that report independently. It also accepts `--claims`, `--iterations`, and `--warmup`. Ed25519 has a fixed configuration, so there is no `--key-size` option. Keys stay in memory, and signing/verification timings exclude key generation and JWT encoding/decoding just as in the RSA script. The report records `algorithm: EdDSA` and `curve: Ed25519`.
+
+## Try an ML-DSA-44 token
+
+With the same dependencies installed in `crypto`, generate one token:
+
+```bash
+python scripts/mldsa_jwt.py
+python scripts/mldsa_jwt.py --claims fixtures/claims.json
+```
+
+This script uses the shared claims and prints only a compact signed JWT. It generates a fresh in-memory key for each run and does not save it. There are no benchmark loops or timing reports. Since the installed PyJWT does not provide this algorithm, the script assembles the compact JWS directly and uses `cryptography` for signing. It uses `alg: ML-DSA-44`, a raw signature encoded with base64url, and an empty signing context as specified in [RFC 9964](https://www.rfc-editor.org/rfc/rfc9964.html#section-5). It only generates tokens; it does not provide a JWT authentication validator.
+
+## Try SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f tokens
+
+Install the added dependency in `crypto`, then run either script:
+
+```bash
+python -m pip install -r requirements.txt
+python scripts/slhdsa_sha2_128s_jwt.py
+python scripts/slhdsa_sha2_128f_jwt.py
+```
+
+Each script generates a fresh in-memory key, signs the shared claims, and prints only the compact token. Both accept `--claims path/to/claims.json`. They use [pqcrypto 1.0.0's finalized SLH-DSA implementations](https://pypi.org/project/pqcrypto/1.0.0/) with an empty context and no pre-hash mode. There are no benchmark loops, timing reports, saved keys, or authentication validators.
+
+The `alg` values `SLH-DSA-SHA2-128s` and `SLH-DSA-SHA2-128f` are experimental identifiers for this project; they are not currently registered in the [IANA JOSE registry](https://www.iana.org/assignments/jose/). The compact JWS is assembled directly; standard JWT libraries need an adapter to verify these tokens. With the default claims, token sizes are 10,613 bytes for `128s` and 22,922 bytes for `128f`. The `s` variant prioritizes signature size and the `f` variant prioritizes signing speed.
 
 ## Research questions
 
@@ -25,6 +93,7 @@ These are **digital signature algorithms**, not encryption algorithms. Signed JW
 | --- | --- | --- | --- |
 | Classical baseline | RS256 | RSA, 2,048-bit key, SHA-256 | Establish a familiar JWT baseline first. |
 | Classical baseline | ES256 | ECDSA, P-256, SHA-256 | Provide a compact classical signature comparison. |
+| Additional classical baseline | EdDSA | Ed25519 | Compare another compact classical signature. |
 | Post-quantum comparison | ML-DSA, FIPS 204 | ML-DSA-44 | Start with one lattice-based parameter set. |
 | Post-quantum comparison | SLH-DSA, FIPS 205 | SLH-DSA-SHA2-128s | Start with one hash-based parameter set. |
 

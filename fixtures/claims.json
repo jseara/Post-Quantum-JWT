@@ -1,0 +1,5 @@
+{
+  "sub": "benchmark-user",
+  "name": "JWT Benchmark",
+  "role": "reader"
+}
