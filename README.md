@@ -6,7 +6,7 @@ The final deliverable is a reproducible authentication test environment and expe
 
 ## Project status
 
-Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py) and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py): RSA/RS256 and Ed25519 JWT generation, verification, size reporting, and local cryptographic timings. Token generation prototypes for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are also available below. ECDSA, post-quantum benchmark integration, the combined benchmark runner, and web transport experiments remain on the backlog. Project context is in [AGENTS.md](AGENTS.md).
+Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py): RS256, ES256, and Ed25519 JWT generation, verification, size reporting, and local cryptographic timings. Token generation prototypes for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are also available below. Post-quantum benchmark integration, the combined benchmark runner, and web transport experiments remain on the backlog. Project context is in [AGENTS.md](AGENTS.md).
 
 ## Run the RSA baseline
 
@@ -37,6 +37,21 @@ Run these commands from the repository root. The default fixture is resolved rel
 The report includes decoded payload bytes, raw signature bytes, complete JWT bytes, per-iteration signing/verification times in nanoseconds, median and nearest-rank p95 in milliseconds, and environment metadata. Timings cover raw RSA operations over the prepared JWT signing input. Key generation is reported separately; JWT serialization, parsing, claim validation, and file output are excluded from signing/verification timings. Every measured signature is verified. This is a local sequential benchmark; it does not measure HTTP latency or concurrent throughput.
 
 The implementation uses [PyJWT's RS256 support](https://pyjwt.readthedocs.io/en/stable/usage.html) and [cryptography's RSA primitives](https://cryptography.io/en/stable/hazmat/primitives/asymmetric/rsa/). Correctness checks cover valid tokens, payload/signature tampering, wrong keys, disallowed algorithms, and expired claims.
+
+## Run the ES256 baseline
+
+Use the same `crypto` environment and dependencies as RSA:
+
+```bash
+python scripts/es256_jwt.py
+python scripts/es256_jwt.py --verbose
+python scripts/es256_jwt.py --iterations 1000 --warmup 100 --output results/es256.json
+python -m unittest discover -s tests -p 'test_es256_jwt.py' -v
+```
+
+The script uses [PyJWT's ES256 support](https://pyjwt.readthedocs.io/en/stable/algorithms.html) with an ephemeral P-256 key, SHA-256, and the same claims fixture and options as the Ed25519 script (`--claims`, `--iterations`, `--warmup`, `--verbose`, `--output`). The curve is fixed, so there is no `--key-size` option. The report records `algorithm: ES256`, `curve: P-256`, and `hash: SHA-256`.
+
+JWS requires ECDSA signatures as the fixed-width 64-byte `R || S` concatenation ([RFC 7518, section 3.4](https://www.rfc-editor.org/rfc/rfc7518.html#section-3.4)), while `cryptography` produces variable-length DER. The reported signature size is the 64-byte JOSE form from the token. Timed operations use the DER form directly, so the DER ↔ `R || S` conversion is excluded from timings along with key generation and JWT encoding/decoding. ECDSA signing is randomized, so each run produces a different signature. Besides the checks shared with RSA and Ed25519, the tests confirm that a DER-encoded signature in the token is rejected.
 
 ## Run the Ed25519 baseline
 
@@ -139,9 +154,9 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 ### S1-03 — Implement the classical JWT baselines
 
-- [ ] Implement RS256 with a 2,048-bit RSA key and ES256 with P-256 using established libraries.
-- [ ] Generate complete compact signed JWTs and verify them, respecting JOSE signature encoding requirements.
-- [ ] Add correctness checks for a valid token, a changed payload, a changed signature, a wrong verification key, and a disallowed algorithm.
+- [x] Implement RS256 with a 2,048-bit RSA key and ES256 with P-256 using established libraries.
+- [x] Generate complete compact signed JWTs and verify them, respecting JOSE signature encoding requirements.
+- [x] Add correctness checks for a valid token, a changed payload, a changed signature, a wrong verification key, and a disallowed algorithm.
 
 **Done when:** Both baselines pass the correctness checks and produce measured signature and complete token sizes for the shared fixture.
 
