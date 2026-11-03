@@ -62,11 +62,13 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 ### S2-01 — Choose and document the transport stack
 
-- [ ] Select the browser automation tool and browser engines, the reverse proxy, and the application server/framework. Start with one of each (for example Playwright with Chromium, nginx, and a Python application server), and add others only after the first path works.
-- [ ] Record each layer's version and its documented default limits for cookie size, single header size, and total request header size, with sources.
+- [x] Select the browser automation tool and browser engines, the reverse proxy, and the application server/framework. Start with one of each (for example Playwright with Chromium, nginx, and a Python application server), and add others only after the first path works.
+- [x] Record each layer's version and its documented default limits for cookie size, single header size, and total request header size, with sources.
 - [ ] Add reproducible setup instructions (pinned versions or containers) that work on both macOS and WSL2.
 
 **Done when:** The stack runs from a clean checkout on both team machines, and a table lists every layer with its version and documented limits.
+
+**Status:** Playwright with Chromium, nginx, and Gunicorn with Flask; versions and documented limits are in [TRANSPORT.md](TRANSPORT.md). Setup is pinned in [environment.yml](environment.yml) and checked from a fresh environment on macOS; it still needs a run of `python scripts/transport_stack.py` on WSL2.
 
 ### S2-02 — Build the test environment
 

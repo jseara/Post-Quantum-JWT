@@ -1,0 +1,9 @@
+name: crypto
+channels:
+  - conda-forge
+dependencies:
+  - python=3.15
+  - pip
+  - nginx=1.31.8
+  - pip:
+      - -r requirements.txt
