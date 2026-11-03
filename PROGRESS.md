@@ -15,7 +15,7 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 ### S1-02 — Define shared fixtures and the algorithm interface
 
 - [x] Add one fixed JWT claim fixture and deterministic JSON serialization for comparable input bytes. Keep time-dependent claim validation separate from static cryptographic measurements.
-- [ ] Define a common interface for key generation, signing, and verification, with algorithm and parameter-set metadata.
+- [x] Define a common interface for key generation, signing, and verification, with algorithm and parameter-set metadata.
 - [ ] Specify the benchmark output format, including payload bytes, signature bytes, token bytes, operation, duration, iteration, and run/environment metadata.
 
 **Done when:** Every adapter can consume the same signing input and report results through the same schema. Fixtures and keys used for experiments are clearly distinguished from production credentials.
