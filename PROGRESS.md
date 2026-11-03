@@ -46,9 +46,9 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 ### S1-06 — Publish the first comparison and reproduction steps
 
-- [ ] Run the benchmark in a recorded environment and check that all generated tokens verify.
-- [ ] Add a small results table comparing signature bytes, JWT bytes, signing latency, and verification latency, with links to the raw data and run settings.
-- [ ] Document the exact setup and execution commands, measurement limitations, and follow-up questions for transport testing.
+- [x] Run the benchmark in a recorded environment and check that all generated tokens verify.
+- [x] Add a small results table comparing signature bytes, JWT bytes, signing latency, and verification latency, with links to the raw data and run settings.
+- [x] Document the exact setup and execution commands, measurement limitations, and follow-up questions for transport testing.
 
 **Done when:** Another team member can reproduce the workflow from a clean checkout, and reported results can be traced to a specific configuration and dataset.
 
