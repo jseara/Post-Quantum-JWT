@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "run_id": "20261103T213538864472Z",
+  "started_utc": "2026-11-03T21:35:38.864472+00:00",
+  "finished_utc": "2026-11-03T21:37:26.807477+00:00",
+  "settings": {
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA",
+      "ML-DSA-44",
+      "SLH-DSA-SHA2-128s",
+      "SLH-DSA-SHA2-128f"
+    ],
+    "iterations": 1000,
+    "warmup": 100,
+    "iterations_per_algorithm": {},
+    "claims_file": "fixtures/claims.json",
+    "claims_sha256": "6e51520aaa370c696749a21acf7d1a94cbbee3a7926924135264b20b964ad5c0"
+  },
+  "measurement_scope": "raw signature operations on a prepared JWT signing input; key generation, JOSE encoding/decoding, and file output excluded",
+  "environment": {
+    "python": "3.15.2",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_count": 18,
+    "cryptography": "50.0.2",
+    "pyjwt": "2.15.1",
+    "pqcrypto": "1.0.0",
+    "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+    "timer": "perf_counter_ns",
+    "git_commit": "e36a3fbc4873c7fd7e40ada787ff70f439b753d2",
+    "git_dirty_scripts_or_fixtures": false
+  }
+}
