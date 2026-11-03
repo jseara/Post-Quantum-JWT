@@ -32,7 +32,7 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 - [x] Add ML-DSA-44 and SLH-DSA-SHA2-128s adapters using the selected backend.
 - [x] Integrate their signatures into the compact token flow with documented algorithm identifiers and encoding rules.
-- [ ] Run the same positive and negative correctness checks as the classical adapters, and check signature lengths against the relevant standards.
+- [x] Run the same positive and negative correctness checks as the classical adapters, and check signature lengths against the relevant standards.
 
 **Done when:** Both post-quantum configurations create and verify tokens over the shared fixture. Documentation identifies backend versions and any experimental JWT integration. A backend or JOSE blocker must be recorded explicitly rather than substituting an older algorithm silently.
 

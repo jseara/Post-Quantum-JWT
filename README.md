@@ -6,7 +6,7 @@ The final deliverable is a reproducible authentication test environment and expe
 
 ## Project status
 
-Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py): RS256, ES256, and Ed25519 JWT generation, verification, size reporting, and local cryptographic timings. Token generation prototypes for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are also available below. Post-quantum benchmark integration, the combined benchmark runner, and web transport experiments remain on the backlog. Project context is in [AGENTS.md](AGENTS.md).
+Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py): RS256, ES256, and Ed25519 JWT generation, verification, size reporting, and local cryptographic timings. Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are also available below. Post-quantum benchmark integration, the combined benchmark runner, and web transport experiments remain on the backlog. Project context is in [AGENTS.md](AGENTS.md).
 
 ## Run the RSA baseline
 
@@ -73,9 +73,10 @@ With the same dependencies installed in `crypto`, generate one token:
 ```bash
 python scripts/mldsa_jwt.py
 python scripts/mldsa_jwt.py --claims fixtures/claims.json
+python -m unittest discover -s tests -p 'test_mldsa_jwt.py' -v
 ```
 
-This script uses the shared claims and prints only a compact signed JWT. It generates a fresh in-memory key for each run and does not save it. There are no benchmark loops or timing reports. Since the installed PyJWT does not provide this algorithm, the script assembles the compact JWS directly and uses `cryptography` for signing. It uses `alg: ML-DSA-44`, a raw signature encoded with base64url, and an empty signing context as specified in [RFC 9964](https://www.rfc-editor.org/rfc/rfc9964.html#section-5). It only generates tokens; it does not provide a JWT authentication validator.
+This script uses the shared claims and prints only a compact signed JWT. It generates a fresh in-memory key for each run and does not save it. There are no benchmark loops or timing reports. Since the installed PyJWT does not provide this algorithm, the script assembles the compact JWS directly and uses `cryptography` for signing. It uses `alg: ML-DSA-44`, a raw signature encoded with base64url, and an empty signing context as specified in [RFC 9964](https://www.rfc-editor.org/rfc/rfc9964.html#section-5). `verify_token` in the same module verifies these tokens through the shared [scripts/compact_jws.py](scripts/compact_jws.py) parser: it accepts only `alg: ML-DSA-44`, uses strict unpadded base64url, and rejects expired tokens when an `exp` claim is supplied. Failures raise PyJWT's exception types (`InvalidSignatureError`, `InvalidAlgorithmError`, `ExpiredSignatureError`, `DecodeError`), so callers handle these tokens the same way as the classical baselines. No other registered claims are validated.
 
 ## Try SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f tokens
 
@@ -85,9 +86,10 @@ Install the added dependency in `crypto`, then run either script:
 python -m pip install -r requirements.txt
 python scripts/slhdsa_sha2_128s_jwt.py
 python scripts/slhdsa_sha2_128f_jwt.py
+python -m unittest discover -s tests -p 'test_slhdsa_jwt.py' -v
 ```
 
-Each script generates a fresh in-memory key, signs the shared claims, and prints only the compact token. Both accept `--claims path/to/claims.json`. They use [pqcrypto 1.0.0's finalized SLH-DSA implementations](https://pypi.org/project/pqcrypto/1.0.0/) with an empty context and no pre-hash mode. There are no benchmark loops, timing reports, saved keys, or authentication validators.
+Each script generates a fresh in-memory key, signs the shared claims, and prints only the compact token. Both accept `--claims path/to/claims.json`. They use [pqcrypto 1.0.0's finalized SLH-DSA implementations](https://pypi.org/project/pqcrypto/1.0.0/) with an empty context and no pre-hash mode. There are no benchmark loops, timing reports, or saved keys. Each module also provides `verify_token`, which uses the same parser and exceptions as ML-DSA-44 and accepts only its own `alg` value.
 
 The `alg` values `SLH-DSA-SHA2-128s` and `SLH-DSA-SHA2-128f` are experimental identifiers for this project; they are not currently registered in the [IANA JOSE registry](https://www.iana.org/assignments/jose/). The compact JWS is assembled directly; standard JWT libraries need an adapter to verify these tokens. With the default claims, token sizes are 10,613 bytes for `128s` and 22,922 bytes for `128f`. The `s` variant prioritizes signature size and the `f` variant prioritizes signing speed.
 

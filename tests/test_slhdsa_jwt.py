@@ -1,6 +1,6 @@
 """Check both SLH-DSA token generators without benchmarking."""
 
-from base64 import urlsafe_b64decode
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 import json
 from pathlib import Path
 import subprocess
@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 
+import jwt
 from pqcrypto import InvalidSignatureError
 
 from scripts import slhdsa_sha2_128s_jwt, slhdsa_sha2_128f_jwt
@@ -57,6 +58,41 @@ class SLHDSAJWTTests(unittest.TestCase):
                 ):
                     with self.assertRaises(InvalidSignatureError):
                         script.slh_dsa.verify(key, data, sig, b"")
+
+    def test_verify_token_round_trip_and_rejections(self):
+        for script, public_key, claims, token, _, _ in self.cases:
+            with self.subTest(algorithm=script.ALGORITHM):
+                self.assertEqual(script.verify_token(token, public_key), claims)
+                header, payload, signature_segment = token.split(".")
+                signature = bytearray(decode(signature_segment))
+                signature[0] ^= 1
+                changed_signature = urlsafe_b64encode(bytes(signature)).rstrip(b"=").decode("ascii")
+                changed_payload = urlsafe_b64encode(
+                    json.dumps(dict(claims, role="admin")).encode()).rstrip(b"=").decode("ascii")
+                truncated = urlsafe_b64encode(bytes(signature[:-1])).rstrip(b"=").decode("ascii")
+                wrong_key, _ = script.slh_dsa.keygen()
+                for bad_token, key in (
+                    (f"{header}.{changed_payload}.{signature_segment}", public_key),
+                    (f"{header}.{payload}.{changed_signature}", public_key),
+                    (f"{header}.{payload}.{truncated}", public_key),
+                    (token, wrong_key),
+                ):
+                    with self.assertRaises(jwt.InvalidSignatureError):
+                        script.verify_token(bad_token, key)
+
+    def test_verify_token_rejects_disallowed_algorithm_and_expired_claims(self):
+        hs256 = jwt.encode({"sub": "x"}, "test-only-secret-at-least-32-bytes-long", algorithm="HS256")
+        for script, public_key, claims, _, _, _ in self.cases:
+            with self.subTest(algorithm=script.ALGORITHM):
+                # The other SLH-DSA variant's token is also a disallowed algorithm here.
+                other_token = next(case[3] for case in self.cases if case[0] is not script)
+                for token in (hs256, other_token):
+                    with self.assertRaises(jwt.InvalidAlgorithmError):
+                        script.verify_token(token, public_key)
+                expiring_key, private_key = script.slh_dsa.keygen()
+                expired = script.create_token(dict(claims, exp=1), private_key)
+                with self.assertRaises(jwt.ExpiredSignatureError):
+                    script.verify_token(expired, expiring_key)
 
     def test_cli_prints_only_default_token_from_another_directory(self):
         with tempfile.TemporaryDirectory() as directory:

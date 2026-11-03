@@ -1,12 +1,18 @@
-"""Generate one ML-DSA-44 signed JWT and print only the token."""
+"""Generate one ML-DSA-44 signed JWT and print only the token; verify ML-DSA-44 JWTs."""
 
 import argparse
 from base64 import urlsafe_b64encode
 import json
 from pathlib import Path
+import sys
 
-from cryptography.exceptions import UnsupportedAlgorithm
-from cryptography.hazmat.primitives.asymmetric.mldsa import MLDSA44PrivateKey
+if __package__ in (None, ""):  # Allow `python scripts/<name>.py` as well as package imports.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
+from cryptography.hazmat.primitives.asymmetric.mldsa import MLDSA44PrivateKey, MLDSA44PublicKey
+
+from scripts.compact_jws import decode_compact
 
 
 DEFAULT_CLAIMS = Path(__file__).resolve().parents[1] / "fixtures" / "claims.json"
@@ -23,6 +29,18 @@ def create_token(claims: dict, private_key: MLDSA44PrivateKey) -> str:
     signing_input = header_segment + b"." + payload_segment
     signature = private_key.sign(signing_input, context=b"")
     return (signing_input + b"." + urlsafe_b64encode(signature).rstrip(b"=")).decode("ascii")
+
+
+def verify_token(token: str, public_key: MLDSA44PublicKey) -> dict:
+    """Verify the signature and expiration, accepting only ML-DSA-44 with an empty context."""
+    def verify_signature(signing_input: bytes, signature: bytes) -> bool:
+        try:
+            public_key.verify(signature, signing_input, context=b"")
+        except InvalidSignature:
+            return False
+        return True
+
+    return decode_compact(token, ALGORITHM, verify_signature)
 
 
 def main() -> None:
