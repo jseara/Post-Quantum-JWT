@@ -6,7 +6,7 @@ The final deliverable is a reproducible authentication test environment and expe
 
 ## Project status
 
-Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py). Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are described below. A combined benchmark runner covers all six configurations, and the first measured comparison is in [RESULTS.md](RESULTS.md). Web transport experiments (Sprint 2) remain on the backlog; see [PROGRESS.md](PROGRESS.md). Project context is in [AGENTS.md](AGENTS.md).
+Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py). Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are described below. A combined benchmark runner covers all six configurations, and the first measured comparison is in [RESULTS.md](RESULTS.md). [PROGRESS.md](PROGRESS.md) plans Sprint 2 (where large tokens break in cookie and Bearer transport) and Sprint 3 (end-to-end cost and mitigations). Project context is in [AGENTS.md](AGENTS.md).
 
 ## Run the RSA baseline
 

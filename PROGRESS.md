@@ -54,9 +54,90 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 **Sprint 1 completion:** All six tasks are complete, all four algorithm configurations pass correctness checks, and the repository contains a runnable benchmark, raw measurements, and an initial comparison. Do not fill result tables with estimates presented as measurements.
 
+## Sprint 2: Find where large tokens break in transport
+
+**Sprint goal:** Send tokens from all six configurations through a browser → reverse proxy → application path, as cookies and as `Authorization: Bearer` headers. Find the size at which each layer rejects them, and publish the limits with evidence.
+
+Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-for-transport-testing) (RQ2). End-to-end cost and mitigations follow in Sprint 3. Test each layer at its default limits first. Raise a limit only to uncover the next layer's limit, and record every change.
+
+### S2-01 — Choose and document the transport stack
+
+- [ ] Select the browser automation tool and browser engines, the reverse proxy, and the application server/framework. Start with one of each (for example Playwright with Chromium, nginx, and a Python application server), and add others only after the first path works.
+- [ ] Record each layer's version and its documented default limits for cookie size, single header size, and total request header size, with sources.
+- [ ] Add reproducible setup instructions (pinned versions or containers) that work on both macOS and WSL2.
+
+**Done when:** The stack runs from a clean checkout on both team machines, and a table lists every layer with its version and documented limits.
+
+### S2-02 — Build the test environment
+
+- [ ] Add a minimal application with one endpoint that issues a token as a cookie and one that accepts a token from either a cookie or a Bearer header and verifies it with the adapters in [scripts/algorithms.py](scripts/algorithms.py).
+- [ ] Put the reverse proxy in front of the application, and serve the test page the browser loads through the proxy.
+- [ ] Log enough at each layer to tell which one handled or rejected a request: the browser's cookie jar and request headers, the proxy's access and error logs, and the application's log of received header sizes.
+
+**Done when:** A normal-sized token from each of the six configurations travels browser → proxy → application as both a cookie and a Bearer header and verifies, and every layer's log shows the request.
+
+### S2-03 — Generate size-controlled tokens and account for bytes
+
+- [ ] Add a realistic claims fixture (for example, typical OpenID Connect ID token claims) alongside the existing minimal fixture.
+- [ ] Add a deterministic padding claim that produces tokens at target sizes for every configuration, and verify each token before sending it.
+- [ ] Report, for every request, the token bytes, the cookie bytes (name, value, and attributes), the header line bytes (`Cookie:` or `Authorization: Bearer`), and the total request header bytes.
+
+**Done when:** Any configuration can produce a verified token at a requested size, and the byte accounting for a request can be checked by hand.
+
+### S2-04 — Cookie transport sweep
+
+- [ ] Sweep token sizes for each configuration, delivered in a cookie set by the application's `Set-Cookie` response. Use coarse steps, then narrow to the exact boundary at each limit found.
+- [ ] At each size, record whether the browser stored the cookie, whether it sent it, and which layer rejected the request, with the status code or browser behavior. A cookie the browser silently drops counts as a rejection by the browser.
+- [ ] Measure ML-DSA-44's claim headroom with the realistic claims fixture and typical cookie attributes (`Secure`, `HttpOnly`, `SameSite`, `Path`, `Max-Age`).
+
+**Done when:** For each configuration, the largest cookie-carried token that reaches the application is known, along with the first layer that rejects a larger one and the evidence.
+
+### S2-05 — Bearer header transport sweep
+
+- [ ] Repeat the sweep with the token in an `Authorization: Bearer` header, sent both from the browser (`fetch`) and from a non-browser HTTP client, to separate browser limits from server limits.
+- [ ] Record the first rejecting layer and its response at each boundary, and compare the boundaries with the cookie results.
+- [ ] Raise the first rejecting layer's limit once, rerun, and record the next layer's limit and the configuration change.
+
+**Done when:** For each configuration, the largest Bearer-carried token that reaches the application is known for both clients, and the next limit behind the first one is recorded.
+
+### S2-06 — Publish the transport results
+
+- [ ] Add a results document with a table per transport giving, for every configuration, the size boundary, the rejecting layer, its status or behavior, and its configured limit.
+- [ ] Link each result to its raw data, logs, and the exact configuration of every layer.
+- [ ] Document the reproduction steps, limitations (engines and versions tested, default versus raised limits), and follow-up questions for Sprint 3.
+
+**Done when:** Another team member can reproduce the sweeps from a clean checkout, and every reported boundary can be traced to raw evidence.
+
+**Sprint 2 completion:** All six tasks are complete, and every configuration has measured cookie and Bearer boundaries with the rejecting layer identified. Do not report documented limits as measured boundaries.
+
+## Sprint 3: Measure end-to-end cost and mitigations
+
+**Sprint goal:** Measure whether token size matters more end to end than verification cost, and test whether mitigations bring oversized tokens within the limits found in Sprint 2.
+
+Sprint 3 answers transport questions 4 and 5 in [RESULTS.md](RESULTS.md#questions-for-transport-testing) (RQ3 at the HTTP level, and RQ4). Refine these tasks once Sprint 2's limits are known.
+
+### S3-01 — Measure end-to-end latency and throughput
+
+- [ ] Define the workload (request mix, concurrency, duration, and where the client runs) and record it with every run.
+- [ ] Measure request latency (median and p95) and throughput for every configuration through the Sprint 2 path, separating token transfer, verification, and other server handling.
+
+**Done when:** For each configuration, the results show how much of the end-to-end difference comes from token size and how much from verification.
+
+### S3-02 — Compare mitigations
+
+- [ ] Smaller claim sets: measure how much each configuration's token shrinks with only essential claims, and whether that moves any Sprint 2 boundary.
+- [ ] Cookie splitting: split oversized tokens across several cookies and reassemble them in the application. Record the per-cookie, cookie-count, and total header limits it runs into, and how it handles missing or reordered chunks.
+- [ ] Reference tokens: replace the JWT in transit with a short opaque reference and look up the signed token on the server. Measure the lookup latency, and note what the design gives up, such as stateless and offline verification.
+
+**Done when:** Each mitigation has run under the S3-01 workload, with its effect on the size limits and on latency recorded.
+
+### S3-03 — Publish the end-to-end and mitigation results
+
+- [ ] Add tables comparing end-to-end latency and throughput, and each mitigation's effect, with links to the raw data and settings.
+- [ ] Summarize recommendations for RQ4: which configuration and mitigation fit which deployment, and what each trades off.
+
+**Done when:** The results are reproducible from a clean checkout, and every recommendation can be traced to a measurement.
+
 ## Follow-up backlog
 
-- **Sprint 2 — Transport limits:** Build the browser/proxy/application path; exercise cookie and bearer-header transport; sweep token sizes around observed limits; capture rejection evidence and configuration at each layer.
-- **End-to-end performance:** Measure request latency and throughput under a defined workload, distinguishing cryptographic costs from token transfer and server handling.
-- **Mitigations:** Compare smaller claim sets, cookie splitting/reassembly, and reference tokens using the same workload. Account for cookie count/aggregate header limits, failure handling, and reference-token lookup costs.
 - **Expanded comparisons:** Add further parameter sets and repeat runs to assess variability and the tradeoffs among signature size, speed, and security strength.

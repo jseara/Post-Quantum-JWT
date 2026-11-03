@@ -58,7 +58,9 @@ The run took about 7 minutes, almost all of it SLH-DSA-SHA2-128s signing. Add `-
 - **One small payload (63 bytes).** Larger claim sets add to every token equally, but by a smaller fraction of the post-quantum tokens' size.
 - The security levels are not equivalent: RSA-2048 is about 112-bit classical, and the others target NIST category 1 / 128-bit.
 
-## Questions for Sprint 2 (transport)
+## Questions for transport testing
+
+Sprint 2 covers questions 1–3 and Sprint 3 covers questions 4 and 5; see [PROGRESS.md](PROGRESS.md).
 
 1. With realistic claims, a cookie name, and cookie attributes, does an ML-DSA-44 cookie still fit within browsers' per-cookie limit? How much claim headroom is left?
 2. For a 10.6 KB or 22.9 KB token, which layer rejects it first? Candidates are the browser cookie jar, the reverse proxy's header buffers (for example nginx `large_client_header_buffers`), or the application server's header limits. What status or behavior does each produce?
