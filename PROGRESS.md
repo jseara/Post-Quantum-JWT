@@ -16,7 +16,7 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 - [x] Add one fixed JWT claim fixture and deterministic JSON serialization for comparable input bytes. Keep time-dependent claim validation separate from static cryptographic measurements.
 - [x] Define a common interface for key generation, signing, and verification, with algorithm and parameter-set metadata.
-- [ ] Specify the benchmark output format, including payload bytes, signature bytes, token bytes, operation, duration, iteration, and run/environment metadata.
+- [x] Specify the benchmark output format, including payload bytes, signature bytes, token bytes, operation, duration, iteration, and run/environment metadata.
 
 **Done when:** Every adapter can consume the same signing input and report results through the same schema. Fixtures and keys used for experiments are clearly distinguished from production credentials.
 
@@ -38,9 +38,9 @@ Build the classical baseline first so the shared fixtures, token format, and mea
 
 ### S1-05 — Build the local benchmark runner
 
-- [ ] Add a repeatable command that runs all four configurations with configurable warm-up and measured iterations.
-- [ ] Measure signing and verification independently with keys and fixtures prepared outside the timed loops; report signature and complete token sizes.
-- [ ] Export raw timings and run metadata to CSV or JSON, plus median and p95 summaries. Exclude setup, file output, and summary generation from operation timings.
+- [x] Add a repeatable command that runs all four configurations with configurable warm-up and measured iterations.
+- [x] Measure signing and verification independently with keys and fixtures prepared outside the timed loops; report signature and complete token sizes.
+- [x] Export raw timings and run metadata to CSV or JSON, plus median and p95 summaries. Exclude setup, file output, and summary generation from operation timings.
 
 **Done when:** A run produces inspectable raw data and a summary for all four configurations, and its settings can be reused for another run. Do not use timing thresholds as correctness tests.
 

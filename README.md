@@ -93,6 +93,32 @@ Each script generates a fresh in-memory key, signs the shared claims, and prints
 
 The `alg` values `SLH-DSA-SHA2-128s` and `SLH-DSA-SHA2-128f` are experimental identifiers for this project; they are not currently registered in the [IANA JOSE registry](https://www.iana.org/assignments/jose/). The compact JWS is assembled directly; standard JWT libraries need an adapter to verify these tokens. With the default claims, token sizes are 10,613 bytes for `128s` and 22,922 bytes for `128f`. The `s` variant prioritizes signature size and the `f` variant prioritizes signing speed.
 
+## Run the combined benchmark
+
+[scripts/benchmark.py](scripts/benchmark.py) runs every configuration through the common interface in [scripts/algorithms.py](scripts/algorithms.py), which wraps each script's `create_token`/`verify_token` and adds key generation, raw signing/verification, and algorithm metadata:
+
+```bash
+python scripts/benchmark.py
+python scripts/benchmark.py --iterations 1000 --warmup 100 --iterations-per-algorithm SLH-DSA-SHA2-128s=200
+python scripts/benchmark.py --algorithms ML-DSA-44 SLH-DSA-SHA2-128s --output-dir results/pq-only
+python scripts/benchmark.py --settings results/<run_id>/run.json
+python -m unittest discover -s tests -v
+```
+
+By default it runs all six configurations (RS256, ES256, EdDSA, ML-DSA-44, SLH-DSA-SHA2-128s, SLH-DSA-SHA2-128f) with 100 measured and 10 warm-up iterations, prints a summary table, and writes a run directory under `results/<run_id>/`. `--settings` reuses a saved run's algorithms, iteration counts, warm-up, and claims file; any other flag given on the command line overrides the saved value. `--iterations-per-algorithm` lowers the count for slow configurations (SLH-DSA-SHA2-128s signing takes hundreds of milliseconds); the count used is recorded for every algorithm.
+
+For each configuration, keys are generated, and a token is created and verified with `verify_token`, before the timed loop. Each iteration then times one raw signature and one raw verification of that signature over the prepared JWT signing input, and every signature is verified. Key generation is timed once and reported separately. JOSE encoding/decoding, warm-up iterations, summary generation, and file output are excluded. Like the individual scripts, this is a local sequential benchmark.
+
+### Benchmark output format
+
+Each run directory contains three files (`schema_version: 1`):
+
+- `run.json`: `run_id`, start/finish times (UTC), `settings` (`algorithms`, `iterations`, `warmup`, `iterations_per_algorithm`, `claims_file`, `claims_sha256`), `measurement_scope`, and `environment` (Python, platform, CPU count, `cryptography`, PyJWT, `pqcrypto` and OpenSSL versions, timer, and the git commit and whether `scripts/` or `fixtures/` had uncommitted changes).
+- `raw.csv`: one row per measured operation, with columns `run_id, algorithm, parameter_set, operation, iteration, duration_ns`. `operation` is `sign` or `verify`, and `iteration` starts at 1 after warm-up.
+- `summary.json`: per algorithm, the metadata (`algorithm`, `family`, `parameter_set`, `standard`, `jose_spec`, `jose_status`, `backend`), `iterations`, `warmup`, `sizes_bytes` (`payload`: decoded payload bytes, `signature`: raw signature bytes as carried in the token, `jwt`: complete compact token bytes), `key_generation_ms`, `sign` and `verify` (`median_ms`, nearest-rank `p95_ms`, `n`), `verified`, and the sample `token`.
+
+All keys are ephemeral experiment keys held in memory; tokens in results are signed with discarded keys and are not credentials.
+
 ## Research questions
 
 1. How large are JWTs signed with ML-DSA and SLH-DSA compared with classical algorithms?
