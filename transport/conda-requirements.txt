@@ -1,0 +1,5 @@
+# conda-forge packages for the transport environment (see TRANSPORT.md).
+# The *_cp315 build selects the standard (GIL) CPython build, not the free-threaded cp315t one.
+python=3.15.2=*_cp315
+pip==26.2.2
+nginx==1.31.8

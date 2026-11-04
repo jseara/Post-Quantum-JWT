@@ -1,7 +1,7 @@
 export const meta = {
   name: 'multi-agent-dev',
   description: 'Clarify a coding task, then build it three ways, test, judge, and summarize for human review',
-  whenToUse: 'Run with mode "clarify" until it reports ready, then with mode "run" and the returned spec.',
+  whenToUse: 'Run with mode "clarify" until it reports ready (rerun on "incomplete", answer "needs_human"), then with mode "run" and the returned spec.',
   phases: [
     { title: 'Brief', detail: 'coordinator turns the task into a spec and per-role notes' },
     { title: 'Clarify', detail: 'each role checks whether it needs more information' },
@@ -13,8 +13,13 @@ export const meta = {
   ],
 }
 
-// args (clarify): { mode: 'clarify', task, runTag, testCommand?, answers?: [{question, answer}], previousSpec? }
-// args (run):     { mode: 'run', runTag, spec, weights?: {tests, legibility} } where spec is the object a ready clarify run returned
+// args (clarify): { mode: 'clarify', task, runTag, baseRef?, testCommand?, answers?: [{question, answer}], previousSpec? }
+// args (run):     { mode: 'run', runTag, spec, baseRef?, baselines?: [{id, ref, note?}], weights?: {tests, legibility} }
+//                 where spec is the object a ready clarify run returned. Instead of spec, pass the
+//                 clarify args (task, ...) with resumeFromRunId to replay that clarify from cache.
+//                 resumeFrom?: {coderId: branch} restarts interrupted coders from their WIP branches;
+//                 reuseTests?: {branch, commit, testFiles, testCount, assumptions?, coverage?} skips the tester. baseRef makes every agent build
+//                 from that commit instead of HEAD; baselines are existing commits the judge scores too.
 const A = args || {}
 if (!A.mode || !A.runTag) throw new Error('args.mode ("clarify" | "run") and args.runTag are required')
 
@@ -174,14 +179,27 @@ Assumptions already made: ${spec.assumptions.length ? spec.assumptions.join('; '
 
 const branchFor = id => `wf/${A.runTag}/${id}`
 
-if (A.mode === 'clarify') {
+// Commits after baseRef may hold a baseline candidate, so agents must not see them.
+const BASE = A.baseRef ? `
+Work from commit ${A.baseRef}, not HEAD. Read the repository as of that commit (\`git show ${A.baseRef}:<path>\`, \`git ls-tree -r ${A.baseRef}\`), and do not read files, diffs, or history from any later commit: they contain a competing implementation.` : ''
+const RESET = A.baseRef ? `
+Before reading or writing anything, run \`git reset --hard ${A.baseRef}\` in your worktree so your work starts from that commit.` : ''
+
+// A coder interrupted mid-task (for example by a usage limit) continues from its WIP branch.
+const startFor = id => {
+  const wip = (A.resumeFrom || {})[id]
+  return wip ? `
+An earlier attempt at this exact task, with these same instructions, was interrupted before it finished. Its unfinished work is committed on branch ${wip}. Before reading or writing anything else, run \`git reset --hard ${wip}\` in your worktree and continue from that work: check it against the spec, finish what is missing, fix what is wrong, and verify it. That branch is your own earlier work and the only commit after ${A.baseRef || 'the base'} you may read. An environment that attempt created at its documented path may be reused if it is intact.` : RESET
+}
+
+async function clarify() {
   const answers = (A.answers || []).map(a => `Q: ${a.question}\nA: ${a.answer}`).join('\n\n')
 
   phase('Brief')
   const draft = await agent(`You are the coordinator of a multi-agent coding workflow and the only role that speaks for the human.
 Turn the task below into a spec that six agents will work from: three coders (independent implementations), a tester (writes unit tests from requirements only), a judge (scores each implementation on tests passed and legibility), and a test reviewer.
 
-Explore the repository read-only to ground the spec: find the files to mirror, the test layout, and the exact test command. Check \`git status\`; if there are uncommitted changes, say in repoWarnings that the agents' worktrees will not see them.
+Explore the repository read-only to ground the spec: find the files to mirror, the test layout, and the exact test command. Check \`git status\`; if there are uncommitted changes, say in repoWarnings that the agents' worktrees will not see them.${BASE}
 Write requirements that are specific and testable. Where the task is ambiguous, prefer a stated assumption over a guess hidden in the requirements.
 
 TASK (from the human):
@@ -194,7 +212,7 @@ ${RULES}`, { label: 'coordinator: brief', schema: SPEC_SCHEMA })
 
   phase('Clarify')
   const checks = await parallel(ROLES.map(role => () => agent(`You will soon be the "${role.id}" agent in a multi-agent coding workflow. Your job then: ${role.duty}
-Before starting, decide whether you have everything you need. You may read the repository to check. Do not write any files now.
+Before starting, decide whether you have everything you need. You may read the repository to check. Do not write any files now.${BASE}
 
 ${specText(draft)}
 
@@ -204,18 +222,19 @@ Ask only questions whose answer would change what you produce. Do not ask about 
     { label: `check: ${role.id}`, phase: 'Clarify', schema: CHECK_SCHEMA, effort: 'low' })
     .then(result => result && { role: role.id, ...result })))
 
+  // A role whose check failed has not confirmed it is ready, so the spec cannot be.
+  const failedRoles = ROLES.filter((role, i) => !checks[i]).map(role => role.id)
+  if (failedRoles.length) log(`Role check(s) did not return: ${failedRoles.join(', ')}; rerun clarify before building`)
   const asked = checks.filter(Boolean).filter(c => c.questions.length)
-  const skipped = ROLES.length - checks.filter(Boolean).length
-  if (skipped) log(`${skipped} role check(s) did not return; their roles were not asked`)
   if (!asked.length) {
-    log('No role needed more information')
-    return { status: 'ready', spec: draft, answeredFromRepo: [], forHuman: [] }
+    if (!failedRoles.length) log('No role needed more information')
+    return { status: failedRoles.length ? 'incomplete' : 'ready', spec: draft, answeredFromRepo: [], forHuman: [], failedRoles }
   }
 
   phase('Triage')
   const triage = await agent(`You are the coordinator of a multi-agent coding workflow. Agents asked the questions below before starting.
 For each question: if the repository, the task, or the human's earlier answers settle it, answer it, cite the source, and fold the answer into the spec. Otherwise put it in forHuman, merging duplicates and listing every role that asked. Never invent the human's preferences; questions about intent, scope, or priorities go to the human.
-Return the revised spec (unchanged fields kept as they are).
+Return the revised spec (unchanged fields kept as they are).${BASE}
 
 TASK (from the human):
 ${A.task}
@@ -229,21 +248,31 @@ ${asked.map(c => c.questions.map(q => `- [${c.role}${q.blocking ? ', blocking' :
 ${RULES}`, { label: 'coordinator: triage', schema: TRIAGE_SCHEMA })
 
   return {
-    status: triage.forHuman.length ? 'needs_human' : 'ready',
+    status: triage.forHuman.length ? 'needs_human' : failedRoles.length ? 'incomplete' : 'ready',
     spec: triage.spec,
     answeredFromRepo: triage.answeredFromRepo,
     forHuman: triage.forHuman,
+    failedRoles,
   }
 }
 
+if (A.mode === 'clarify') return await clarify()
 if (A.mode !== 'run') throw new Error(`unknown mode: ${A.mode}`)
-if (!A.spec) throw new Error('run mode needs args.spec from a ready clarify run')
-const spec = A.spec
+
+// Without args.spec, rerun clarify with the same args. With resumeFromRunId, its agents
+// replay from cache, so this reproduces the reviewed spec exactly instead of retyping it.
+let spec = A.spec
+if (!spec) {
+  if (!A.task) throw new Error('run mode needs args.spec, or args.task to rerun clarify')
+  const clarified = await clarify()
+  if (clarified.status !== 'ready') return clarified
+  spec = clarified.spec
+}
 const SPEC = specText(spec)
 
 phase('Build')
 const coderRuns = CODERS.map(coder => () => agent(`You are ${coder.id}, one of three coders implementing the same spec independently. Your angle: ${coder.angle}
-You are in an isolated git worktree. Implement the spec, run the existing test suite, then create branch ${branchFor(coder.id)} and commit your work there.
+You are in an isolated git worktree. Implement the spec, run the existing test suite, then create branch ${branchFor(coder.id)} and commit your work there.${startFor(coder.id)}${BASE}
 Do not create or edit the reserved test files (${spec.testFiles.join(', ')}); a separate agent writes those, and your code will be judged by them. Build to the requirements, not to guesses about the tests.
 
 ${SPEC}
@@ -252,8 +281,10 @@ Notes for coders: ${spec.roleNotes.coder}
 
 ${RULES}`, { label: coder.id, phase: 'Build', schema: CODER_SCHEMA, isolation: 'worktree' }))
 
-const testRun = () => agent(`You are the tester. Write unit tests for the spec below from its requirements alone. Implementations are being written in parallel and you must not look for or rely on them.
-You are in an isolated git worktree. Write the tests in the reserved test files (${spec.testFiles.join(', ')}), import from the target modules as the spec describes, then create branch ${branchFor('tests')} and commit. The new tests are expected to fail here, since the code does not exist yet; check only that they are syntactically valid and collected.
+// reuseTests is a finished tester result (for example from an interrupted run). The resume
+// cache matches calls by position, so a reused result has to come in through args instead.
+const testRun = A.reuseTests ? async () => ({ coverage: [], assumptions: [], ...A.reuseTests }) : () => agent(`You are the tester. Write unit tests for the spec below from its requirements alone. Implementations are being written in parallel and you must not look for or rely on them.
+You are in an isolated git worktree. Write the tests in the reserved test files (${spec.testFiles.join(', ')}), import from the target modules as the spec describes, then create branch ${branchFor('tests')} and commit. The new tests are expected to fail here, since the code does not exist yet; check only that they are syntactically valid and collected.${RESET}${BASE}
 Map every requirement to at least one test, include negative cases, and test behavior rather than implementation details. Do not use timing thresholds as pass/fail criteria.
 
 ${SPEC}
@@ -262,23 +293,33 @@ Notes for the tester: ${spec.roleNotes.tester}
 
 ${RULES}`, { label: 'tester', phase: 'Build', schema: TESTER_SCHEMA, isolation: 'worktree' })
 
-// Barrier: the judge needs every implementation and the tests together.
-const built = await parallel([...coderRuns, testRun])
-const candidates = built.slice(0, CODERS.length).map((run, i) => run && { coder: CODERS[i].id, ...run }).filter(Boolean)
-const tests = built[CODERS.length]
+// Barrier: the judge needs every implementation and the tests together. The tester is
+// started first so that a resume with changed coder prompts can still replay it from cache.
+const built = await parallel([testRun, ...coderRuns])
+const tests = built[0]
+const candidates = built.slice(1).map((run, i) => run && { coder: CODERS[i].id, ...run }).filter(Boolean)
 if (candidates.length < CODERS.length) log(`${CODERS.length - candidates.length} coder(s) did not finish; judging ${candidates.length}`)
 if (!tests) throw new Error('the tester did not finish; nothing to judge against')
 if (!candidates.length) throw new Error('no coder finished; nothing to judge')
 
+// Baselines are existing implementations, scored exactly like the coders' work.
+const baselines = (A.baselines || []).map(b => ({
+  coder: b.id, branch: b.ref, filesChanged: b.files || [], summary: b.note || 'existing implementation',
+  existingTestsResult: 'not run by a coder', concerns: [], baseline: true,
+}))
+const contenders = [...candidates, ...baselines]
+if (baselines.length) log(`Also judging ${baselines.length} baseline(s): ${baselines.map(b => b.coder).join(', ')}`)
+
 phase('Judge')
 const judged = await agent(`You are the judge. Score each implementation by how many of the tester's tests it passes, and rate how legible it is to a human reader.
-You are in an isolated git worktree. For each candidate branch below: check it out, bring in the test files with \`git checkout ${tests.branch} -- ${spec.testFiles.join(' ')}\`, run \`${spec.testCommand}\`, record passes, failures, and errors, then reset to a clean state before the next candidate. Do not modify any code or tests, and do not commit.
+You are in an isolated git worktree. For each candidate below (a branch or a commit): check it out, bring in the test files with \`git checkout ${tests.branch} -- ${spec.testFiles.join(' ')}\`, run \`${spec.testCommand}\`, record passes, failures, and errors, then reset to a clean state before the next candidate. Do not modify any code or tests, and do not commit.
 Count only those test files toward passed/failed/total, but note if a candidate breaks any existing test.
-Rate legibility 1-5 (5 = a newcomer could follow it easily and it matches the repo's style), judged on the diff against the base, and explain the score in a sentence or two.
+Rate legibility 1-5 (5 = a newcomer could follow it easily and it matches the repo's style), judged on the candidate's diff against ${A.baseRef || 'the commit it started from'}, and explain the score in a sentence or two.
 List any test that every candidate fails; it more likely points to a test or spec problem.
+Score baselines exactly like the others, and return one entry per candidate below, using its name as \`coder\`.
 
 Candidates:
-${candidates.map(c => `- ${c.coder}: branch ${c.branch}, files ${c.filesChanged.join(', ')}`).join('\n')}
+${contenders.map(c => `- ${c.coder}: ${c.baseline ? `commit ${c.branch} (baseline: an existing implementation, not written for this spec)` : `branch ${c.branch}`}${c.filesChanged.length ? `, files ${c.filesChanged.join(', ')}` : ''}`).join('\n')}
 
 ${SPEC}
 
@@ -307,7 +348,7 @@ Fix clear-cut test errors yourself and commit them to ${branchFor('tests-reviewe
 
 ${SPEC}
 
-The tester's coverage map: ${JSON.stringify(tests.coverage)}
+The tester's coverage map: ${tests.coverage.length ? JSON.stringify(tests.coverage) : 'not provided; build it from the test files yourself'}
 The tester's assumptions: ${tests.assumptions.join('; ') || 'none'}
 Judge results: ${JSON.stringify(judged)}
 Notes for the test reviewer: ${spec.roleNotes.testReviewer}
@@ -330,8 +371,8 @@ Keep it short; the human will read the code themselves.
 SPEC:
 ${JSON.stringify(spec, null, 2)}
 
-CODERS:
-${JSON.stringify(candidates, null, 2)}
+CANDIDATES (entries with baseline: true are existing commits, not coder output; they created no branch):
+${JSON.stringify(contenders, null, 2)}
 
 TESTER:
 ${JSON.stringify(tests, null, 2)}

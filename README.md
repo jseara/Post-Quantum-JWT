@@ -6,28 +6,21 @@ The final deliverable is a reproducible authentication test environment and expe
 
 ## Project status
 
-Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py). Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are described below. A combined benchmark runner covers all six configurations, and the first measured comparison is in [RESULTS.md](RESULTS.md). Sprint 2 (where large tokens break in cookie and Bearer transport) has started: the transport stack is chosen and its documented limits are in [TRANSPORT.md](TRANSPORT.md). [PROGRESS.md](PROGRESS.md) tracks Sprint 2 and plans Sprint 3 (end-to-end cost and mitigations). Project context is in [AGENTS.md](AGENTS.md).
+Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py). Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are described below. A combined benchmark runner covers all six configurations, and the first measured comparison is in [RESULTS.md](RESULTS.md). [PROGRESS.md](PROGRESS.md) plans Sprint 2 (where large tokens break in cookie and Bearer transport) and Sprint 3 (end-to-end cost and mitigations). Project context is in [AGENTS.md](AGENTS.md).
 
-## Set up the environment
-
-Create the `crypto` conda environment from [environment.yml](environment.yml), which pins Python 3.15, nginx 1.31.8 from conda-forge, and the Python packages in [requirements.txt](requirements.txt). Then download Playwright's Chromium build (about 150 MB, kept in Playwright's cache outside the repository):
-
-```bash
-conda env create -f environment.yml
-conda activate crypto
-python -m playwright install chromium
-```
-
-Add `-n <name>` to `conda env create` to choose another environment name, or run `conda env update -n <name> -f environment.yml` to update an existing environment. nginx, Flask, Gunicorn, and Playwright are needed only for the Sprint 2 transport stack. On Linux or WSL2, if Chromium fails to launch because system libraries are missing, `python -m playwright install-deps chromium` installs them with apt (it asks for sudo). The Sprint 1 scripts were checked with Python 3.15.2 on WSL2 and macOS; the transport stack has so far been checked only on macOS (Apple Silicon).
+The Sprint 2 transport stack (Playwright with Chromium, nginx, and waitress) is described in [TRANSPORT.md](TRANSPORT.md), with each layer's version and documented default limits, pinned setup for macOS and WSL2, and a check that sends one browser request through the proxy to the application.
 
 ## Run the RSA baseline
 
-Use the `crypto` environment from [Set up the environment](#set-up-the-environment):
+Use the existing `crypto` conda environment and install the pinned Python dependencies:
 
 ```bash
 conda activate crypto
+python -m pip install -r requirements.txt
 python scripts/rsa_jwt.py
 ```
+
+If creating the environment on another machine, run `conda create -n crypto python=3.15 pip` first. The initial implementation was checked with Python 3.15.2.
 
 The script generates an ephemeral 2,048-bit RSA key, creates and verifies an RS256 JWT using [fixtures/claims.json](fixtures/claims.json), and prints only the token by default. Add `--verbose` (or `-v`) to print the full JSON report. Keys stay in memory. The fixed fixture has no expiration or other time-dependent claims so later algorithms can use the same payload. Verification still checks expiration when an `exp` claim is supplied. These fixtures are for experiments.
 
@@ -127,17 +120,6 @@ Each run directory contains three files (`schema_version: 1`):
 - `summary.json`: per algorithm, the metadata (`algorithm`, `family`, `parameter_set`, `standard`, `jose_spec`, `jose_status`, `backend`), `iterations`, `warmup`, `sizes_bytes` (`payload`: decoded payload bytes, `signature`: raw signature bytes as carried in the token, `jwt`: complete compact token bytes), `key_generation_ms`, `sign` and `verify` (`median_ms`, nearest-rank `p95_ms`, `n`), `verified`, and the sample `token`.
 
 All keys are ephemeral experiment keys held in memory; tokens in results are signed with discarded keys and are not credentials.
-
-## Check the transport stack
-
-[scripts/transport_stack.py](scripts/transport_stack.py) starts nginx in front of Gunicorn serving the Flask app in [scripts/transport_app.py](scripts/transport_app.py), all on `127.0.0.1` with free ports, then loads `/health` in headless Chromium through nginx:
-
-```bash
-python scripts/transport_stack.py
-python -m unittest discover -s tests -p 'test_transport_stack.py' -v
-```
-
-The script prints every layer's version and exits with an error unless the request reached the application through nginx. nginx runs from a temporary directory with a generated configuration and its own logs, so it does not touch any other nginx installation. The configuration sets no header buffer directives, so the default limits under test apply; [TRANSPORT.md](TRANSPORT.md) lists each layer's documented limits. The tests start nginx and Gunicorn but not the browser, and they are skipped if nginx is not installed.
 
 ## Research questions
 

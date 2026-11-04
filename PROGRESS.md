@@ -68,7 +68,7 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 **Done when:** The stack runs from a clean checkout on both team machines, and a table lists every layer with its version and documented limits.
 
-**Status:** Playwright with Chromium, nginx, and Gunicorn with Flask; versions and documented limits are in [TRANSPORT.md](TRANSPORT.md). Setup is pinned in [environment.yml](environment.yml) and checked from a fresh environment on macOS; it still needs a run of `python scripts/transport_stack.py` on WSL2.
+**Status:** Playwright 1.64.1 with Chromium 156.0.8078.4, nginx 1.31.8, and waitress 3.0.2; versions and documented limits are in [TRANSPORT.md](TRANSPORT.md) and [transport/stack.json](transport/stack.json). `bash transport/setup.sh PREFIX` builds the pinned environment and has been checked from a clean checkout on macOS; it still needs a run of `scripts/transport_stack.py check` on WSL2.
 
 ### S2-02 — Build the test environment
 

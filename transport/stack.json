@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "layers": [
+    {
+      "role": "automation",
+      "component": "Playwright for Python",
+      "version": "1.64.1",
+      "install": "pip install playwright==1.64.1 (transport/requirements.txt) into the conda prefix; the platform wheel (macosx_11_0_arm64 or manylinux1_x86_64) bundles the Playwright driver 1.64.0-beta-1791568591000 and its Node.js runtime. The browser is driven over a pipe, not a TCP port.",
+      "limits": {
+        "cookie": {
+          "bytes": null,
+          "setting": null,
+          "note": "Not enforced at this layer: Playwright stores and sends no cookies itself. Cookies set by the page or by BrowserContext.add_cookies() live in the browser's cookie jar, so the browser layer's limit applies.",
+          "sources": [
+            "https://playwright.dev/python/docs/api/class-browsercontext#browser-context-add-cookies",
+            "https://playwright.dev/python/docs/api/class-browsertype#browser-type-launch"
+          ]
+        },
+        "single_header": {
+          "bytes": null,
+          "setting": null,
+          "note": "Not enforced at this layer: the check request is sent by the browser from the page's fetch(), so Playwright adds no HTTP layer to it and documents no header size limit. Playwright's own APIRequestContext client, which bypasses the browser, is not used.",
+          "sources": [
+            "https://playwright.dev/python/docs/api/class-page#page-evaluate",
+            "https://playwright.dev/python/docs/api/class-apirequestcontext"
+          ]
+        },
+        "total_headers": {
+          "bytes": null,
+          "setting": null,
+          "note": "Not enforced at this layer, for the same reason as single_header: request line and headers are built and sent by the browser.",
+          "sources": [
+            "https://playwright.dev/python/docs/api/class-page#page-evaluate",
+            "https://playwright.dev/python/docs/api/class-apirequestcontext"
+          ]
+        }
+      }
+    },
+    {
+      "role": "browser",
+      "component": "Chromium (Chrome for Testing)",
+      "version": "156.0.8078.4",
+      "install": "Pinned by Playwright 1.64.1 (playwright chromium v1248): python -m playwright install --no-shell chromium downloads Chrome for Testing 156.0.8078.4 (mac-arm64 or linux64 build) to Playwright's default cache. Launched with channel \"chromium\", the full browser in new headless mode, not the headless shell.",
+      "limits": {
+        "cookie": {
+          "bytes": 4096,
+          "setting": null,
+          "note": "Name plus value bytes of one cookie (kMaxCookieNamePlusValueSize); the '=' and the attributes are not counted. A Set-Cookie or document.cookie string whose name+value is larger is rejected and not stored (EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE). Each attribute value, such as Path or Domain, has its own 1024-byte limit (kMaxCookieAttributeValueSize). Compile-time constants with no runtime setting.",
+          "sources": [
+            "https://chromium.googlesource.com/chromium/src/+/refs/tags/156.0.8078.4/net/cookies/parsed_cookie.h",
+            "https://chromium.googlesource.com/chromium/src/+/refs/tags/156.0.8078.4/net/cookies/parsed_cookie.cc",
+            "https://www.rfc-editor.org/rfc/rfc6265.html#section-6.1"
+          ]
+        },
+        "single_header": {
+          "bytes": null,
+          "setting": null,
+          "note": "No documented numeric limit for one request header: Chromium's HTTP/1.1 stream parser concatenates the request line and headers and sends them without a size check, and the Fetch standard sets no header size limit. The browser's size limits apply to response headers and to cookies, not to request headers.",
+          "sources": [
+            "https://chromium.googlesource.com/chromium/src/+/refs/tags/156.0.8078.4/net/http/http_stream_parser.cc",
+            "https://fetch.spec.whatwg.org/"
+          ]
+        },
+        "total_headers": {
+          "bytes": null,
+          "setting": null,
+          "note": "No documented numeric limit for the whole request header (request line plus all header lines), for the same reason as single_header. The Cookie header it builds is bounded indirectly by the per-cookie limit and the number of cookies stored per domain.",
+          "sources": [
+            "https://chromium.googlesource.com/chromium/src/+/refs/tags/156.0.8078.4/net/http/http_stream_parser.cc",
+            "https://fetch.spec.whatwg.org/"
+          ]
+        }
+      }
+    },
+    {
+      "role": "proxy",
+      "component": "nginx",
+      "version": "1.31.8",
+      "install": "conda-forge nginx==1.31.8 (transport/conda-requirements.txt); the build string differs by platform (hcc312dc_0 on osx-arm64, h1ababa1_0 on linux-64), the version does not.",
+      "limits": {
+        "cookie": {
+          "bytes": null,
+          "setting": "large_client_header_buffers (Cookie request header); proxy_buffer_size (Set-Cookie response headers)",
+          "note": "No cookie-specific limit. The whole Cookie request header line counts as one request header field, so the single_header limit (8192 bytes) applies to all cookies sent together. In the response direction, Set-Cookie headers from the application must fit, with the status line and every other response header, in proxy_buffer_size, which defaults to one memory page (ngx_pagesize: 4 KiB on x86_64 Linux, 16 KiB on Apple Silicon macOS); larger upstream headers produce 502 'upstream sent too big header'.",
+          "sources": [
+            "https://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers",
+            "https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffer_size",
+            "https://github.com/nginx/nginx/blob/release-1.31.8/src/http/modules/ngx_http_proxy_module.c#L3743-L3745"
+          ]
+        },
+        "single_header": {
+          "bytes": 8192,
+          "setting": "large_client_header_buffers",
+          "note": "One request header line (name, colon, value, and line ending) must fit in one large_client_header_buffers buffer, 8k by default; a longer line gets 400 'Request Header Or Cookie Too Large'. The request line has the same limit and gets 414. A line that fits in the initial 1k client_header_buffer_size buffer never needs a large buffer.",
+          "sources": [
+            "https://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers",
+            "https://nginx.org/en/docs/http/ngx_http_core_module.html#client_header_buffer_size",
+            "https://github.com/nginx/nginx/blob/release-1.31.8/src/http/ngx_http_core_module.c#L3628-L3632",
+            "https://github.com/nginx/nginx/blob/release-1.31.8/src/http/ngx_http_request.c#L1657-L1700"
+          ]
+        },
+        "total_headers": {
+          "bytes": 32768,
+          "setting": "large_client_header_buffers",
+          "note": "Once the 1k client_header_buffer_size buffer is full, the request line and header lines are read into at most 4 large buffers of 8k (4 x 8192 = 32768 bytes); running out gets 400 'Request Header Or Cookie Too Large'. A line never spans two buffers and lines already parsed stay in the first buffer, so the usable total depends on line lengths and is approximate.",
+          "sources": [
+            "https://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers",
+            "https://github.com/nginx/nginx/blob/release-1.31.8/src/http/ngx_http_core_module.c#L3628-L3632",
+            "https://github.com/nginx/nginx/blob/release-1.31.8/src/http/ngx_http_request.c#L1657-L1700"
+          ]
+        }
+      }
+    },
+    {
+      "role": "app_server",
+      "component": "waitress",
+      "version": "3.0.2",
+      "install": "pip install waitress==3.0.2 (transport/requirements.txt) into the conda prefix; a pure-Python wheel (py3-none-any), identical on both platforms. It runs the plain WSGI application in scripts/transport_app.py; there is no separate framework.",
+      "dependencies": {
+        "python": "3.15.2"
+      },
+      "limits": {
+        "cookie": {
+          "bytes": null,
+          "setting": "max_request_header_size",
+          "note": "No cookie-specific limit; the Cookie header counts toward max_request_header_size (total_headers) like any other header.",
+          "sources": [
+            "https://docs.pylonsproject.org/projects/waitress/en/v3.0.2/arguments.html",
+            "https://github.com/Pylons/waitress/blob/v3.0.2/src/waitress/parser.py#L81-L123"
+          ]
+        },
+        "single_header": {
+          "bytes": null,
+          "setting": "max_request_header_size",
+          "note": "No per-header limit; one header is bounded only by max_request_header_size (total_headers). Header names containing '_' are dropped, and repeated headers are joined with ', '.",
+          "sources": [
+            "https://docs.pylonsproject.org/projects/waitress/en/v3.0.2/arguments.html",
+            "https://github.com/Pylons/waitress/blob/v3.0.2/src/waitress/parser.py#L228-L246"
+          ]
+        },
+        "total_headers": {
+          "bytes": 262144,
+          "setting": "max_request_header_size",
+          "note": "Bytes of the request line plus all header lines, including every CRLF and the blank line that ends the header block. A request is rejected with 431 Request Header Fields Too Large once this count reaches 262144 (>=), so 262143 bytes is the largest accepted header block.",
+          "sources": [
+            "https://docs.pylonsproject.org/projects/waitress/en/v3.0.2/arguments.html",
+            "https://github.com/Pylons/waitress/blob/v3.0.2/src/waitress/adjustments.py#L242-L243",
+            "https://github.com/Pylons/waitress/blob/v3.0.2/src/waitress/parser.py#L81-L123"
+          ]
+        }
+      }
+    }
+  ]
+}
