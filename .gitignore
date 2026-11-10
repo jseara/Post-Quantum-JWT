@@ -221,3 +221,6 @@ __marimo__/
 
 # macOS Finder metadata
 .DS_Store
+
+# Claude Code workflow worktrees (multi-agent-dev)
+.claude/worktrees/
