@@ -107,15 +107,18 @@ No other prerequisite was needed on macOS 26.5.1.
 ### WSL2 (x86_64 Linux)
 
 ```bash
-export TRANSPORT_ENV="$HOME/miniforge3/envs/cis628-transport"
-CONDA_EXE="$HOME/miniforge3/bin/conda" bash transport/setup.sh "$TRANSPORT_ENV"
-# One time only, run by you (setup.sh never uses sudo): Chromium's system libraries.
+export TRANSPORT_ENV="$HOME/miniconda3/envs/crypto"
+CONDA_EXE="$HOME/miniconda3/bin/conda" bash transport/setup.sh "$TRANSPORT_ENV"
+# Only if setup.sh ended with "browser (... installed not found)", run by you
+# (setup.sh never uses sudo): Chromium's system libraries.
 sudo "$TRANSPORT_ENV/bin/python" -m playwright install-deps chromium
 "$TRANSPORT_ENV/bin/python" scripts/transport_stack.py versions
 "$TRANSPORT_ENV/bin/python" scripts/transport_stack.py check
 ```
 
-On a fresh WSL2 distribution, Chromium cannot start until its shared libraries are installed, so the first `setup.sh` run is expected to end with `Error: version mismatch: browser (documented 156.0.8078.4, installed not found)` after everything else is installed (not yet verified; see [Limitations](#limitations)). [`playwright install-deps`](https://playwright.dev/python/docs/browsers#install-system-dependencies) installs those libraries with `apt-get`; after it, `versions` should exit 0, and running `setup.sh` again is safe. The Sprint 1 `pqcrypto` wheel for Linux requires glibc 2.34 or later (Ubuntu 22.04 or newer).
+Any conda installation works; point `CONDA_EXE` at its `conda` and `PREFIX` at the environment. On the WSL2 machine the stack was installed into the existing Sprint 1 `crypto` environment of a Miniconda installation. Because setup installs only from conda-forge, that replaced the environment's Python 3.15.2 build from Anaconda's default channel with conda-forge's (`python-3.15.2-h6e52b48_100_cp315`) and updated openssl, libgcc, libstdcxx, libffi, and a few other libraries; the Sprint 1 benchmark run on that machine (`20261103T181323053798Z`) used the earlier build.
+
+If Chromium's shared libraries are missing, as on a minimal WSL2 distribution, the first `setup.sh` run ends with `Error: version mismatch: browser (documented 156.0.8078.4, installed not found)` after everything else is installed. [`playwright install-deps`](https://playwright.dev/python/docs/browsers#install-system-dependencies) installs those libraries with `apt-get`; after it, `versions` should exit 0, and running `setup.sh` again is safe. On the tested Ubuntu 24.04.4 distribution the libraries were already present, so `install-deps` was not needed and `setup.sh` exited 0 on its first run. The Sprint 1 `pqcrypto` wheel for Linux requires glibc 2.34 or later (Ubuntu 22.04 or newer).
 
 ### Cross-platform pins
 
@@ -234,7 +237,7 @@ Output of `check` from a real run on the Apple Silicon machine:
 
 ## Limitations
 
-- **Tested platform:** only macOS 26.5.1 (build 25F80) on an Apple M5 Pro (arm64), with Python 3.15.2 from conda-forge, on November 4, 2026. **WSL2 was not verified:** only the availability of every pin for linux-64 was checked (see [Cross-platform pins](#cross-platform-pins)). The WSL2 steps above, including the `install-deps` prerequisite, still need to be run on the WSL2 machine.
+- **Tested platforms:** macOS 26.5.1 (build 25F80) on an Apple M5 Pro (arm64), on November 4, 2026; and Ubuntu 24.04.4 LTS (glibc 2.39) on WSL2 (Linux 6.6.87.2-microsoft-standard-WSL2, x86_64), on November 12, 2026. Both used Python 3.15.2 from conda-forge, and on both `setup.sh` exited 0 and `check` passed. On WSL2, conda resolved nginx 1.31.8 to build `hee9aced_1` rather than the `h1ababa1_0` found by the earlier dry run; the version is the same. `install-deps` was not exercised, because the WSL2 distribution already had Chromium's libraries. `getconf PAGESIZE` reports 4,096 on the WSL2 machine, which confirms the 4 KiB `proxy_buffer_size` default there.
 - **Plain HTTP/1.1 on 127.0.0.1:** there is no TLS. Cookies with the `Secure` attribute or a `__Secure-`/`__Host-` prefix may be handled differently than on an HTTPS site, so S2-04 must check how Chromium treats them on `http://127.0.0.1` before using them, or add TLS. HTTP/2 and HTTP/3 header compression (HPACK and QPACK) is out of scope; nginx applies its buffer limits to compressed header fields there, so the byte counts here do not carry over.
 - **Documented, not measured:** the limits table lists documented defaults. The test suite only checks them coarsely (a header of one quarter of the smallest documented limit passes; twice nginx's or waitress's limit is rejected). Exact boundaries are S2-04 and S2-05 work.
 - **Minimal logs:** the logs record each request's target and status, and `app.log` also records requests waitress rejects, but not the header sizes, the browser's cookie jar, or the headers the browser sent. Detailed per-layer logging is S2-02 work.

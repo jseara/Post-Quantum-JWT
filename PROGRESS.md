@@ -64,11 +64,11 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 - [x] Select the browser automation tool and browser engines, the reverse proxy, and the application server/framework. Start with one of each (for example Playwright with Chromium, nginx, and a Python application server), and add others only after the first path works.
 - [x] Record each layer's version and its documented default limits for cookie size, single header size, and total request header size, with sources.
-- [ ] Add reproducible setup instructions (pinned versions or containers) that work on both macOS and WSL2.
+- [x] Add reproducible setup instructions (pinned versions or containers) that work on both macOS and WSL2.
 
 **Done when:** The stack runs from a clean checkout on both team machines, and a table lists every layer with its version and documented limits.
 
-**Status:** Playwright 1.64.1 with Chromium 156.0.8078.4, nginx 1.31.8, and waitress 3.0.2; versions and documented limits are in [TRANSPORT.md](TRANSPORT.md) and [transport/stack.json](transport/stack.json). `bash transport/setup.sh PREFIX` builds the pinned environment and has been checked from a clean checkout on macOS; it still needs a run of `scripts/transport_stack.py check` on WSL2.
+**Status:** Playwright 1.64.1 with Chromium 156.0.8078.4, nginx 1.31.8, and waitress 3.0.2; versions and documented limits are in [TRANSPORT.md](TRANSPORT.md) and [transport/stack.json](transport/stack.json). `bash transport/setup.sh PREFIX` builds the pinned environment; it exited 0 and `scripts/transport_stack.py check` passed on macOS (November 4) and on WSL2 with Ubuntu 24.04.4 (November 12).
 
 ### S2-02 — Build the test environment
 
