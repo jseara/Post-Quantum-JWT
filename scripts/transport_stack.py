@@ -1,12 +1,15 @@
-"""Run the browser -> reverse proxy -> application stack and check one real browser request.
+"""Run the browser -> reverse proxy -> application stack and check real browser requests.
 
 check starts the stack, loads the test page in headless Chromium through nginx, sends one
-fetch() to /api/echo from that page, prints the result as JSON, and stops the stack. serve
-starts the stack and keeps it running until SIGINT or SIGTERM. versions compares the installed
-component versions with transport/stack.json.
+fetch() to /api/echo from that page, prints the result as JSON, and stops the stack. tokens does
+the same with the fixture token of every configuration, once as a cookie and once as a Bearer
+header, and names the layer that rejected any token that did not verify (see
+scripts/transport_tokens.py). serve starts the stack and keeps it running until SIGINT or
+SIGTERM. versions compares the installed component versions with transport/stack.json.
 """
 
 import argparse
+from collections.abc import Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 import http.client
@@ -57,6 +60,12 @@ class Stack:
 def load_manifest() -> dict:
     """Return transport/stack.json parsed."""
     return json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+
+
+def manifest_layers(manifest: dict) -> list[dict]:
+    """Return each layer's role, component, and version, as the check results list them."""
+    return [{key: layer[key] for key in ("role", "component", "version")}
+            for layer in manifest["layers"]]
 
 
 def find_executable(name: str) -> str | None:
@@ -346,13 +355,21 @@ def run_check(stack, timeout: float = 60.0) -> dict:
         "proxy_url": stack.proxy_url,
         "app_url": stack.app_url,
         "run_dir": str(stack.run_dir),
-        "layers": [{key: layer[key] for key in ("role", "component", "version")}
-                   for layer in manifest["layers"]],
+        "layers": manifest_layers(manifest),
         "browser": {"version": reported_version, "user_agent": user_agent},
         "page": {"url": page_url, "status": page_status},
         "request": {"url": echo_url, "nonce": nonce},
         "response": {"status": echo["status"], "headers": echo["headers"], "body": body},
     }
+
+
+def run_token_check(stack, algorithms: Sequence[str] | None = None,
+                    timeout: float = 60.0) -> dict:
+    """Send each configuration's fixture token as a cookie and a Bearer header through the stack."""
+    # Imported on first use, so check, serve, and versions never load the crypto libraries.
+    from scripts.transport_tokens import run_token_check as run_tokens
+
+    return run_tokens(stack, algorithms, timeout)
 
 
 def port_number(text: str) -> int:
@@ -375,7 +392,28 @@ def positive_seconds(text: str) -> float:
     return seconds
 
 
+def algorithm_name(text: str) -> str:
+    from scripts.algorithms import ADAPTERS  # Only the tokens command loads the crypto libraries.
+
+    if text not in ADAPTERS:
+        raise argparse.ArgumentTypeError(f"unknown algorithm {text!r}; "
+                                         f"choose from {', '.join(ADAPTERS)}")
+    return text
+
+
+def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
+    """Summarize each pair on stderr, and exit 1 if a pair did not match the documented limits."""
+    from scripts.transport_tokens import mismatch_message, summary_lines
+
+    sys.stderr.write("".join(f"{line}\n" for line in summary_lines(result)))
+    if not result["ok"]:
+        parser.exit(1, f"Error: {mismatch_message(result)}\n")
+
+
 def interrupt(signum: int, frame) -> None:
+    # A second signal must not interrupt the shutdown of the stack or the browser.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
     raise KeyboardInterrupt
 
 
@@ -393,6 +431,12 @@ def main() -> None:
                          help="seconds allowed for startup and for each browser step (default: 60)")
     commands.add_parser("check", parents=[options],
                         help="start the stack, send one browser request through it, and stop it")
+    tokens = commands.add_parser("tokens", parents=[options],
+                                 help="send every configuration's fixture token through the stack "
+                                      "as a cookie and as a Bearer header")
+    tokens.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                        help="configuration to run, from scripts/algorithms.py; repeat or list "
+                             "several (default: all six)")
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -412,12 +456,16 @@ def main() -> None:
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:
         parser.error("--proxy-port and --app-port must differ")
+    if args.command == "tokens" and args.alg and len(set(args.alg)) != len(args.alg):
+        parser.error(f"--alg must not repeat a configuration, got {' '.join(args.alg)}")
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, interrupt)
     try:
         with start_stack(args.proxy_port, args.app_port, args.run_dir, args.timeout) as stack:
             if args.command == "check":
                 result = run_check(stack, args.timeout)
+            elif args.command == "tokens":
+                result = run_token_check(stack, args.alg, args.timeout)
             else:
                 print(json.dumps({"proxy_url": stack.proxy_url, "app_url": stack.app_url,
                                   "run_dir": str(stack.run_dir)}), flush=True)
@@ -425,15 +473,15 @@ def main() -> None:
                     while True:
                         signal.pause()
                 except KeyboardInterrupt:
-                    # A second signal must not interrupt the shutdown of the stack.
-                    signal.signal(signal.SIGINT, signal.SIG_IGN)
-                    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+                    pass  # The signal that ends serve; interrupt() ignores any later one.
                 return
     except KeyboardInterrupt:
         parser.exit(1, "Error: interrupted\n")
     except (OSError, RuntimeError, ValueError) as error:
         parser.exit(1, f"Error: {error}\n")
     sys.stdout.write(json.dumps(result, indent=2) + "\n")
+    if args.command == "tokens":
+        report_token_check(parser, result)
 
 
 if __name__ == "__main__":

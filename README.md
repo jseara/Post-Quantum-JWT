@@ -8,7 +8,7 @@ The final deliverable is a reproducible authentication test environment and expe
 
 Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py](scripts/rsa_jwt.py), [scripts/es256_jwt.py](scripts/es256_jwt.py), and [scripts/ed25519_jwt.py](scripts/ed25519_jwt.py). Token generation and verification for ML-DSA-44 and both SLH-DSA-SHA2-128 variants are described below. A combined benchmark runner covers all six configurations, and the first measured comparison is in [RESULTS.md](RESULTS.md). [PROGRESS.md](PROGRESS.md) plans Sprint 2 (where large tokens break in cookie and Bearer transport) and Sprint 3 (end-to-end cost and mitigations). Project context is in [AGENTS.md](AGENTS.md).
 
-The Sprint 2 transport stack (Playwright with Chromium, nginx, and waitress) is described in [TRANSPORT.md](TRANSPORT.md), with each layer's version and documented default limits, pinned setup for macOS and WSL2, and a check that sends one browser request through the proxy to the application.
+The Sprint 2 transport stack (Playwright with Chromium, nginx, and waitress) is described in [TRANSPORT.md](TRANSPORT.md), with each layer's version and documented default limits, pinned setup for macOS and WSL2, a check that sends one browser request through the proxy to the application, and a `tokens` check that sends every configuration's token through it as a cookie and as a Bearer header.
 
 ## Run the RSA baseline
 

@@ -72,11 +72,13 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 ### S2-02 — Build the test environment
 
-- [ ] Add a minimal application with one endpoint that issues a token as a cookie and one that accepts a token from either a cookie or a Bearer header and verifies it with the adapters in [scripts/algorithms.py](scripts/algorithms.py).
-- [ ] Put the reverse proxy in front of the application, and serve the test page the browser loads through the proxy.
-- [ ] Log enough at each layer to tell which one handled or rejected a request: the browser's cookie jar and request headers, the proxy's access and error logs, and the application's log of received header sizes.
+- [x] Add a minimal application with one endpoint that issues a token as a cookie and one that accepts a token from either a cookie or a Bearer header and verifies it with the adapters in [scripts/algorithms.py](scripts/algorithms.py).
+- [x] Put the reverse proxy in front of the application, and serve the test page the browser loads through the proxy.
+- [x] Log enough at each layer to tell which one handled or rejected a request: the browser's cookie jar and request headers, the proxy's access and error logs, and the application's log of received header sizes.
 
-**Done when:** A normal-sized token from each of the six configurations travels browser → proxy → application as both a cookie and a Bearer header and verifies, and every layer's log shows the request.
+**Done when:** A normal-sized token from each of the six configurations verifies at the application as both a cookie and a Bearer header. Sent browser → proxy → application, every token within the default limits verifies, every other token is rejected with the rejecting layer identified, and each layer's log shows every request that reached it.
+
+**Status:** `"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py tokens` sends the fixture token of each configuration through the stack as a cookie and as a Bearer header; endpoints, logs, and results are in [TRANSPORT.md](TRANSPORT.md#the-token-check). On macOS (Apple M5 Pro, November 10, 2026), RS256, ES256, EdDSA, and ML-DSA-44 verified browser → proxy → application on both transports. The SLH-DSA tokens were rejected, as the default limits predict: the SLH-DSA-SHA2-128s cookie by the browser (Chromium did not store it), the SLH-DSA-SHA2-128f cookie by the proxy (502, `upstream sent too big header`), and both Bearer headers by the proxy (400, `client sent too long header line`). All six configurations verified on both transports when sent directly to the application. The WSL2 run is still pending.
 
 ### S2-03 — Generate size-controlled tokens and account for bytes
 

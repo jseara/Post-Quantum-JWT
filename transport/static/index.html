@@ -3,11 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- An empty icon, so the browser sends no /favicon.ico request without a nonce. -->
+  <link rel="icon" href="data:,">
   <title>Transport test page</title>
 </head>
 <body>
   <h1>Transport test page</h1>
-  <p>Served by the application through the reverse proxy. The browser check sends its
-    <code>fetch()</code> requests to <code>/api/echo</code> from this page.</p>
+  <p>Served by the application through the reverse proxy. The browser checks send their
+    <code>fetch()</code> requests from this page: <code>check</code> to <code>/api/echo</code>,
+    and <code>tokens</code> to <code>/api/token/issue</code> and
+    <code>/api/token/verify</code>.</p>
 </body>
 </html>
