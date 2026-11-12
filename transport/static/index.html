@@ -5,13 +5,293 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- An empty icon, so the browser sends no /favicon.ico request without a nonce. -->
   <link rel="icon" href="data:,">
-  <title>Transport test page</title>
+  <title>PQ JWT Transport Lab</title>
+  <!-- Everything is inline and nothing is fetched on load: the automated checks load this page
+       and match every request it makes to a nonce, so requests happen only on button clicks. -->
+  <style>
+    :root {
+      --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #5d6677; --line: #e1e4ea;
+      --accent: #3b5bdb; --accent-soft: #e7ecff; --ok: #2b8a3e; --ok-soft: #e6f4ea;
+      --bad: #c92a2a; --bad-soft: #fdecec; --warn: #b35c00; --warn-soft: #fff3e0;
+      --on-accent: #ffffff;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151c; --panel: #1b2029; --text: #e6e9ef; --muted: #9aa3b2; --line: #2c3340;
+        --accent: #7c9cff; --accent-soft: #232c45; --ok: #69db7c; --ok-soft: #1c3324;
+        --bad: #ff8787; --bad-soft: #3a1f22; --warn: #ffb35c; --warn-soft: #3a2a17;
+        --on-accent: #10162a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+           font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 16px 48px; }
+    h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.01em; }
+    h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+         margin: 28px 0 12px; }
+    p { margin: 0; }
+    code { font-family: var(--mono); font-size: 0.9em; }
+    .sub { color: var(--muted); }
+    .path { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+    .hop { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+           padding: 6px 12px; font-size: 14px; }
+    .hop b { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .arrow { color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+            padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .card h3 { margin: 0; font-size: 17px; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft);
+           color: var(--accent); white-space: nowrap; }
+    .tag.pq { background: var(--warn-soft); color: var(--warn); }
+    .meter { display: grid; grid-template-columns: 112px 1fr 64px; align-items: center; gap: 8px;
+             font-size: 12px; color: var(--muted); }
+    .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+    .bar span { display: block; height: 100%; background: var(--ok); border-radius: 99px; }
+    .bar span.over { background: var(--bad); }
+    .meter .pct { text-align: right; font-family: var(--mono); }
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    button { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; cursor: pointer;
+             border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+    button.primary:hover { filter: brightness(1.1); color: var(--on-accent); }
+    button:disabled { opacity: 0.5; cursor: wait; }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; }
+    .log { display: flex; flex-direction: column; gap: 10px; }
+    .empty { color: var(--muted); background: var(--panel); border: 1px dashed var(--line);
+             border-radius: 12px; padding: 20px; text-align: center; }
+    .entry { background: var(--panel); border: 1px solid var(--line); border-left-width: 4px;
+             border-radius: 10px; padding: 12px 14px; }
+    .entry.ok { border-left-color: var(--ok); }
+    .entry.bad { border-left-color: var(--bad); }
+    .entry.warn { border-left-color: var(--warn); }
+    .entry .top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .pill { font-family: var(--mono); font-size: 12px; padding: 1px 8px; border-radius: 99px; }
+    .pill.ok { background: var(--ok-soft); color: var(--ok); }
+    .pill.bad { background: var(--bad-soft); color: var(--bad); }
+    .pill.warn { background: var(--warn-soft); color: var(--warn); }
+    .entry .what { font-weight: 600; }
+    .entry .req { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+    .entry .why { margin-top: 6px; }
+    details { margin-top: 6px; }
+    summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+    pre { font-family: var(--mono); font-size: 12px; background: var(--bg); border-radius: 8px;
+          padding: 10px; overflow: auto; max-height: 320px; margin: 6px 0 0; }
+    footer { margin-top: 32px; color: var(--muted); font-size: 13px; }
+  </style>
 </head>
 <body>
-  <h1>Transport test page</h1>
-  <p>Served by the application through the reverse proxy. The browser checks send their
-    <code>fetch()</code> requests from this page: <code>check</code> to <code>/api/echo</code>,
-    and <code>tokens</code> to <code>/api/token/issue</code> and
-    <code>/api/token/verify</code>.</p>
+<main>
+  <h1>Post-quantum JWT transport lab</h1>
+  <p class="sub">Issue and verify JWTs signed with classical and post-quantum algorithms, and see
+    which layer breaks when they get big. Every button sends a real request from this browser.</p>
+  <div class="path" aria-label="Request path">
+    <div class="hop"><b>Browser</b>this page</div><span class="arrow">→</span>
+    <div class="hop"><b>Reverse proxy</b>nginx 1.31.8</div><span class="arrow">→</span>
+    <div class="hop"><b>App server</b>waitress 3.0.2</div><span class="arrow">→</span>
+    <div class="hop"><b>Application</b>issue · verify · echo</div>
+  </div>
+
+  <h2>Algorithms</h2>
+  <div class="grid" id="cards"></div>
+
+  <h2>Tools</h2>
+  <div class="tools">
+    <button id="which">Which cookie does the browser hold?</button>
+    <button id="echo">Echo my request headers</button>
+    <button id="clear">Clear the activity log</button>
+  </div>
+
+  <h2>Activity</h2>
+  <div class="log" id="log"><div class="empty">Click a button above. Results appear here, newest first.</div></div>
+
+  <footer>Signatures use ephemeral experiment keys held in the app's memory; tokens are not
+    credentials. The <code>jwt</code> cookie is <code>HttpOnly</code>, so this page cannot read it,
+    only ask the app to verify it. Bar limits are documented defaults: Chromium's 4,096-byte cookie
+    (name + value) and nginx's 8,192-byte header line.</footer>
+</main>
+
+<script>
+// Token sizes for fixtures/claims.json (RESULTS.md); updated from each response's token_bytes.
+const ALGORITHMS = [
+  {name: "RS256", label: "RSA-2048", bytes: 464, pq: false},
+  {name: "ES256", label: "ECDSA P-256", bytes: 208, pq: false},
+  {name: "EdDSA", label: "Ed25519", bytes: 208, pq: false},
+  {name: "ML-DSA-44", label: "FIPS 204, lattice", bytes: 3355, pq: true},
+  {name: "SLH-DSA-SHA2-128s", label: "FIPS 205, hash, small", bytes: 10613, pq: true},
+  {name: "SLH-DSA-SHA2-128f", label: "FIPS 205, hash, fast", bytes: 22922, pq: true},
+];
+const COOKIE_LIMIT = 4096;       // Chromium: name + value of one cookie.
+const HEADER_LINE_LIMIT = 8192;  // nginx: one request header line.
+
+const $ = (selector) => document.querySelector(selector);
+const fmt = (n) => n.toLocaleString("en-US");
+const escape = (text) => String(text).replace(/[&<>"]/g,
+  (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function meter(label, used, limit) {
+  const pct = Math.round(100 * used / limit);
+  return `<div class="meter"><span>${label}</span>
+    <div class="bar"><span class="${used > limit ? "over" : ""}" style="width:${Math.min(pct, 100)}%"></span></div>
+    <span class="pct">${pct}%</span></div>`;
+}
+
+function renderCards() {
+  $("#cards").innerHTML = ALGORITHMS.map((alg, i) => `
+    <section class="card">
+      <header><h3>${alg.name}</h3><span class="tag ${alg.pq ? "pq" : ""}">${alg.pq ? "post-quantum" : "classical"}</span></header>
+      <p class="sub">${alg.label} · <b id="size-${i}">${fmt(alg.bytes)}</b> byte token</p>
+      <div id="meters-${i}">${meters(alg)}</div>
+      <div class="buttons">
+        <button class="primary" data-action="cookie" data-i="${i}">Issue as cookie</button>
+        <button data-action="verify-cookie" data-i="${i}">Verify cookie</button>
+        <button data-action="bearer" data-i="${i}">Send as Bearer</button>
+        <button data-action="body" data-i="${i}">Issue in body</button>
+      </div>
+    </section>`).join("");
+}
+
+function meters(alg) {
+  // "jwt" + token is the cookie name + value; "Authorization: Bearer " + token is the header line.
+  return meter("Cookie limit", 3 + alg.bytes, COOKIE_LIMIT)
+       + meter("Header line", 22 + alg.bytes, HEADER_LINE_LIMIT);
+}
+
+async function send(url, options = {}) {
+  const response = await fetch(url, {cache: "no-store", ...options});
+  const text = await response.text();
+  let body = null;
+  try { body = JSON.parse(text); } catch (error) { /* nginx error pages are HTML. */ }
+  return {status: response.status, body, text, proxied: response.headers.has("x-transport-proxy")};
+}
+
+// Who answered, and what it means, from the status and whether the app wrote the body.
+function explain(reply) {
+  const fromApp = reply.body && reply.body.layer === "application";
+  if (!fromApp && reply.status === 502) {
+    return {tone: "bad", who: "nginx", why: "nginx rejected the app's response: the Set-Cookie header did not fit in proxy_buffer_size (upstream sent too big header)."};
+  }
+  if (!fromApp && reply.status === 400) {
+    return {tone: "bad", who: "nginx", why: "nginx rejected the request: a header line was longer than large_client_header_buffers allows (client sent too long header line)."};
+  }
+  if (!fromApp && reply.status === 431) {
+    return {tone: "bad", who: "waitress", why: "waitress rejected the request: the header block exceeded max_request_header_size."};
+  }
+  if (!fromApp) {
+    return {tone: "bad", who: reply.proxied ? "nginx" : "unknown", why: `Unexpected ${reply.status} response that the app did not write.`};
+  }
+  if (reply.status >= 400) return {tone: "warn", who: "application", why: reply.body.error || "The app refused the request."};
+  return {tone: "ok", who: "application", why: ""};
+}
+
+function addEntry({what, url, reply, note, tone}) {
+  const verdict = explain(reply);
+  tone = tone || verdict.tone;
+  const why = [verdict.why, note].filter(Boolean).join(" ");
+  const shown = reply.body ? JSON.stringify(reply.body, null, 2) : reply.text;
+  const entry = document.createElement("div");
+  entry.className = `entry ${tone}`;
+  entry.innerHTML = `
+    <div class="top"><span class="pill ${tone}">${reply.status}</span>
+      <span class="what">${escape(what)}</span><span class="sub">answered by ${verdict.who}</span></div>
+    <div class="req">${escape(url)}</div>
+    ${why ? `<div class="why">${escape(why)}</div>` : ""}
+    <details><summary>Response body</summary><pre>${escape(shown)}</pre></details>`;
+  const log = $("#log");
+  log.querySelector(".empty")?.remove();
+  log.prepend(entry);
+}
+
+function updateSize(i, bytes) {
+  if (!bytes) return;
+  ALGORITHMS[i].bytes = bytes;
+  $(`#size-${i}`).textContent = fmt(bytes);
+  $(`#meters-${i}`).innerHTML = meters(ALGORITHMS[i]);
+}
+
+const issueUrl = (name, delivery) =>
+  `/api/token/issue?alg=${encodeURIComponent(name)}&delivery=${delivery}`;
+
+async function verifyCookie(expected) {
+  const url = "/api/token/verify";
+  const reply = await send(url);
+  let note = "", tone;
+  if (reply.body && reply.body.verified && expected && reply.body.algorithm !== expected) {
+    tone = "warn";
+    note = `The browser's cookie still holds ${reply.body.algorithm}, not ${expected}: the last ${expected} issue never replaced it.`;
+  } else if (reply.body && reply.body.verified) {
+    note = `Verified a ${fmt(reply.body.token_bytes)}-byte ${reply.body.algorithm} token from the cookie.`;
+  }
+  addEntry({what: `Verify cookie${expected ? ` (expecting ${expected})` : ""}`, url, reply, note, tone});
+}
+
+const actions = {
+  async cookie(alg, i) {
+    const url = issueUrl(alg.name, "cookie");
+    const reply = await send(url);
+    updateSize(i, reply.body && reply.body.token_bytes);
+    const note = reply.body && reply.status === 200
+      ? `The app sent a ${fmt(reply.body.set_cookie_bytes)}-byte Set-Cookie. Press "Verify cookie" to see whether the browser stored it.`
+      : "";
+    addEntry({what: `Issue ${alg.name} as a cookie`, url, reply, note});
+  },
+  async "verify-cookie"(alg) { await verifyCookie(alg.name); },
+  async bearer(alg, i) {
+    const issue = issueUrl(alg.name, "body");
+    const issued = await send(issue);
+    if (!issued.body || !issued.body.token) {
+      addEntry({what: `Issue ${alg.name} for Bearer`, url: issue, reply: issued});
+      return;
+    }
+    updateSize(i, issued.body.token_bytes);
+    const url = "/api/token/verify";
+    // credentials: "omit" keeps the jwt cookie out, since the app accepts only one token.
+    const reply = await send(url, {credentials: "omit",
+                                   headers: {Authorization: `Bearer ${issued.body.token}`}});
+    const note = reply.body && reply.body.verified
+      ? `Verified a ${fmt(reply.body.token_bytes)}-byte token from the Authorization header.` : "";
+    addEntry({what: `Send ${alg.name} as Authorization: Bearer`, url, reply, note});
+  },
+  async body(alg, i) {
+    const url = issueUrl(alg.name, "body");
+    const reply = await send(url);
+    updateSize(i, reply.body && reply.body.token_bytes);
+    const note = reply.body && reply.body.token
+      ? "Response bodies are not limited like headers, so even large tokens arrive this way." : "";
+    addEntry({what: `Issue ${alg.name} in the response body`, url, reply, note});
+  },
+};
+
+async function run(button, task) {
+  button.disabled = true;
+  try { await task(); }
+  catch (error) { addEntry({what: button.textContent, url: "", tone: "bad",
+                            reply: {status: "error", body: null, text: String(error)}}); }
+  finally { button.disabled = false; }
+}
+
+renderCards();
+$("#cards").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-action]");
+  if (!button) return;
+  const i = Number(button.dataset.i);
+  run(button, () => actions[button.dataset.action](ALGORITHMS[i], i));
+});
+$("#which").addEventListener("click", (event) => run(event.target, () => verifyCookie(null)));
+$("#echo").addEventListener("click", (event) => run(event.target, async () => {
+  const url = "/api/echo";
+  const reply = await send(url);
+  const count = reply.body ? Object.keys(reply.body.headers).length : 0;
+  addEntry({what: "Echo request headers", url, reply,
+            note: reply.body ? `The app received ${count} headers. Compare host with this page's address: nginx rewrote it.` : ""});
+}));
+$("#clear").addEventListener("click", () => {
+  $("#log").innerHTML = '<div class="empty">Click a button above. Results appear here, newest first.</div>';
+});
+</script>
 </body>
 </html>

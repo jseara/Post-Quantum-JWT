@@ -21,7 +21,7 @@ make tokens   # send every configuration's token through the stack as a cookie a
 make test     # full test suite
 ```
 
-`make serve` keeps its nginx config and logs in `.transport-run/` (ignored by git) and empties it at each start. Ports and the interpreter can be overridden, for example `make serve PROXY_PORT=9090 APP_PORT=9091 PYTHON=/path/to/python`. From WSL2, the Windows browser reaches the stack at `http://localhost:8080/`.
+`make serve` keeps its nginx config and logs in `.transport-run/` (ignored by git) and empties it at each start. Ports and the interpreter can be overridden, for example `make serve PROXY_PORT=9090 APP_PORT=9091 PYTHON=/path/to/python`. From WSL2, the Windows browser reaches the stack at `http://localhost:8080/`. That page is a dashboard with buttons for each configuration: issue the token as a cookie or in the response body, verify the cookie, or send the token as a Bearer header. Each result shows the status and which layer answered (application, nginx, or waitress), and why a request was rejected. The page sends no request until a button is clicked, so it does not disturb `make check` or `make tokens`, which load the same page.
 
 ## Run the RSA baseline
 
