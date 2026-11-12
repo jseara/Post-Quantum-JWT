@@ -224,3 +224,6 @@ __marimo__/
 
 # Claude Code workflow worktrees (multi-agent-dev)
 .claude/worktrees/
+
+# Run directory of `make serve` (nginx config and logs)
+.transport-run/

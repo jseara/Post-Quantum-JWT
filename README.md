@@ -10,6 +10,19 @@ Sprint 1 is complete. Classical baselines are implemented in [scripts/rsa_jwt.py
 
 The Sprint 2 transport stack (Playwright with Chromium, nginx, and waitress) is described in [TRANSPORT.md](TRANSPORT.md), with each layer's version and documented default limits, pinned setup for macOS and WSL2, a check that sends one browser request through the proxy to the application, and a `tokens` check that sends every configuration's token through it as a cookie and as a Bearer header.
 
+## Make shortcuts
+
+The [Makefile](Makefile) wraps the common commands; run `make` for the list. With the environment active (`conda activate crypto`), or with `TRANSPORT_ENV` set as in [TRANSPORT.md](TRANSPORT.md#setup):
+
+```bash
+make serve    # nginx on http://localhost:8080 in front of the app on 8081; Ctrl+C stops both
+make logs     # in a second terminal: follow nginx's access and error logs and app.log
+make tokens   # send every configuration's token through the stack as a cookie and a Bearer header
+make test     # full test suite
+```
+
+`make serve` keeps its nginx config and logs in `.transport-run/` (ignored by git) and empties it at each start. Ports and the interpreter can be overridden, for example `make serve PROXY_PORT=9090 APP_PORT=9091 PYTHON=/path/to/python`. From WSL2, the Windows browser reaches the stack at `http://localhost:8080/`.
+
 ## Run the RSA baseline
 
 Use the existing `crypto` conda environment and install the pinned Python dependencies:
