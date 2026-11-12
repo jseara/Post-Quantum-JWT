@@ -17,11 +17,26 @@ export const meta = {
 // args (run):     { mode: 'run', runTag, spec, baseRef?, baselines?: [{id, ref, note?}], weights?: {tests, legibility} }
 //                 where spec is the object a ready clarify run returned. Instead of spec, pass the
 //                 clarify args (task, ...) with resumeFromRunId to replay that clarify from cache.
-//                 resumeFrom?: {coderId: branch} restarts interrupted coders from their WIP branches;
+//                 resumeFrom?: {coderId | 'tester': branch} restarts interrupted agents from their WIP branches;
+//                 reuseCoders?: {coderId: result} skips coders that already finished, using their journal results;
+//                 reuseCodersHash?: number, computed from the journal results, stops the run if reuseCoders was pasted wrong;
 //                 reuseTests?: {branch, commit, testFiles, testCount, assumptions?, coverage?} skips the tester. baseRef makes every agent build
 //                 from that commit instead of HEAD; baselines are existing commits the judge scores too.
+//                 specEdits?: [{field, startsWith, value}] replaces the one entry of a spec array (requirements,
+//                 assumptions, ...) that starts with startsWith, e.g. to apply a human answer without rerunning clarify.
 const A = args || {}
 if (!A.mode || !A.runTag) throw new Error('args.mode ("clarify" | "run") and args.runTag are required')
+
+// Polynomial hash over the compact JSON, matching Python's
+// json.dumps(value, ensure_ascii=False, separators=(',', ':')) with the same hash.
+const jsonHash = value => {
+  let hash = 0
+  for (const ch of JSON.stringify(value)) hash = (hash * 31 + ch.codePointAt(0)) % 1000000007
+  return hash
+}
+if (A.reuseCodersHash !== undefined && jsonHash(A.reuseCoders || {}) !== A.reuseCodersHash) {
+  throw new Error(`reuseCoders does not match reuseCodersHash (${jsonHash(A.reuseCoders || {})} != ${A.reuseCodersHash}); re-copy it from the journal`)
+}
 
 const RULES = `Shared rules for every agent in this workflow:
 - Stay inside the repository (or your git worktree). Do not search the home directory or other folders outside it.
@@ -185,7 +200,7 @@ Work from commit ${A.baseRef}, not HEAD. Read the repository as of that commit (
 const RESET = A.baseRef ? `
 Before reading or writing anything, run \`git reset --hard ${A.baseRef}\` in your worktree so your work starts from that commit.` : ''
 
-// A coder interrupted mid-task (for example by a usage limit) continues from its WIP branch.
+// A coder or the tester interrupted mid-task (for example by a usage limit) continues from its WIP branch.
 const startFor = id => {
   const wip = (A.resumeFrom || {})[id]
   return wip ? `
@@ -268,10 +283,19 @@ if (!spec) {
   if (clarified.status !== 'ready') return clarified
   spec = clarified.spec
 }
+for (const edit of A.specEdits || []) {
+  const entries = spec[edit.field]
+  const matches = Array.isArray(entries) ? entries.filter(entry => entry.startsWith(edit.startsWith)) : []
+  if (matches.length !== 1) throw new Error(`specEdits: ${matches.length} ${edit.field} entries start with "${edit.startsWith}"; expected 1`)
+  spec = { ...spec, [edit.field]: entries.map(entry => entry === matches[0] ? edit.value : entry) }
+}
+if (A.specEdits) log(`Applied ${A.specEdits.length} spec edit(s): ${A.specEdits.map(edit => edit.startsWith).join('; ')}`)
 const SPEC = specText(spec)
 
 phase('Build')
-const coderRuns = CODERS.map(coder => () => agent(`You are ${coder.id}, one of three coders implementing the same spec independently. Your angle: ${coder.angle}
+// reuseCoders holds finished coder results, for example from a run whose tester failed: the
+// resume cache replays only the calls before the first failed one, so those coders would rerun.
+const coderRuns = CODERS.map(coder => (A.reuseCoders || {})[coder.id] ? async () => A.reuseCoders[coder.id] : () => agent(`You are ${coder.id}, one of three coders implementing the same spec independently. Your angle: ${coder.angle}
 You are in an isolated git worktree. Implement the spec, run the existing test suite, then create branch ${branchFor(coder.id)} and commit your work there.${startFor(coder.id)}${BASE}
 Do not create or edit the reserved test files (${spec.testFiles.join(', ')}); a separate agent writes those, and your code will be judged by them. Build to the requirements, not to guesses about the tests.
 
@@ -284,7 +308,7 @@ ${RULES}`, { label: coder.id, phase: 'Build', schema: CODER_SCHEMA, isolation: '
 // reuseTests is a finished tester result (for example from an interrupted run). The resume
 // cache matches calls by position, so a reused result has to come in through args instead.
 const testRun = A.reuseTests ? async () => ({ coverage: [], assumptions: [], ...A.reuseTests }) : () => agent(`You are the tester. Write unit tests for the spec below from its requirements alone. Implementations are being written in parallel and you must not look for or rely on them.
-You are in an isolated git worktree. Write the tests in the reserved test files (${spec.testFiles.join(', ')}), import from the target modules as the spec describes, then create branch ${branchFor('tests')} and commit. The new tests are expected to fail here, since the code does not exist yet; check only that they are syntactically valid and collected.${RESET}${BASE}
+You are in an isolated git worktree. Write the tests in the reserved test files (${spec.testFiles.join(', ')}), import from the target modules as the spec describes, then create branch ${branchFor('tests')} and commit. The new tests are expected to fail here, since the code does not exist yet; check only that they are syntactically valid and collected.${startFor('tester')}${BASE}
 Map every requirement to at least one test, include negative cases, and test behavior rather than implementation details. Do not use timing thresholds as pass/fail criteria.
 
 ${SPEC}
