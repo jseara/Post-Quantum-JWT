@@ -12,13 +12,14 @@ LOGS := $(RUN_DIR)/logs
 STACK := PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/transport_stack.py
 
 .DEFAULT_GOAL := help
-.PHONY: help serve logs check tokens versions test benchmark setup
+.PHONY: help serve logs check tokens sweep versions test benchmark setup
 
 help:
 	@echo "make serve      start nginx (http://localhost:$(PROXY_PORT)) and the app (port $(APP_PORT)); Ctrl+C stops both"
 	@echo "make logs       follow the nginx and app logs of the running serve"
 	@echo "make check      send one browser request through the stack, then stop it"
 	@echo "make tokens     send every configuration's token as a cookie and a Bearer header"
+	@echo "make sweep      cookie sweep of all six at default and 16k nginx buffers (SWEEP_DIR=$(SWEEP_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -39,6 +40,11 @@ check:
 
 tokens:
 	$(STACK) tokens
+
+SWEEP_DIR ?= results/transport/$(shell date -u +%Y%m%dT%H%M%SZ)
+sweep:
+	$(STACK) sweep --output-dir "$(SWEEP_DIR)/cookie-default"
+	$(STACK) sweep --proxy-buffers 16k --output-dir "$(SWEEP_DIR)/cookie-16k"
 
 versions:
 	$(STACK) versions

@@ -82,19 +82,23 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 ### S2-03 — Generate size-controlled tokens and account for bytes
 
-- [ ] Add a realistic claims fixture (for example, typical OpenID Connect ID token claims) alongside the existing minimal fixture.
-- [ ] Add a deterministic padding claim that produces tokens at target sizes for every configuration, and verify each token before sending it.
-- [ ] Report, for every request, the token bytes, the cookie bytes (name, value, and attributes), the header line bytes (`Cookie:` or `Authorization: Bearer`), and the total request header bytes.
+- [x] Add a realistic claims fixture (for example, typical OpenID Connect ID token claims) alongside the existing minimal fixture.
+- [x] Add a deterministic padding claim that produces tokens at target sizes for every configuration, and verify each token before sending it.
+- [x] Report, for every request, the token bytes, the cookie bytes (name, value, and attributes), the header line bytes (`Cookie:` or `Authorization: Bearer`), and the total request header bytes.
 
 **Done when:** Any configuration can produce a verified token at a requested size, and the byte accounting for a request can be checked by hand.
 
+**Status:** [fixtures/claims_oidc.json](fixtures/claims_oidc.json) holds 22 typical OpenID Connect claims, and [scripts/token_sizing.py](scripts/token_sizing.py) grows any configuration's token to a requested size (within one byte) with a `pad` claim, computed without signing and checked by signing. The issue endpoint takes `claims`, `pad`, and `attrs`, and every `sweep` probe records the token, cookie, `Set-Cookie`, upstream response header, `Cookie:` line, and request header bytes; how each is counted is in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#byte-accounting). Building it found that the post-quantum verifiers accepted tokens with an `aud` claim that PyJWT rejects; all six adapters now take an `audience` and apply PyJWT's rules.
+
 ### S2-04 — Cookie transport sweep
 
-- [ ] Sweep token sizes for each configuration, delivered in a cookie set by the application's `Set-Cookie` response. Use coarse steps, then narrow to the exact boundary at each limit found.
-- [ ] At each size, record whether the browser stored the cookie, whether it sent it, and which layer rejected the request, with the status code or browser behavior. A cookie the browser silently drops counts as a rejection by the browser.
-- [ ] Measure ML-DSA-44's claim headroom with the realistic claims fixture and typical cookie attributes (`Secure`, `HttpOnly`, `SameSite`, `Path`, `Max-Age`).
+- [x] Sweep token sizes for each configuration, delivered in a cookie set by the application's `Set-Cookie` response. Use coarse steps, then narrow to the exact boundary at each limit found.
+- [x] At each size, record whether the browser stored the cookie, whether it sent it, and which layer rejected the request, with the status code or browser behavior. A cookie the browser silently drops counts as a rejection by the browser.
+- [x] Measure ML-DSA-44's claim headroom with the realistic claims fixture and typical cookie attributes (`Secure`, `HttpOnly`, `SameSite`, `Path`, `Max-Age`).
 
 **Done when:** For each configuration, the largest cookie-carried token that reaches the application is known, along with the first layer that rejects a larger one and the evidence.
+
+**Status:** Measured on WSL2 on November 13, 2026, at nginx's default buffers and with `--proxy-buffers 16k` (the Mac's defaults); results and evidence are in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md). At WSL2's defaults nginx rejects first, once the application's response header block reaches 4,096 bytes (a 3,916-byte token); with 16k buffers Chromium does, above 4,096 bytes of cookie name + value. Neither SLH-DSA parameter set fits at any size. With OIDC claims and production cookie attributes, ML-DSA-44's headroom is negative: its 4,095-byte token is 2 bytes over Chromium's limit. The sweep has not been run on macOS.
 
 ### S2-05 — Bearer header transport sweep
 
