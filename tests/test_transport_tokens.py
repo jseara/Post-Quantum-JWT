@@ -1642,15 +1642,14 @@ class DocumentationTests(unittest.TestCase):
         self.assertIn("direct", status[0].lower())
 
     def test_progress_other_tasks_unchanged(self):
-        # A whole-file hash and S2-01's checkbox count were checked here before; both froze
-        # PROGRESS.md as of S2-02 and broke on the legitimate S2-01 WSL2 update.
+        # Only checks that later progress cannot invalidate: the other tasks' "Done when" lines
+        # are intact and Sprint 1 stays complete. A whole-file hash, S2-01's checkbox count, and
+        # "S2-03 to S3-03 have no checked box" were checked here before; each froze PROGRESS.md
+        # as of S2-02 and broke, or would break, on legitimate progress updates.
         lines = self.progress.splitlines()
         for line in OTHER_DONE_WHEN:
             with self.subTest(done_when=line[:50]):
                 self.assertIn(line, lines)
-        for task in ("S2-03", "S2-04", "S2-05", "S2-06", "S3-01", "S3-02", "S3-03"):
-            with self.subTest(task=task):
-                self.assertNotIn("- [x]", self.progress_section(task))
         for task in ("S1-01", "S1-02", "S1-03", "S1-04", "S1-05", "S1-06"):
             with self.subTest(task=task):
                 self.assertNotIn("- [ ]", self.progress_section(task))
