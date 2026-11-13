@@ -8,9 +8,11 @@ import unittest
 from pathlib import Path
 
 from scripts.token_sizing import claim_set, padded_claims, token_bytes
-from scripts.transport_stack import (BROWSER_CHANNEL, http_get, load_manifest,
-                                     proxy_buffer_directives, start_stack)
-from scripts.transport_sweep import probe, run_cookie_sweep, summary_lines, write_results
+from scripts import transport_sweep
+from scripts.transport_stack import (BROWSER_CHANNEL, header_buffer_directives, http_get,
+                                     load_manifest, proxy_buffer_directives, start_stack)
+from scripts.transport_sweep import (probe, run_cookie_sweep, run_sweep, summary_lines,
+                                     write_results)
 
 
 PAGE_SIZE = os.sysconf("SC_PAGE_SIZE")  # nginx's default proxy_buffer_size.
@@ -114,17 +116,23 @@ class ProxyBufferOptionTests(unittest.TestCase):
             with self.subTest(size=bad), self.assertRaises(ValueError):
                 proxy_buffer_directives(bad)
 
+    def test_header_buffer_directives(self):
+        self.assertEqual(header_buffer_directives("512k"), ["large_client_header_buffers 4 512k;"])
+        with self.assertRaises(ValueError):
+            header_buffer_directives("big")
+
     def test_rendered_config_only_changes_when_asked(self):
         with tempfile.TemporaryDirectory() as directory:
             for buffers in (None, "16k"):
                 run_dir = Path(directory) / str(buffers)
-                with start_stack(run_dir=run_dir, proxy_buffers=buffers):
+                with start_stack(run_dir=run_dir, proxy_buffers=buffers, header_buffers=buffers):
                     conf = (run_dir / "nginx" / "nginx.conf").read_text(encoding="utf-8")
                 active = [line.strip() for line in conf.splitlines()
-                          if line.strip().startswith("proxy_buffer")]
+                          if line.strip().startswith(("proxy_buffer", "large_client"))]
                 with self.subTest(buffers=buffers):
                     self.assertEqual(active, [] if buffers is None else
-                                     ["proxy_buffer_size 16k;", "proxy_buffers 8 16k;"])
+                                     ["large_client_header_buffers 4 16k;",
+                                      "proxy_buffer_size 16k;", "proxy_buffers 8 16k;"])
 
 
 def assert_cookie_boundary(test, result: dict, buffer_bytes: int) -> None:
@@ -193,6 +201,64 @@ class PinnedBufferSweepTests(StackCase):
         self.assertGreater(counted["upstream_response_headers"], counted["set_cookie_line"])
         self.assertGreater(counted["browser_request_headers"], counted["cookie_line"])
         self.assertGreater(counted["app_received_headers"], counted["cookie_line"])
+
+
+class BearerSweepTests(StackCase):
+    def test_both_clients_stop_at_nginx_header_line(self):
+        result = run_sweep(self.stack, "bearer", ["ES256"], step=4096, max_bytes=12288)
+        self.assertEqual([entry["client"] for entry in result["results"]], ["browser", "direct"])
+        for entry in result["results"]:
+            with self.subTest(client=entry["client"]):
+                boundary = entry["boundaries"][0]
+                last, first = boundary["last"], boundary["first"]
+                self.assertEqual((last["outcome"], first["rejected_by"]), ("verified", "proxy"))
+                self.assertEqual(first["verify_status"], 400)
+                # One request header line, CRLF included, must fit one 8k buffer.
+                self.assertLessEqual(last["bytes"]["authorization_line"], 8192)
+                self.assertGreater(first["bytes"]["authorization_line"], 8192)
+                self.assertTrue(first["verified_directly"])
+
+    def test_invalid_transport_and_clients(self):
+        for kwargs in ({"transport": "query"}, {"transport": "cookie", "clients": ["direct"]},
+                       {"transport": "bearer", "clients": ["curl"]}):
+            with self.subTest(**kwargs), self.assertRaises(ValueError):
+                run_sweep(self.stack, algorithms=["ES256"], **kwargs)
+
+    def test_large_logs_are_saved_compressed(self):
+        result = run_sweep(self.stack, "bearer", ["EdDSA"], clients=["direct"], step=8192,
+                           max_bytes=8192)
+        original = transport_sweep.COMPRESS_LOGS_OVER
+        transport_sweep.COMPRESS_LOGS_OVER = 0
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                saved = write_results(result, Path(directory))
+                logs = json.loads((saved / "sweep.json").read_text())["evidence"]["logs"]
+                self.assertEqual(logs["app.log"], "logs/app.log.gz")
+                self.assertTrue((saved / "logs" / "app.log.gz").is_file())
+        finally:
+            transport_sweep.COMPRESS_LOGS_OVER = original
+
+
+class RaisedHeaderBufferSweepTests(StackCase):
+    header_buffers = "512k"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.directory = cls.enterClassContext(tempfile.TemporaryDirectory())
+        cls.stack = cls.enterClassContext(start_stack(run_dir=Path(cls.directory) / "run",
+                                                      header_buffers=cls.header_buffers))
+
+    def test_waitress_total_header_limit_is_next(self):
+        result = run_sweep(self.stack, "bearer", ["ES256"], step=65536, max_bytes=327680,
+                           header_buffers="512k")
+        for entry in result["results"]:
+            with self.subTest(client=entry["client"]):
+                boundary = entry["boundaries"][0]
+                last, first = boundary["last"], boundary["first"]
+                self.assertEqual((first["rejected_by"], first["verify_status"]),
+                                 ("app_server", 431))
+                self.assertIn("rejected by waitress", first["evidence"])
+                self.assertLess(last["bytes"]["app_received_headers"], 262144)
 
 
 if __name__ == "__main__":

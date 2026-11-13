@@ -146,6 +146,14 @@ Sprint 3 answers transport questions 4 and 5 in [RESULTS.md](RESULTS.md#question
 
 **Done when:** The results are reproducible from a clean checkout, and every recommendation can be traced to a measurement.
 
+### S3-04 — Repeat the transport sweeps over HTTPS and HTTP/2
+
+- [ ] Add a TLS option to the stack: a self-signed certificate for `127.0.0.1` and `localhost` generated into the run directory with `cryptography`, `listen ... ssl` in the rendered nginx configuration, and Playwright set to accept the certificate. The pinned nginx build already has `--with-http_ssl_module` and `--with-http_v2_module`.
+- [ ] Rerun the S2-04 cookie and S2-05 Bearer sweeps over HTTPS with HTTP/1.1, and check that the boundaries match the plain-HTTP results, as expected when TLS only encrypts the same header bytes.
+- [ ] Rerun them over HTTP/2 (`http2 on;`), where header compression (HPACK) changes how nginx and Chromium apply their limits, and record each boundary that moves and the layer and limit responsible. HTTP/3 is out of scope: the nginx build has no `http_v3` module.
+
+**Done when:** For each configuration and transport, the cookie and Bearer boundaries over HTTPS/HTTP/1.1 and over HTTP/2 are measured and compared with Sprint 2's plain-HTTP boundaries, with the evidence linked.
+
 ## Follow-up backlog
 
 - **Expanded comparisons:** Add further parameter sets and repeat runs to assess variability and the tradeoffs among signature size, speed, and security strength.

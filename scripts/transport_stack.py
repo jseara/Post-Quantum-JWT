@@ -242,8 +242,16 @@ def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: f
 
 # nginx size syntax accepted by --proxy-buffers: a number of bytes, or of k or m units.
 NGINX_SIZE = re.compile(r"[1-9][0-9]*[km]?")
-# The anchor in the rendered config after which --proxy-buffers inserts its directives.
+# Anchors in the rendered config after which --proxy-buffers (location level) and
+# --header-buffers (server level) insert their directives.
 PROXY_BUFFERS_ANCHOR = 'add_header X-Transport-Proxy'
+HEADER_BUFFERS_ANCHOR = 'listen 127.0.0.1:'
+
+
+def nginx_size(name: str, size: str) -> str:
+    if not isinstance(size, str) or not NGINX_SIZE.fullmatch(size):
+        raise ValueError(f"{name} must be an nginx size such as 16k, got {size!r}")
+    return size
 
 
 def proxy_buffer_directives(size: str) -> list[str]:
@@ -254,19 +262,39 @@ def proxy_buffer_directives(size: str) -> list[str]:
     minus one. Raising proxy_buffers to 8 buffers of the same size is valid everywhere, and
     with 16k it reproduces the defaults of a 16 KiB-page system such as Apple Silicon macOS.
     """
-    if not isinstance(size, str) or not NGINX_SIZE.fullmatch(size):
-        raise ValueError(f"proxy_buffers must be an nginx size such as 16k, got {size!r}")
+    nginx_size("proxy_buffers", size)
     return [f"proxy_buffer_size {size};", f"proxy_buffers 8 {size};"]
+
+
+def header_buffer_directives(size: str) -> list[str]:
+    """nginx directive that raises the request header line limit to `size`.
+
+    Keeps the default count of 4 buffers, so the total request header limit is about 4 x size.
+    large_client_header_buffers is valid only at http or server level, not in a location.
+    """
+    nginx_size("header_buffers", size)
+    return [f"large_client_header_buffers 4 {size};"]
+
+
+def insert_directives(config: str, anchor: str, option: str, value: str,
+                      directives: list[str]) -> str:
+    """Add directives after the line containing anchor, with a comment naming the option."""
+    line = next(line for line in config.splitlines() if anchor in line)
+    indent = line[:len(line) - len(line.lstrip())]
+    added = [f"# Not a default: {option} {value}.", *directives]
+    return config.replace(line, "\n".join([line, *(indent + a for a in added)]), 1)
 
 
 @contextmanager
 def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                 run_dir: str | Path | None = None, timeout: float = 60.0,
-                proxy_buffers: str | None = None):
+                proxy_buffers: str | None = None, header_buffers: str | None = None):
     """Start the application server and the reverse proxy; yield a Stack and stop both on exit.
 
     proxy_buffers, such as "16k", sets nginx's upstream response buffers (see
-    proxy_buffer_directives); None keeps nginx's defaults, as transport/nginx.conf.template does.
+    proxy_buffer_directives), and header_buffers, such as "512k", raises nginx's request header
+    line limit (see header_buffer_directives); None keeps nginx's defaults, as
+    transport/nginx.conf.template does.
     """
     for name, port in (("proxy_port", proxy_port), ("app_port", app_port)):
         if port is not None and not valid_port(port):
@@ -275,6 +303,7 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
         raise ValueError("proxy_port and app_port must differ")
     check_timeout(timeout)
     buffer_directives = None if proxy_buffers is None else proxy_buffer_directives(proxy_buffers)
+    header_directives = None if header_buffers is None else header_buffer_directives(header_buffers)
 
     manifest = {layer["role"]: layer for layer in load_manifest()["layers"]}
     # Error messages name the layer by role and component, e.g. "proxy (nginx)".
@@ -311,12 +340,13 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                              "@APP_PORT@": str(app_port),
                              "@PROXY_COMPONENT@": manifest["proxy"]["component"]}.items():
             config = config.replace(token, value)
+        # Changed on purpose, so the rendered nginx.conf says so where each applies.
         if buffer_directives is not None:
-            # Changed on purpose, so the rendered nginx.conf says so where it applies.
-            line = next(line for line in config.splitlines() if PROXY_BUFFERS_ANCHOR in line)
-            indent = line[:len(line) - len(line.lstrip())]
-            added = [f"# Not a default: --proxy-buffers {proxy_buffers}.", *buffer_directives]
-            config = config.replace(line, "\n".join([line, *(indent + a for a in added)]), 1)
+            config = insert_directives(config, PROXY_BUFFERS_ANCHOR, "--proxy-buffers",
+                                       proxy_buffers, buffer_directives)
+        if header_directives is not None:
+            config = insert_directives(config, HEADER_BUFFERS_ANCHOR, "--header-buffers",
+                                       header_buffers, header_directives)
         config_path = run_dir / "nginx" / "nginx.conf"
         config_path.write_text(config, encoding="utf-8")
         error_log = logs / "proxy-error.log"
@@ -464,6 +494,9 @@ def main() -> None:
     options.add_argument("--proxy-buffers", metavar="SIZE",
                          help="set nginx's proxy_buffer_size to SIZE and proxy_buffers to 8 SIZE, "
                               "e.g. 16k (default: nginx's defaults, one memory page)")
+    options.add_argument("--header-buffers", metavar="SIZE",
+                         help="set nginx's large_client_header_buffers to 4 SIZE, raising the "
+                              "request header line limit, e.g. 512k (default: 4 8k)")
     commands.add_parser("check", parents=[options],
                         help="start the stack, send one browser request through it, and stop it")
     tokens = commands.add_parser("tokens", parents=[options],
@@ -473,8 +506,14 @@ def main() -> None:
                         help="configuration to run, from scripts/algorithms.py; repeat or list "
                              "several (default: all six)")
     sweep = commands.add_parser("sweep", parents=[options],
-                                help="sweep cookie-carried token sizes and find where each layer "
-                                     "rejects them")
+                                help="sweep token sizes as a cookie or Bearer header and find "
+                                     "where each layer rejects them")
+    sweep.add_argument("--transport", choices=("cookie", "bearer"), default="cookie",
+                       help="carry the token in a cookie (default) or an Authorization: Bearer "
+                            "header")
+    sweep.add_argument("--client", action="extend", nargs="+", choices=("browser", "direct"),
+                       help="bearer only: send from Chromium, from http.client, or both "
+                            "(default: both)")
     sweep.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
                        help="configuration to sweep; repeat or list several (default: all six)")
     sweep.add_argument("--claims", choices=("minimal", "oidc"), default="minimal",
@@ -513,16 +552,17 @@ def main() -> None:
         signal.signal(signum, interrupt)
     try:
         with start_stack(args.proxy_port, args.app_port, args.run_dir, args.timeout,
-                         args.proxy_buffers) as stack:
+                         args.proxy_buffers, args.header_buffers) as stack:
             if args.command == "check":
                 result = run_check(stack, args.timeout)
             elif args.command == "tokens":
                 result = run_token_check(stack, args.alg, args.timeout)
             elif args.command == "sweep":
-                from scripts.transport_sweep import run_cookie_sweep, write_results
+                from scripts.transport_sweep import run_sweep, write_results
 
-                result = run_cookie_sweep(stack, args.alg, args.claims, args.attrs, args.step,
-                                          args.max_bytes, args.timeout, args.proxy_buffers)
+                result = run_sweep(stack, args.transport, args.alg, args.client, args.claims,
+                                   args.attrs, args.step, args.max_bytes, args.timeout,
+                                   args.proxy_buffers, args.header_buffers)
                 if args.output_dir:
                     write_results(result, args.output_dir)
             else:

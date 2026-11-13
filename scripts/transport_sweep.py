@@ -1,21 +1,25 @@
-"""Sweep cookie-carried token sizes through the stack and find where each layer rejects them.
+"""Sweep token sizes through the stack and find where each layer rejects them.
 
 For each configuration, the sweep sends tokens grown with the padding claim of
-scripts/token_sizing.py through browser -> nginx -> application, each in a new browser context,
-using the same steps and the same layer attribution as the token check (run_pair and judge in
-scripts/transport_tokens.py). It first probes coarse steps of token size, then binary-searches
+scripts/token_sizing.py through nginx to the application, as a cookie (S2-04) or an
+Authorization: Bearer header (S2-05). The browser client sends each probe from a new browser
+context, using the same steps and the same layer attribution as the token check (run_pair and
+judge in scripts/transport_tokens.py); the direct client sends the Bearer header to nginx with
+http.client instead, which separates the browser's limits from the servers'. It first probes coarse steps of token size, then binary-searches
 the padding between every two neighbouring probes whose outcome or rejecting layer differs, so
 each boundary is narrowed to one character of padding. Every probe is verified before it is
 sent: the application signs it, and the same token is verified straight at the application.
 
 Each probe records the bytes that each limit counts (S2-03): the token, the cookie's name +
 value (Chromium's limit), the Set-Cookie header and the whole upstream response header block
-(nginx's proxy_buffer_size), the Cookie header line (nginx's large_client_header_buffers), and
-the request header block as Chromium reported it and as the application received it.
+(nginx's proxy_buffer_size), the Cookie or Authorization header line (nginx's
+large_client_header_buffers), and the request header block as the client sent it and as the
+application received it (waitress's max_request_header_size counts the whole block).
 """
 
 from collections.abc import Sequence
 from datetime import datetime, timezone
+import gzip
 import http.client
 import json
 from pathlib import Path
@@ -24,13 +28,19 @@ from urllib.parse import urlsplit
 
 from scripts.token_sizing import claim_set, pad_for_target, token_bytes
 from scripts.transport_app import COOKIE_ATTRIBUTE_SETS, COOKIE_NAME
-from scripts.transport_stack import BROWSER_CHANNEL, check_timeout, load_manifest, manifest_layers
-from scripts.transport_tokens import (ISSUE_PATH, LOG_FILES, judge, nonce_url, read_lines,
-                                      run_pair, selected_algorithms, wait_for_proxy_log)
+from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout, http_get,
+                                     load_manifest, manifest_layers)
+from scripts.transport_tokens import (ISSUE_PATH, LOG_FILES, VERIFY_PATH, BrowserRequest,
+                                      failed_request_layer, issue_directly, json_object, judge,
+                                      lines_mentioning, nonce_url, read_lines, run_pair,
+                                      selected_algorithms, verify_directly, wait_for_proxy_log)
 
 
 DEFAULT_STEP = 512
 DEFAULT_MAX_BYTES = 24_576
+TRANSPORT_CLIENTS = {"cookie": ("browser",), "bearer": ("browser", "direct")}
+# Logs above this size are saved gzip-compressed (padded tokens compress very well).
+COMPRESS_LOGS_OVER = 5_000_000
 
 
 def response_header_bytes(url: str, timeout: float) -> tuple[int | None, int | None]:
@@ -73,8 +83,17 @@ def browser_request_bytes(browser_log: Path, url: str) -> int | None:
     return None
 
 
-def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: float) -> dict:
-    """Send one padded token as a cookie through the stack; return its outcome and byte counts."""
+def read_logs(stack, nonces: list[str]) -> dict[str, list[str]]:
+    log_dir = Path(stack.run_dir) / "logs"
+    wait_for_proxy_log(log_dir / LOG_FILES["proxy_access"], nonces)
+    return {key: read_lines(log_dir / name) for key, name in LOG_FILES.items()}
+
+
+def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: float,
+          transport: str = "cookie") -> dict:
+    """Send one padded token from the browser through the stack; return outcome and byte counts."""
+    if transport == "bearer":
+        return bearer_probe(browser, stack, layers, algorithm, query, timeout)
     log_dir = Path(stack.run_dir) / "logs"
     run = run_pair(browser, stack, algorithm, "cookie", timeout, log_dir / LOG_FILES["browser"],
                    query)
@@ -91,6 +110,7 @@ def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: fl
     received = (run.verify.body or {}).get("received") or {}
     sent_cookie = received.get("cookie_bytes") is not None
     return {
+        "client": "browser",
         "pad": int(run.issue_query["pad"]),
         "token_bytes": run.token_bytes,
         "outcome": result["outcome"],
@@ -117,6 +137,91 @@ def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: fl
         "evidence": result["evidence"],
         "issue_nonce": result["issue"]["nonce"],
         "verify_nonce": result["verify"]["nonce"],
+    }
+
+
+def bearer_bytes(token_bytes: int) -> dict:
+    return {"authorization_value": len("Bearer ") + token_bytes,
+            "authorization_line": len("Authorization: Bearer \r\n") + token_bytes}
+
+
+def bearer_probe(browser, stack, layers: dict, algorithm: str, query: dict,
+                 timeout: float) -> dict:
+    """fetch() a padded token in an Authorization: Bearer header from the browser."""
+    log_dir = Path(stack.run_dir) / "logs"
+    run = run_pair(browser, stack, algorithm, "bearer", timeout, log_dir / LOG_FILES["browser"],
+                   query)
+    answered = [request.nonce for request in (run.issue, run.verify) if request.status is not None]
+    result = judge(run, read_logs(stack, answered), layers)
+    received = (run.verify.body or {}).get("received") or {}
+    return {
+        "client": "browser",
+        "pad": int(run.issue_query["pad"]),
+        "token_bytes": run.token_bytes,
+        "outcome": result["outcome"],
+        "rejected_by": result["rejected_by"],
+        "verified_directly": result["direct"]["verified"],
+        "issue_status": result["issue"]["status"],
+        "verify_status": result["verify"]["status"],
+        "verify_error": run.verify.error,
+        "bytes": {
+            **bearer_bytes(run.token_bytes),
+            "client_request_headers": browser_request_bytes(log_dir / LOG_FILES["browser"],
+                                                            run.verify.url),
+            "app_received_headers": received.get("header_bytes"),
+        },
+        "evidence": result["evidence"],
+        "issue_nonce": result["issue"]["nonce"],
+        "verify_nonce": result["verify"]["nonce"],
+    }
+
+
+def direct_probe(stack, algorithm: str, query: dict, timeout: float) -> dict:
+    """Send a padded token in a Bearer header to nginx with http.client, without a browser."""
+    query = {key: str(value) for key, value in query.items()}
+    token = issue_directly(stack.app_url, algorithm, timeout, query)
+    url, nonce = nonce_url(stack.proxy_url, VERIFY_PATH)
+    header = {"Authorization": f"Bearer {token}"}
+    try:
+        status, headers, body = http_get(url, headers=header, timeout=timeout)
+        request = BrowserRequest(url=url, nonce=nonce, status=status, headers=headers,
+                                 body=json_object(body))
+    except (OSError, http.client.HTTPException) as error:
+        request = BrowserRequest(url=url, nonce=nonce, error=f"{type(error).__name__}: {error}")
+    lines = lines_mentioning(nonce, read_logs(stack, [nonce] if request.status else []))
+    body = request.body or {}
+    if (request.status == 200 and PROXY_MARKER.lower() in request.headers
+            and body.get("verified") is True and body.get("algorithm") == algorithm
+            and body.get("source") == "bearer"):
+        outcome, rejected_by = "verified", None
+        evidence = (f"verified: http.client sent the {len(token):,}-byte token as an "
+                    "Authorization: Bearer header through nginx, and the application verified it")
+    else:
+        outcome = "rejected"
+        rejected_by, evidence = failed_request_layer("verify", request, lines)
+        if rejected_by == "browser":  # failed_request_layer's name for "never reached nginx".
+            rejected_by, evidence = "client", evidence.replace("browser: ", "client: ", 1)
+    # http.client adds Host and Accept-Encoding: identity to the request line and header.
+    target = url.split("/", 3)[3]
+    sent = (f"GET /{target} HTTP/1.1\r\nHost: {url.split('/')[2]}\r\n"
+            f"Accept-Encoding: identity\r\nAuthorization: Bearer \r\n\r\n")
+    received = body.get("received") or {}
+    return {
+        "client": "direct",
+        "pad": int(query["pad"]),
+        "token_bytes": len(token),
+        "outcome": outcome,
+        "rejected_by": rejected_by,
+        "verified_directly": verify_directly(stack.app_url, "bearer", token, timeout)["verified"],
+        "verify_status": request.status,
+        "verify_error": request.error,
+        "bytes": {
+            **bearer_bytes(len(token)),
+            "client_request_headers": len(sent.encode("latin-1")) + len(token),
+            "app_received_headers": received.get("header_bytes"),
+        },
+        "evidence": evidence,
+        "verify_nonce": nonce,
     }
 
 
@@ -164,6 +269,27 @@ def run_cookie_sweep(stack, algorithms: Sequence[str] | None = None, claims: str
                      max_bytes: int = DEFAULT_MAX_BYTES, timeout: float = 60.0,
                      proxy_buffers: str | None = None) -> dict:
     """Sweep each configuration's cookie-carried token sizes; return every probe and boundary."""
+    return run_sweep(stack, "cookie", algorithms, claims=claims, attrs=attrs, step=step,
+                     max_bytes=max_bytes, timeout=timeout, proxy_buffers=proxy_buffers)
+
+
+def run_sweep(stack, transport: str = "cookie", algorithms: Sequence[str] | None = None,
+              clients: Sequence[str] | None = None, claims: str = "minimal",
+              attrs: str = "default", step: int = DEFAULT_STEP,
+              max_bytes: int = DEFAULT_MAX_BYTES, timeout: float = 60.0,
+              proxy_buffers: str | None = None, header_buffers: str | None = None) -> dict:
+    """Sweep token sizes for each configuration and client; return every probe and boundary.
+
+    transport is "cookie" (browser client only) or "bearer" (clients "browser" and "direct",
+    both by default). proxy_buffers and header_buffers only record the stack's settings.
+    """
+    if transport not in TRANSPORT_CLIENTS:
+        raise ValueError(f"transport must be one of {', '.join(TRANSPORT_CLIENTS)}, "
+                         f"got {transport!r}")
+    clients = list(clients or TRANSPORT_CLIENTS[transport])
+    if not clients or any(client not in TRANSPORT_CLIENTS[transport] for client in clients):
+        raise ValueError(f"clients for {transport} must be from "
+                         f"{', '.join(TRANSPORT_CLIENTS[transport])}, got {clients!r}")
     names = selected_algorithms(algorithms)
     check_timeout(timeout)
     base_claims = claim_set(claims)
@@ -188,10 +314,15 @@ def run_cookie_sweep(stack, algorithms: Sequence[str] | None = None, claims: str
             try:
                 results = []
                 for name in names:
-                    def send(pad: int, name=name) -> dict:
-                        query = {"claims": claims, "pad": pad, "attrs": attrs}
-                        return probe(browser, stack, layers, name, query, timeout)
-                    results.append(sweep_algorithm(send, name, base_claims, step, max_bytes))
+                    for client in clients:
+                        def send(pad: int, name=name, client=client) -> dict:
+                            query = {"claims": claims, "pad": pad, "attrs": attrs}
+                            if client == "direct":
+                                return direct_probe(stack, name, query, timeout)
+                            return probe(browser, stack, layers, name, query, timeout, transport)
+                        results.append({"client": client,
+                                        **sweep_algorithm(send, name, base_claims, step,
+                                                          max_bytes)})
                 version = browser.version
             finally:
                 browser.close()
@@ -199,10 +330,13 @@ def run_cookie_sweep(stack, algorithms: Sequence[str] | None = None, claims: str
         raise RuntimeError(f"browser: {error}") from error
 
     return {
-        "transport": "cookie",
-        "settings": {"algorithms": names, "claims": claims, "attrs": attrs,
-                     "cookie_attributes": COOKIE_ATTRIBUTE_SETS[attrs], "step": step,
-                     "max_bytes": max_bytes, "proxy_buffers": proxy_buffers,
+        "transport": transport,
+        "settings": {"algorithms": names, "clients": clients, "claims": claims,
+                     "attrs": attrs if transport == "cookie" else None,
+                     "cookie_attributes": (COOKIE_ATTRIBUTE_SETS[attrs] if transport == "cookie"
+                                           else None),
+                     "step": step, "max_bytes": max_bytes, "proxy_buffers": proxy_buffers,
+                     "header_buffers": header_buffers,
                      "padding": "pad claim of 'x' characters (scripts/token_sizing.py)"},
         "proxy_url": stack.proxy_url,
         "app_url": stack.app_url,
@@ -215,7 +349,8 @@ def run_cookie_sweep(stack, algorithms: Sequence[str] | None = None, claims: str
 
 def summary_lines(result: dict) -> list[str]:
     """One line per configuration: the largest verified token and the first rejection."""
-    width = max(len(entry["algorithm"]) for entry in result["results"])
+    width = max(len(f"{entry['algorithm']} ({entry.get('client', 'browser')})")
+                for entry in result["results"])
     lines = []
     for entry in result["results"]:
         largest = entry["largest_verified_token_bytes"]
@@ -224,7 +359,8 @@ def summary_lines(result: dict) -> list[str]:
                     if first else "no rejection up to the maximum")
         layers = " -> ".join(f"{b['first']['rejected_by']} at {b['first']['token_bytes']:,}"
                              for b in entry["boundaries"])
-        lines.append(f"{entry['algorithm']:<{width}}  largest verified "
+        label = f"{entry['algorithm']} ({entry.get('client', 'browser')})"
+        lines.append(f"{label:<{width}}  largest verified "
                      f"{(f'{largest:,}' if largest else 'none'):>6}  {rejected}"
                      f"{f'  (boundaries: {layers})' if layers else ''}")
     return lines
@@ -235,9 +371,19 @@ def write_results(result: dict, output_dir: Path) -> Path:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     run_dir = Path(result["run_dir"])
-    shutil.copytree(run_dir / "logs", output_dir / "logs", dirs_exist_ok=True)
+    (output_dir / "logs").mkdir(exist_ok=True)
+    saved_logs = {}
+    for log in sorted((run_dir / "logs").iterdir()):
+        if log.stat().st_size > COMPRESS_LOGS_OVER:
+            target = output_dir / "logs" / f"{log.name}.gz"
+            with log.open("rb") as source, gzip.open(target, "wb") as compressed:
+                shutil.copyfileobj(source, compressed)
+        else:
+            target = output_dir / "logs" / log.name
+            shutil.copy2(log, target)
+        saved_logs[log.name] = f"logs/{target.name}"
     shutil.copy2(run_dir / "nginx" / "nginx.conf", output_dir / "nginx.conf")
     saved = {**result, "recorded_utc": datetime.now(timezone.utc).isoformat(),
-             "evidence": {"logs": "logs/", "nginx_conf": "nginx.conf"}}
+             "evidence": {"logs": saved_logs, "nginx_conf": "nginx.conf"}}
     (output_dir / "sweep.json").write_text(json.dumps(saved, indent=2) + "\n", encoding="utf-8")
     return output_dir
