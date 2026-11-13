@@ -10277,10 +10277,10 @@
   "recorded_utc": "2026-11-13T08:06:25.116745+00:00",
   "evidence": {
     "logs": {
-      "app.log": "logs/app.log",
-      "browser.log": "logs/browser.log",
-      "proxy-access.log": "logs/proxy-access.log",
-      "proxy-error.log": "logs/proxy-error.log"
+      "app.log": "logs/app.log.gz",
+      "browser.log": "logs/browser.log.gz",
+      "proxy-access.log": "logs/proxy-access.log.gz",
+      "proxy-error.log": "logs/proxy-error.log.gz"
     },
     "nginx_conf": "nginx.conf"
   }

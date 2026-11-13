@@ -8123,7 +8123,12 @@
   ],
   "recorded_utc": "2026-11-13T07:45:48.370626+00:00",
   "evidence": {
-    "logs": "logs/",
+    "logs": {
+      "app.log": "logs/app.log.gz",
+      "browser.log": "logs/browser.log.gz",
+      "proxy-access.log": "logs/proxy-access.log.gz",
+      "proxy-error.log": "logs/proxy-error.log.gz"
+    },
     "nginx_conf": "nginx.conf"
   }
 }

@@ -39,8 +39,6 @@ from scripts.transport_tokens import (ISSUE_PATH, LOG_FILES, VERIFY_PATH, Browse
 DEFAULT_STEP = 512
 DEFAULT_MAX_BYTES = 24_576
 TRANSPORT_CLIENTS = {"cookie": ("browser",), "bearer": ("browser", "direct")}
-# Logs above this size are saved gzip-compressed (padded tokens compress very well).
-COMPRESS_LOGS_OVER = 5_000_000
 
 
 def response_header_bytes(url: str, timeout: float) -> tuple[int | None, int | None]:
@@ -367,20 +365,23 @@ def summary_lines(result: dict) -> list[str]:
 
 
 def write_results(result: dict, output_dir: Path) -> Path:
-    """Save sweep.json with copies of the run's logs and rendered nginx.conf as its evidence."""
+    """Save sweep.json with copies of the run's logs and rendered nginx.conf as its evidence.
+
+    Logs are saved gzip-compressed as <name>.log.gz: padded tokens compress very well, and a
+    saved result is evidence rather than a runtime log (git ignores *.log, and the docs tests
+    forbid committing one).
+    """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     run_dir = Path(result["run_dir"])
     (output_dir / "logs").mkdir(exist_ok=True)
     saved_logs = {}
     for log in sorted((run_dir / "logs").iterdir()):
-        if log.stat().st_size > COMPRESS_LOGS_OVER:
-            target = output_dir / "logs" / f"{log.name}.gz"
-            with log.open("rb") as source, gzip.open(target, "wb") as compressed:
+        target = output_dir / "logs" / f"{log.name}.gz"
+        with log.open("rb") as source, target.open("wb") as raw:
+            # mtime=0 and no file name in the header, so the same log compresses identically.
+            with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
                 shutil.copyfileobj(source, compressed)
-        else:
-            target = output_dir / "logs" / log.name
-            shutil.copy2(log, target)
         saved_logs[log.name] = f"logs/{target.name}"
     shutil.copy2(run_dir / "nginx" / "nginx.conf", output_dir / "nginx.conf")
     saved = {**result, "recorded_utc": datetime.now(timezone.utc).isoformat(),

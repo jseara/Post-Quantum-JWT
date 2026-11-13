@@ -1,6 +1,7 @@
 """Check the sized issue endpoint, the proxy buffer option, Secure cookies over loopback HTTP,
 and short cookie sweeps against a real stack; no timing thresholds."""
 
+import gzip
 import json
 import os
 import tempfile
@@ -8,7 +9,6 @@ import unittest
 from pathlib import Path
 
 from scripts.token_sizing import claim_set, padded_claims, token_bytes
-from scripts import transport_sweep
 from scripts.transport_stack import (BROWSER_CHANNEL, header_buffer_directives, http_get,
                                      load_manifest, proxy_buffer_directives, start_stack)
 from scripts.transport_sweep import (probe, run_cookie_sweep, run_sweep, summary_lines,
@@ -168,7 +168,7 @@ class DefaultBufferSweepTests(StackCase):
             data = json.loads((saved / "sweep.json").read_text(encoding="utf-8"))
             self.assertEqual(data["settings"]["proxy_buffers"], None)
             self.assertTrue((saved / "nginx.conf").is_file())
-            access = (saved / "logs" / "proxy-access.log").read_text(encoding="utf-8")
+            access = gzip.decompress((saved / "logs" / "proxy-access.log.gz").read_bytes()).decode()
             boundary = data["results"][0]["boundaries"][0]
             self.assertIn(boundary["first"]["issue_nonce"], access)
 
@@ -224,19 +224,19 @@ class BearerSweepTests(StackCase):
             with self.subTest(**kwargs), self.assertRaises(ValueError):
                 run_sweep(self.stack, algorithms=["ES256"], **kwargs)
 
-    def test_large_logs_are_saved_compressed(self):
+    def test_logs_are_saved_compressed(self):
         result = run_sweep(self.stack, "bearer", ["EdDSA"], clients=["direct"], step=8192,
                            max_bytes=8192)
-        original = transport_sweep.COMPRESS_LOGS_OVER
-        transport_sweep.COMPRESS_LOGS_OVER = 0
-        try:
-            with tempfile.TemporaryDirectory() as directory:
-                saved = write_results(result, Path(directory))
-                logs = json.loads((saved / "sweep.json").read_text())["evidence"]["logs"]
-                self.assertEqual(logs["app.log"], "logs/app.log.gz")
-                self.assertTrue((saved / "logs" / "app.log.gz").is_file())
-        finally:
-            transport_sweep.COMPRESS_LOGS_OVER = original
+        with tempfile.TemporaryDirectory() as directory:
+            saved = write_results(result, Path(directory))
+            logs = json.loads((saved / "sweep.json").read_text())["evidence"]["logs"]
+            self.assertEqual(set(logs), {"app.log", "browser.log", "proxy-access.log",
+                                         "proxy-error.log"})
+            for name, relative in logs.items():
+                self.assertEqual(relative, f"logs/{name}.gz")
+                original = (Path(result["run_dir"]) / "logs" / name).read_bytes()
+                self.assertEqual(gzip.decompress((saved / relative).read_bytes()), original)
+            self.assertEqual(list((saved / "logs").glob("*.log")), [])
 
 
 class RaisedHeaderBufferSweepTests(StackCase):
