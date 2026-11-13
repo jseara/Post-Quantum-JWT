@@ -102,19 +102,23 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 ### S2-05 — Bearer header transport sweep
 
-- [ ] Repeat the sweep with the token in an `Authorization: Bearer` header, sent both from the browser (`fetch`) and from a non-browser HTTP client, to separate browser limits from server limits.
-- [ ] Record the first rejecting layer and its response at each boundary, and compare the boundaries with the cookie results.
-- [ ] Raise the first rejecting layer's limit once, rerun, and record the next layer's limit and the configuration change.
+- [x] Repeat the sweep with the token in an `Authorization: Bearer` header, sent both from the browser (`fetch`) and from a non-browser HTTP client, to separate browser limits from server limits.
+- [x] Record the first rejecting layer and its response at each boundary, and compare the boundaries with the cookie results.
+- [x] Raise the first rejecting layer's limit once, rerun, and record the next layer's limit and the configuration change.
 
 **Done when:** For each configuration, the largest Bearer-carried token that reaches the application is known for both clients, and the next limit behind the first one is recorded.
 
+**Status:** Measured on WSL2 on November 13, 2026 with `sweep --transport bearer`, from Chromium and from http.client; results in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#bearer-header-boundaries). At the defaults nginx rejects first for both clients, with 400, once the `Authorization` line reaches 8,192 bytes (an 8,168-byte token), so Bearer carries about twice what a cookie does; neither SLH-DSA parameter set fits. Raised once with `--header-buffers 512k`, the next limit is waitress's 262,144-byte request header total (431), at about 261.5 KB of token from Chromium and 262.0 KB from http.client; every configuration fits below it. Chromium sent 262,168 bytes of request headers without error.
+
 ### S2-06 — Publish the transport results
 
-- [ ] Add a results document with a table per transport giving, for every configuration, the size boundary, the rejecting layer, its status or behavior, and its configured limit.
-- [ ] Link each result to its raw data, logs, and the exact configuration of every layer.
-- [ ] Document the reproduction steps, limitations (engines and versions tested, default versus raised limits), and follow-up questions for Sprint 3.
+- [x] Add a results document with a table per transport giving, for every configuration, the size boundary, the rejecting layer, its status or behavior, and its configured limit.
+- [x] Link each result to its raw data, logs, and the exact configuration of every layer.
+- [x] Document the reproduction steps, limitations (engines and versions tested, default versus raised limits), and follow-up questions for Sprint 3.
 
 **Done when:** Another team member can reproduce the sweeps from a clean checkout, and every reported boundary can be traced to raw evidence.
+
+**Status:** [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md) has a table per transport with every configuration's boundary, rejecting layer, and status or behavior, a comparison with each configured limit, byte accounting, links to every run's `sweep.json`, logs, and rendered `nginx.conf`, the commands to reproduce each run, limitations, and questions for Sprint 3. All runs so far are from WSL2; the Mac has not rerun the sweeps.
 
 **Sprint 2 completion:** All six tasks are complete, and every configuration has measured cookie and Bearer boundaries with the rejecting layer identified. Do not report documented limits as measured boundaries.
 

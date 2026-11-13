@@ -19,7 +19,7 @@ help:
 	@echo "make logs       follow the nginx and app logs of the running serve"
 	@echo "make check      send one browser request through the stack, then stop it"
 	@echo "make tokens     send every configuration's token as a cookie and a Bearer header"
-	@echo "make sweep      cookie sweep of all six at default and 16k nginx buffers (SWEEP_DIR=$(SWEEP_DIR))"
+	@echo "make sweep      cookie and Bearer sweeps of all six, at default and raised nginx buffers (SWEEP_DIR=$(SWEEP_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -45,6 +45,8 @@ SWEEP_DIR ?= results/transport/$(shell date -u +%Y%m%dT%H%M%SZ)
 sweep:
 	$(STACK) sweep --output-dir "$(SWEEP_DIR)/cookie-default"
 	$(STACK) sweep --proxy-buffers 16k --output-dir "$(SWEEP_DIR)/cookie-16k"
+	$(STACK) sweep --transport bearer --output-dir "$(SWEEP_DIR)/bearer-default"
+	$(STACK) sweep --transport bearer --header-buffers 512k --step 16384 --max-bytes 327680 --output-dir "$(SWEEP_DIR)/bearer-512k"
 
 versions:
 	$(STACK) versions
