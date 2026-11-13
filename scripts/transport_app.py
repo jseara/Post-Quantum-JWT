@@ -1,8 +1,9 @@
 """Serve the transport test page, the echo, and the token endpoints with waitress on 127.0.0.1.
 
 GET / returns the test page and GET /api/echo describes the request as the application received
-it. GET /api/token/issue signs fixtures/claims.json with one configuration from
-scripts/algorithms.py and delivers the token in a `jwt` Set-Cookie header or in a JSON body; GET
+it. GET /api/token/issue signs a claims fixture (fixtures/claims.json by default), padded to a
+chosen size if asked, with one configuration from scripts/algorithms.py and delivers the token in
+a `jwt` Set-Cookie header or in a JSON body; GET
 /api/token/verify verifies the token sent in the `jwt` cookie or an Authorization: Bearer header.
 Tokens are signed with ephemeral experiment keys: one key pair per configuration, generated in
 memory by this process on first use and never stored, logged, or returned. They are not
@@ -28,16 +29,21 @@ from waitress.parser import HTTPRequestParser
 
 from scripts.algorithms import ADAPTER_LIST, ADAPTERS
 from scripts.compact_jws import decode_json_object
+from scripts.token_sizing import CLAIM_SETS, MAX_PAD, claim_set, padded_token
 
 
 REPO = Path(__file__).resolve().parents[1]
 HOST = "127.0.0.1"
 TEST_PAGE = REPO / "transport" / "static" / "index.html"
-CLAIMS_FIXTURE = REPO / "fixtures" / "claims.json"
 LOG = logging.getLogger("transport_app")
 MAX_LOGGED_LINE = 65536
 COOKIE_NAME = "jwt"
 COOKIE_ATTRIBUTES = "Path=/; HttpOnly; SameSite=Strict"
+# attrs=full adds the attributes a production session cookie typically carries (S2-04).
+COOKIE_ATTRIBUTE_SETS = {"default": COOKIE_ATTRIBUTES,
+                         "full": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600"}
+# The audience the application expects in tokens that carry an aud claim (claims=oidc).
+APP_AUDIENCE = "cis628-transport-client"
 DELIVERIES = ("cookie", "body")
 ALGORITHM_NAMES = [adapter.name for adapter in ADAPTER_LIST]
 
@@ -76,11 +82,6 @@ def experiment_keypair(algorithm: str) -> tuple:
         if algorithm not in EXPERIMENT_KEYS:
             EXPERIMENT_KEYS[algorithm] = ADAPTERS[algorithm].generate_keypair()
         return EXPERIMENT_KEYS[algorithm]
-
-
-def fixture_claims() -> dict:
-    """Return the Sprint 1 claims fixture, unchanged and unpadded."""
-    return json.loads(CLAIMS_FIXTURE.read_text(encoding="utf-8"))
 
 
 def received_headers(environ: dict) -> dict:
@@ -129,7 +130,8 @@ def json_response(status: str, body: dict) -> Response:
     return status, [("Content-Type", "application/json"), ("Content-Length", str(len(data)))], data
 
 
-def issue_problem(algorithm: str | None, delivery: str) -> str | None:
+def issue_problem(algorithm: str | None, delivery: str, claims: str = "minimal",
+                  pad: str = "0", attrs: str = "default") -> str | None:
     """Say what is wrong with an issue request's parameters, or return None."""
     if algorithm is None:
         return "missing alg parameter"
@@ -137,14 +139,26 @@ def issue_problem(algorithm: str | None, delivery: str) -> str | None:
         return f"unknown alg {algorithm!r}"
     if delivery not in DELIVERIES:
         return f"delivery must be one of {', '.join(DELIVERIES)}, got {delivery!r}"
+    if claims not in CLAIM_SETS:
+        return f"claims must be one of {', '.join(CLAIM_SETS)}, got {claims!r}"
+    if not (pad.isascii() and pad.isdigit() and int(pad) <= MAX_PAD):
+        return f"pad must be an integer from 0 to {MAX_PAD:,}, got {pad!r}"
+    if attrs not in COOKIE_ATTRIBUTE_SETS:
+        return f"attrs must be one of {', '.join(COOKIE_ATTRIBUTE_SETS)}, got {attrs!r}"
     return None
 
 
 def issue_endpoint(environ: dict) -> tuple[Response, dict]:
-    """Sign the claims fixture and deliver the token in a Set-Cookie header or the JSON body."""
+    """Sign a claims fixture, padded if asked, and deliver it in a Set-Cookie header or the body.
+
+    Optional parameters: claims (minimal, the default, or oidc), pad (characters in a `pad`
+    claim, default 0, see scripts/token_sizing.py), and attrs (default or full cookie attributes).
+    """
     query = query_parameters(environ)
     algorithm, delivery = query.get("alg"), query.get("delivery", "cookie")
-    problem = issue_problem(algorithm, delivery)
+    claims_name, pad, attrs = (query.get("claims", "minimal"), query.get("pad", "0"),
+                               query.get("attrs", "default"))
+    problem = issue_problem(algorithm, delivery, claims_name, pad, attrs)
     if problem is not None:
         known = algorithm if algorithm in ADAPTERS else None
         return json_response("400 Bad Request", {
@@ -153,20 +167,24 @@ def issue_endpoint(environ: dict) -> tuple[Response, dict]:
         }), {"alg": known, "token_bytes": None}
 
     private_key, _ = experiment_keypair(algorithm)
-    token = ADAPTERS[algorithm].create_token(fixture_claims(), private_key)
+    token = padded_token(algorithm, claim_set(claims_name), int(pad), private_key)
     log_fields = {"alg": algorithm, "token_bytes": len(token)}
+    # Requests that use the sizing parameters get them echoed; default responses are unchanged.
+    sizing = ({"claims": claims_name, "pad": int(pad)}
+              if any(key in query for key in ("claims", "pad", "attrs")) else {})
     if delivery == "body":
         return json_response("200 OK", {
             "layer": "application", "algorithm": algorithm, "delivery": "body", "token": token,
-            "token_bytes": len(token), "experiment_key": True,
+            "token_bytes": len(token), **sizing, "experiment_key": True,
         }), log_fields
 
     # The body leaves the token out so the response headers stay small for nginx's buffer.
-    set_cookie = f"{COOKIE_NAME}={token}; {COOKIE_ATTRIBUTES}"
+    set_cookie = f"{COOKIE_NAME}={token}; {COOKIE_ATTRIBUTE_SETS[attrs]}"
     status, headers, data = json_response("200 OK", {
         "layer": "application", "algorithm": algorithm, "delivery": "cookie",
         "cookie_name": COOKIE_NAME, "token_bytes": len(token),
-        "set_cookie_bytes": len(set_cookie), "experiment_key": True,
+        "set_cookie_bytes": len(set_cookie), **sizing, **({"attrs": attrs} if sizing else {}),
+        "experiment_key": True,
     })
     return (status, [*headers, ("Set-Cookie", set_cookie)], data), log_fields
 
@@ -187,6 +205,14 @@ def bearer_token(authorization: str | None) -> str | None:
     if not parts or parts[0].lower() != "bearer":
         return None
     return parts[1] if len(parts) == 2 else ""
+
+
+def unverified_claims(token: str) -> dict:
+    """Read the payload without verifying, only to choose the audience; {} if unreadable."""
+    try:
+        return decode_json_object(token.split(".")[1], "payload")
+    except (IndexError, jwt.PyJWTError, RecursionError):
+        return {}
 
 
 def unverified_algorithm(token: str) -> str | None:
@@ -232,7 +258,10 @@ def verify_endpoint(environ: dict) -> tuple[Response, dict]:
                               received), log_fields
     _, public_key = experiment_keypair(algorithm)
     try:
-        claims = ADAPTERS[algorithm].verify_token(token, public_key)
+        # An experiment shortcut: tokens with an aud claim must name APP_AUDIENCE, and tokens
+        # without one (claims=minimal) are verified without an audience.
+        audience = APP_AUDIENCE if "aud" in unverified_claims(token) else None
+        claims = ADAPTERS[algorithm].verify_token(token, public_key, audience=audience)
     except Exception as error:  # Untrusted input: any failure means "not verified", never a 500.
         reason = str(error) or type(error).__name__
         return verify_failure("401 Unauthorized", source, f"verification failed: {reason}",

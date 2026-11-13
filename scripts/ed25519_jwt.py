@@ -25,9 +25,9 @@ def create_token(claims: dict, private_key: Ed25519PrivateKey) -> str:
     return jwt.encode(claims, private_key, algorithm=ALGORITHM)
 
 
-def verify_token(token: str, public_key: Ed25519PublicKey) -> dict:
+def verify_token(token: str, public_key: Ed25519PublicKey, audience: str | None = None) -> dict:
     """Verify the signature and claims, accepting only EdDSA."""
-    return jwt.decode(token, public_key, algorithms=[ALGORITHM])
+    return jwt.decode(token, public_key, algorithms=[ALGORITHM], audience=audience)
 
 
 def summarize(samples: list[int]) -> dict:

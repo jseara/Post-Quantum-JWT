@@ -33,12 +33,31 @@ def decode_json_object(segment: str, name: str) -> dict:
     return value
 
 
+def check_audience(claims: dict, audience: str | None) -> None:
+    """Apply PyJWT's (non-strict) `aud` rules, so every adapter treats audiences alike."""
+    present = claims.get("aud")
+    if audience is None:
+        if present:
+            raise jwt.InvalidAudienceError("Invalid audience")
+        return
+    if not present:
+        raise jwt.MissingRequiredClaimError("aud")
+    values = [present] if isinstance(present, str) else present
+    if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
+        raise jwt.InvalidAudienceError("Invalid claim format in token")
+    if audience not in values:
+        raise jwt.InvalidAudienceError("Audience doesn't match")
+
+
 def decode_compact(token: str, algorithm: str,
-                   verify_signature: Callable[[bytes, bytes], bool]) -> dict:
+                   verify_signature: Callable[[bytes, bytes], bool],
+                   audience: str | None = None) -> dict:
     """Verify a compact JWS and return its claims, raising PyJWT exceptions on failure.
 
     Accepts only `algorithm` in the header. Like PyJWT, it rejects a token whose numeric
-    `exp` claim is at or before the current time; no other claims are validated.
+    `exp` claim is at or before the current time, and it applies PyJWT's `aud` rules: a token
+    with an `aud` claim needs a matching `audience`, and an `audience` needs an `aud` claim. No
+    other claims are validated.
     """
     segments = token.split(".")
     if len(segments) != 3:
@@ -60,4 +79,5 @@ def decode_compact(token: str, algorithm: str,
             raise jwt.DecodeError("Expiration Time claim (exp) must be a number")
         if expiration <= time.time():
             raise jwt.ExpiredSignatureError("Signature has expired")
+    check_audience(claims, audience)
     return claims

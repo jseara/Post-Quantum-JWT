@@ -26,9 +26,9 @@ def create_token(claims: dict, private_key: ec.EllipticCurvePrivateKey) -> str:
     return jwt.encode(claims, private_key, algorithm=ALGORITHM)
 
 
-def verify_token(token: str, public_key: ec.EllipticCurvePublicKey) -> dict:
+def verify_token(token: str, public_key: ec.EllipticCurvePublicKey, audience: str | None = None) -> dict:
     """Verify the signature and claims, accepting only ES256."""
-    return jwt.decode(token, public_key, algorithms=[ALGORITHM])
+    return jwt.decode(token, public_key, algorithms=[ALGORITHM], audience=audience)
 
 
 def summarize(samples: list[int]) -> dict:

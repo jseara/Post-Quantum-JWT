@@ -38,7 +38,7 @@ class Adapter:
     expected_signature_bytes: int
     generate_keypair: Callable[[], tuple[Any, Any]]
     create_token: Callable[[dict, Any], str]
-    verify_token: Callable[[str, Any], dict]
+    verify_token: Callable[..., dict]  # (token, public_key, audience=None) -> claims
     sign_raw: Callable[[Any, bytes], bytes]
     verify_raw: Callable[[Any, bytes, bytes], None]
 

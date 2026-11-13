@@ -31,7 +31,7 @@ def create_token(claims: dict, private_key: MLDSA44PrivateKey) -> str:
     return (signing_input + b"." + urlsafe_b64encode(signature).rstrip(b"=")).decode("ascii")
 
 
-def verify_token(token: str, public_key: MLDSA44PublicKey) -> dict:
+def verify_token(token: str, public_key: MLDSA44PublicKey, audience: str | None = None) -> dict:
     """Verify the signature and expiration, accepting only ML-DSA-44 with an empty context."""
     def verify_signature(signing_input: bytes, signature: bytes) -> bool:
         try:
@@ -40,7 +40,7 @@ def verify_token(token: str, public_key: MLDSA44PublicKey) -> dict:
             return False
         return True
 
-    return decode_compact(token, ALGORITHM, verify_signature)
+    return decode_compact(token, ALGORITHM, verify_signature, audience)
 
 
 def main() -> None:

@@ -4,7 +4,8 @@ check starts the stack, loads the test page in headless Chromium through nginx, 
 fetch() to /api/echo from that page, prints the result as JSON, and stops the stack. tokens does
 the same with the fixture token of every configuration, once as a cookie and once as a Bearer
 header, and names the layer that rejected any token that did not verify (see
-scripts/transport_tokens.py). serve starts the stack and keeps it running until SIGINT or
+scripts/transport_tokens.py). sweep sends cookie-carried tokens of growing size and narrows
+each layer's rejection boundary (see scripts/transport_sweep.py). serve starts the stack and keeps it running until SIGINT or
 SIGTERM. versions compares the installed component versions with transport/stack.json.
 """
 
@@ -239,16 +240,41 @@ def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: f
         time.sleep(0.05)
 
 
+# nginx size syntax accepted by --proxy-buffers: a number of bytes, or of k or m units.
+NGINX_SIZE = re.compile(r"[1-9][0-9]*[km]?")
+# The anchor in the rendered config after which --proxy-buffers inserts its directives.
+PROXY_BUFFERS_ANCHOR = 'add_header X-Transport-Proxy'
+
+
+def proxy_buffer_directives(size: str) -> list[str]:
+    """nginx directives that set the upstream response buffers to `size`.
+
+    proxy_buffer_size alone is not enough on 4 KiB-page systems: nginx then refuses to start,
+    because the default proxy_busy_buffers_size (two buffers) must stay below all proxy_buffers
+    minus one. Raising proxy_buffers to 8 buffers of the same size is valid everywhere, and
+    with 16k it reproduces the defaults of a 16 KiB-page system such as Apple Silicon macOS.
+    """
+    if not isinstance(size, str) or not NGINX_SIZE.fullmatch(size):
+        raise ValueError(f"proxy_buffers must be an nginx size such as 16k, got {size!r}")
+    return [f"proxy_buffer_size {size};", f"proxy_buffers 8 {size};"]
+
+
 @contextmanager
 def start_stack(proxy_port: int | None = None, app_port: int | None = None,
-                run_dir: str | Path | None = None, timeout: float = 60.0):
-    """Start the application server and the reverse proxy; yield a Stack and stop both on exit."""
+                run_dir: str | Path | None = None, timeout: float = 60.0,
+                proxy_buffers: str | None = None):
+    """Start the application server and the reverse proxy; yield a Stack and stop both on exit.
+
+    proxy_buffers, such as "16k", sets nginx's upstream response buffers (see
+    proxy_buffer_directives); None keeps nginx's defaults, as transport/nginx.conf.template does.
+    """
     for name, port in (("proxy_port", proxy_port), ("app_port", app_port)):
         if port is not None and not valid_port(port):
             raise ValueError(f"{name} must be an int in 1-65535, got {port!r}")
     if proxy_port is not None and proxy_port == app_port:
         raise ValueError("proxy_port and app_port must differ")
     check_timeout(timeout)
+    buffer_directives = None if proxy_buffers is None else proxy_buffer_directives(proxy_buffers)
 
     manifest = {layer["role"]: layer for layer in load_manifest()["layers"]}
     # Error messages name the layer by role and component, e.g. "proxy (nginx)".
@@ -285,6 +311,12 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                              "@APP_PORT@": str(app_port),
                              "@PROXY_COMPONENT@": manifest["proxy"]["component"]}.items():
             config = config.replace(token, value)
+        if buffer_directives is not None:
+            # Changed on purpose, so the rendered nginx.conf says so where it applies.
+            line = next(line for line in config.splitlines() if PROXY_BUFFERS_ANCHOR in line)
+            indent = line[:len(line) - len(line.lstrip())]
+            added = [f"# Not a default: --proxy-buffers {proxy_buffers}.", *buffer_directives]
+            config = config.replace(line, "\n".join([line, *(indent + a for a in added)]), 1)
         config_path = run_dir / "nginx" / "nginx.conf"
         config_path.write_text(config, encoding="utf-8")
         error_log = logs / "proxy-error.log"
@@ -429,6 +461,9 @@ def main() -> None:
                          help="directory for configs and logs (default: a new temporary directory)")
     options.add_argument("--timeout", type=positive_seconds, default=60.0,
                          help="seconds allowed for startup and for each browser step (default: 60)")
+    options.add_argument("--proxy-buffers", metavar="SIZE",
+                         help="set nginx's proxy_buffer_size to SIZE and proxy_buffers to 8 SIZE, "
+                              "e.g. 16k (default: nginx's defaults, one memory page)")
     commands.add_parser("check", parents=[options],
                         help="start the stack, send one browser request through it, and stop it")
     tokens = commands.add_parser("tokens", parents=[options],
@@ -437,6 +472,22 @@ def main() -> None:
     tokens.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
                         help="configuration to run, from scripts/algorithms.py; repeat or list "
                              "several (default: all six)")
+    sweep = commands.add_parser("sweep", parents=[options],
+                                help="sweep cookie-carried token sizes and find where each layer "
+                                     "rejects them")
+    sweep.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                       help="configuration to sweep; repeat or list several (default: all six)")
+    sweep.add_argument("--claims", choices=("minimal", "oidc"), default="minimal",
+                       help="claims fixture to pad (default: minimal)")
+    sweep.add_argument("--attrs", choices=("default", "full"), default="default",
+                       help="cookie attributes: default (Path, HttpOnly, SameSite) or full "
+                            "(adds Secure and Max-Age)")
+    sweep.add_argument("--step", type=int, default=512,
+                       help="coarse step in token bytes before narrowing (default: 512)")
+    sweep.add_argument("--max-bytes", type=int, default=24_576,
+                       help="largest token to probe (default: 24,576)")
+    sweep.add_argument("--output-dir", type=Path,
+                       help="save sweep.json, the logs, and nginx.conf here")
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -456,16 +507,24 @@ def main() -> None:
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:
         parser.error("--proxy-port and --app-port must differ")
-    if args.command == "tokens" and args.alg and len(set(args.alg)) != len(args.alg):
+    if args.command in ("tokens", "sweep") and args.alg and len(set(args.alg)) != len(args.alg):
         parser.error(f"--alg must not repeat a configuration, got {' '.join(args.alg)}")
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, interrupt)
     try:
-        with start_stack(args.proxy_port, args.app_port, args.run_dir, args.timeout) as stack:
+        with start_stack(args.proxy_port, args.app_port, args.run_dir, args.timeout,
+                         args.proxy_buffers) as stack:
             if args.command == "check":
                 result = run_check(stack, args.timeout)
             elif args.command == "tokens":
                 result = run_token_check(stack, args.alg, args.timeout)
+            elif args.command == "sweep":
+                from scripts.transport_sweep import run_cookie_sweep, write_results
+
+                result = run_cookie_sweep(stack, args.alg, args.claims, args.attrs, args.step,
+                                          args.max_bytes, args.timeout, args.proxy_buffers)
+                if args.output_dir:
+                    write_results(result, args.output_dir)
             else:
                 print(json.dumps({"proxy_url": stack.proxy_url, "app_url": stack.app_url,
                                   "run_dir": str(stack.run_dir)}), flush=True)
@@ -479,6 +538,11 @@ def main() -> None:
         parser.exit(1, "Error: interrupted\n")
     except (OSError, RuntimeError, ValueError) as error:
         parser.exit(1, f"Error: {error}\n")
+    if args.command == "sweep":
+        from scripts.transport_sweep import summary_lines as sweep_summary
+
+        sys.stdout.write("".join(f"{line}\n" for line in sweep_summary(result)))
+        return
     sys.stdout.write(json.dumps(result, indent=2) + "\n")
     if args.command == "tokens":
         report_token_check(parser, result)

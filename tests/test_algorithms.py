@@ -75,5 +75,21 @@ class AdapterTests(unittest.TestCase):
                     adapter.verify_token(expired, public_key)
 
 
+    def test_audience_rules_match_pyjwt(self):
+        # PyJWT's rules, which compact_jws mirrors for the post-quantum adapters.
+        with_aud = dict(self.claims, aud=["client-a", "client-b"])
+        for name, (adapter, private_key, public_key, token) in self.cases.items():
+            with self.subTest(algorithm=name):
+                aud_token = adapter.create_token(with_aud, private_key)
+                self.assertEqual(adapter.verify_token(aud_token, public_key, audience="client-b"),
+                                 with_aud)
+                with self.assertRaises(jwt.InvalidAudienceError):
+                    adapter.verify_token(aud_token, public_key)
+                with self.assertRaises(jwt.InvalidAudienceError):
+                    adapter.verify_token(aud_token, public_key, audience="client-c")
+                with self.assertRaises(jwt.MissingRequiredClaimError):
+                    adapter.verify_token(token, public_key, audience="client-a")
+
+
 if __name__ == "__main__":
     unittest.main()

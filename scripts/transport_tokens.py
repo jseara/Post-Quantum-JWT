@@ -73,6 +73,8 @@ class PairRun:
     algorithm: str
     transport: str
     token_bytes: int
+    # Extra issue parameters (claims, pad, attrs; see transport_app.issue_endpoint); {} = fixture.
+    issue_query: dict = field(default_factory=dict)
     # Filled in by send_through_browser and verify_directly.
     page_status: int | None = None
     page_error: str | None = None
@@ -168,9 +170,10 @@ def json_object(text: str | bytes | None) -> dict | None:
     return value if isinstance(value, dict) else None
 
 
-def issue_directly(app_url: str, algorithm: str, timeout: float) -> str:
+def issue_directly(app_url: str, algorithm: str, timeout: float,
+                   issue_query: dict | None = None) -> str:
     """Get a token in the JSON body straight from the application, bypassing browser and proxy."""
-    url, _ = nonce_url(app_url, ISSUE_PATH, alg=algorithm, delivery="body")
+    url, _ = nonce_url(app_url, ISSUE_PATH, alg=algorithm, delivery="body", **(issue_query or {}))
     try:
         status, _, body = http_get(url, timeout=timeout)
     except (OSError, http.client.HTTPException) as error:
@@ -243,7 +246,7 @@ def send_through_browser(context, stack, run: PairRun, timeout: float, log: Brow
 
     delivery = "cookie" if run.transport == "cookie" else "body"
     issue_url, issue_nonce = nonce_url(stack.proxy_url, ISSUE_PATH, alg=run.algorithm,
-                                       delivery=delivery)
+                                       delivery=delivery, **run.issue_query)
     run.issue = send_fetch(page, issue_url, issue_nonce, timeout)
     run.issue.set_cookie = traffic.flush().get(issue_url, {}).get("set-cookie")
     jar = read_cookie_jar(context, log, "after_issue")
@@ -255,10 +258,12 @@ def send_through_browser(context, stack, run: PairRun, timeout: float, log: Brow
 
 
 def run_pair(browser, stack, algorithm: str, transport: str, timeout: float,
-             log_path: Path) -> PairRun:
+             log_path: Path, issue_query: dict | None = None) -> PairRun:
     """Send one configuration's token in one transport through the browser, then directly."""
-    token = issue_directly(stack.app_url, algorithm, timeout)
-    run = PairRun(algorithm=algorithm, transport=transport, token_bytes=len(token))
+    issue_query = {key: str(value) for key, value in (issue_query or {}).items()}
+    token = issue_directly(stack.app_url, algorithm, timeout, issue_query)
+    run = PairRun(algorithm=algorithm, transport=transport, token_bytes=len(token),
+                  issue_query=issue_query)
     log = BrowserLog(log_path, algorithm, transport)
     context = browser.new_context()  # A new context per pair, so no cookie carries over.
     try:
