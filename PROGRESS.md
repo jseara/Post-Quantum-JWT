@@ -88,7 +88,7 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 **Done when:** Any configuration can produce a verified token at a requested size, and the byte accounting for a request can be checked by hand.
 
-**Status:** [fixtures/claims_oidc.json](fixtures/claims_oidc.json) holds 22 typical OpenID Connect claims, and [scripts/token_sizing.py](scripts/token_sizing.py) grows any configuration's token to a requested size (within one byte) with a `pad` claim, computed without signing and checked by signing. The issue endpoint takes `claims`, `pad`, and `attrs`, and every `sweep` probe records the token, cookie, `Set-Cookie`, upstream response header, `Cookie:` line, and request header bytes; how each is counted is in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#byte-accounting). Building it found that the post-quantum verifiers accepted tokens with an `aud` claim that PyJWT rejects; all six adapters now take an `audience` and apply PyJWT's rules.
+**Status:** [fixtures/claims_oidc.json](fixtures/claims_oidc.json) holds 22 typical OpenID Connect claims, and [scripts/token_sizing.py](scripts/token_sizing.py) grows any configuration's token to a requested size (within one byte) with a `pad` claim, computed without signing and checked by signing. The issue endpoint takes `claims`, `pad`, and `attrs`, and verifies every token before issuing it (a 500 instead of a token that fails). Every `sweep` probe records the token, cookie, `Set-Cookie`, upstream response header, `Cookie:` line, and request header bytes; how each is counted is in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#byte-accounting). Building it found that the post-quantum verifiers accepted tokens with an `aud` claim that PyJWT rejects; all six adapters now take an `audience` and apply PyJWT's rules.
 
 ### S2-04 — Cookie transport sweep
 
@@ -98,7 +98,7 @@ Sprint 2 answers transport questions 1–3 in [RESULTS.md](RESULTS.md#questions-
 
 **Done when:** For each configuration, the largest cookie-carried token that reaches the application is known, along with the first layer that rejects a larger one and the evidence.
 
-**Status:** Measured on WSL2 on November 13, 2026, at nginx's default buffers and with `--proxy-buffers 16k` (the Mac's defaults); results and evidence are in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md). At WSL2's defaults nginx rejects first, once the application's response header block reaches 4,096 bytes (a 3,916-byte token); with 16k buffers Chromium does, above 4,096 bytes of cookie name + value. Neither SLH-DSA parameter set fits at any size. With OIDC claims and production cookie attributes, ML-DSA-44's headroom is negative: its 4,095-byte token is 2 bytes over Chromium's limit. The sweep has not been run on macOS.
+**Status:** Measured on WSL2 on November 13, 2026, at nginx's default buffers and with `--proxy-buffers 16k` (the Mac's defaults); results and evidence are in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md). At WSL2's defaults nginx rejects first, once the application's response header block reaches 4,096 bytes (a 3,916-byte token); with 16k buffers Chromium does, above 4,096 bytes of cookie name + value. Neither SLH-DSA parameter set fits at any size. With OIDC claims and production cookie attributes, ML-DSA-44's headroom is negative: its 4,095-byte token is 2 bytes over Chromium's limit, so 2 fewer bytes of claims would fit and the verdict depends on the fixture's exact values. The sweep has not been run on macOS.
 
 ### S2-05 — Bearer header transport sweep
 

@@ -8,7 +8,8 @@ judge in scripts/transport_tokens.py); the direct client sends the Bearer header
 http.client instead, which separates the browser's limits from the servers'. It first probes coarse steps of token size, then binary-searches
 the padding between every two neighbouring probes whose outcome or rejecting layer differs, so
 each boundary is narrowed to one character of padding. Every probe is verified before it is
-sent: the application signs it, and the same token is verified straight at the application.
+sent: the application verifies each token before issuing it, and a second token with the same
+claims and padding, issued straight from the application, is also verified there.
 
 Each probe records the bytes that each limit counts (S2-03): the token, the cookie's name +
 value (Chromium's limit), the Set-Cookie header and the whole upstream response header block

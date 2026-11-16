@@ -2,8 +2,8 @@
 
 GET / returns the test page and GET /api/echo describes the request as the application received
 it. GET /api/token/issue signs a claims fixture (fixtures/claims.json by default), padded to a
-chosen size if asked, with one configuration from scripts/algorithms.py and delivers the token in
-a `jwt` Set-Cookie header or in a JSON body; GET
+chosen size if asked, with one configuration from scripts/algorithms.py, verifies it, and delivers
+the token in a `jwt` Set-Cookie header or in a JSON body; GET
 /api/token/verify verifies the token sent in the `jwt` cookie or an Authorization: Bearer header.
 Tokens are signed with ephemeral experiment keys: one key pair per configuration, generated in
 memory by this process on first use and never stored, logged, or returned. They are not
@@ -141,7 +141,9 @@ def issue_problem(algorithm: str | None, delivery: str, claims: str = "minimal",
         return f"delivery must be one of {', '.join(DELIVERIES)}, got {delivery!r}"
     if claims not in CLAIM_SETS:
         return f"claims must be one of {', '.join(CLAIM_SETS)}, got {claims!r}"
-    if not (pad.isascii() and pad.isdigit() and int(pad) <= MAX_PAD):
+    # Check the length before int(), which raises ValueError on strings of over 4,300 digits.
+    if not (pad.isascii() and pad.isdigit() and len(pad) <= len(str(MAX_PAD))
+            and int(pad) <= MAX_PAD):
         return f"pad must be an integer from 0 to {MAX_PAD:,}, got {pad!r}"
     if attrs not in COOKIE_ATTRIBUTE_SETS:
         return f"attrs must be one of {', '.join(COOKIE_ATTRIBUTE_SETS)}, got {attrs!r}"
@@ -166,8 +168,15 @@ def issue_endpoint(environ: dict) -> tuple[Response, dict]:
             "experiment_key": True,
         }), {"alg": known, "token_bytes": None}
 
-    private_key, _ = experiment_keypair(algorithm)
-    token = padded_token(algorithm, claim_set(claims_name), int(pad), private_key)
+    private_key, public_key = experiment_keypair(algorithm)
+    try:
+        token = padded_token(algorithm, claim_set(claims_name), int(pad), private_key,
+                             public_key)
+    except RuntimeError as error:  # The token failed its own checks, so it is never sent.
+        return json_response("500 Internal Server Error", {
+            "layer": "application", "error": f"no token was issued: {error}",
+            "experiment_key": True,
+        }), {"alg": algorithm, "token_bytes": None}
     log_fields = {"alg": algorithm, "token_bytes": len(token)}
     # Requests that use the sizing parameters get them echoed; default responses are unchanged.
     sizing = ({"claims": claims_name, "pad": int(pad)}

@@ -76,8 +76,10 @@ class IssueParameterTests(StackCase):
         self.assertEqual((status, refused["verified"]), (401, False))
 
     def test_invalid_parameters_are_rejected(self):
-        for query in ("claims=large", "pad=-1", "pad=abc", "pad=1000001", "attrs=none"):
-            with self.subTest(query=query):
+        # The 5,000-digit pad is longer than int() converts; it must still be a 400, not a 500.
+        for query in ("claims=large", "pad=-1", "pad=abc", "pad=1000001", "pad=" + "1" * 5000,
+                      "attrs=none"):
+            with self.subTest(query=query[:40]):
                 status, _, body = self.get_json(f"{self.stack.app_url}/api/token/issue"
                                                 f"?alg=ES256&{query}")
                 self.assertEqual(status, 400)

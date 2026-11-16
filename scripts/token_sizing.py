@@ -3,7 +3,7 @@
 A token's size is fixed by its header and signature segments, which do not depend on the claims
 for any configuration in scripts/algorithms.py, plus the base64url length of its compact JSON
 payload. So the size of a padded token can be computed without signing it; padded_token() signs
-the token and checks that the computed size was right.
+the token, checks that the computed size was right, and, given the public key, verifies it.
 
 Padding is one extra claim, `pad`, whose value is `pad` repetitions of "x". `pad=0` leaves the
 claims unchanged, so an unpadded token is byte-for-byte the token the fixture produces.
@@ -87,11 +87,24 @@ def pad_for_target(algorithm: str, claims: dict, target_bytes: int) -> int | Non
     return low
 
 
-def padded_token(algorithm: str, claims: dict, pad: int, private_key) -> str:
-    """Sign the padded claims and check the token has the computed size."""
+def padded_token(algorithm: str, claims: dict, pad: int, private_key, public_key=None) -> str:
+    """Sign the padded claims and check the token has the computed size.
+
+    With public_key, also verify the token, with its own `aud` as the audience, and check that
+    it returns the padded claims; raise RuntimeError if any check fails.
+    """
     padded = padded_claims(claims, pad)
-    token = ADAPTERS[algorithm].create_token(padded, private_key)
+    adapter = ADAPTERS[algorithm]
+    token = adapter.create_token(padded, private_key)
     if len(token) != token_bytes(algorithm, padded):
         raise RuntimeError(f"{algorithm}: token is {len(token)} bytes, computed "
                            f"{token_bytes(algorithm, padded)}")
+    if public_key is not None:
+        try:
+            verified = adapter.verify_token(token, public_key, audience=padded.get("aud"))
+        except Exception as error:  # Any failure means the token must not be used.
+            raise RuntimeError(f"{algorithm}: the padded token did not verify: "
+                               f"{str(error) or type(error).__name__}") from error
+        if verified != padded:
+            raise RuntimeError(f"{algorithm}: the padded token verified with other claims")
     return token

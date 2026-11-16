@@ -47,6 +47,20 @@ class TokenSizingTests(unittest.TestCase):
                             token, public_key, audience=claims.get("aud")),
                             padded_claims(claims, pad))
 
+    def test_padded_token_verifies_before_returning(self):
+        # The issue endpoint passes its public key, so a token that fails is never issued.
+        for name in ("ES256", "ML-DSA-44"):
+            private_key, public_key = self.keys[name]
+            _, other_public_key = ADAPTERS[name].generate_keypair()
+            claims = claim_set("oidc")
+            with self.subTest(algorithm=name):
+                token = padded_token(name, claims, 5, private_key, public_key)
+                self.assertEqual(ADAPTERS[name].verify_token(token, public_key,
+                                                             audience=claims["aud"]),
+                                 padded_claims(claims, 5))
+                with self.assertRaisesRegex(RuntimeError, "did not verify"):
+                    padded_token(name, claims, 5, private_key, other_public_key)
+
     def test_pad_for_target(self):
         for name in ADAPTERS:
             claims = claim_set("minimal")
