@@ -5,8 +5,10 @@ fetch() to /api/echo from that page, prints the result as JSON, and stops the st
 the same with the fixture token of every configuration, once as a cookie and once as a Bearer
 header, and names the layer that rejected any token that did not verify (see
 scripts/transport_tokens.py). sweep sends cookie-carried tokens of growing size and narrows
-each layer's rejection boundary (see scripts/transport_sweep.py). serve starts the stack and keeps it running until SIGINT or
-SIGTERM. versions compares the installed component versions with transport/stack.json.
+each layer's rejection boundary (see scripts/transport_sweep.py). load measures the latency and
+throughput of authenticated requests through the stack for every configuration and saves the
+raw timings (see scripts/transport_load.py). serve starts the stack and keeps it running until
+SIGINT or SIGTERM. versions compares the installed component versions with transport/stack.json.
 """
 
 import argparse
@@ -56,6 +58,7 @@ class Stack:
     proxy_url: str
     app_url: str
     run_dir: Path
+    upstream_keepalive: int | None = None  # See upstream_keepalive_config; None is the default.
 
 
 def load_manifest() -> dict:
@@ -285,16 +288,57 @@ def insert_directives(config: str, anchor: str, option: str, value: str,
     return config.replace(line, "\n".join([line, *(indent + a for a in added)]), 1)
 
 
+UPSTREAM_NAME = "transport_app"
+MAX_UPSTREAM_KEEPALIVE = 1024
+
+
+def check_upstream_keepalive(connections: object) -> None:
+    """Raise ValueError unless connections is an int from 1 to MAX_UPSTREAM_KEEPALIVE."""
+    if (isinstance(connections, bool) or not isinstance(connections, int)
+            or not 1 <= connections <= MAX_UPSTREAM_KEEPALIVE):
+        raise ValueError(f"upstream_keepalive must be an int in 1-{MAX_UPSTREAM_KEEPALIVE}, "
+                         f"got {connections!r}")
+
+
+def upstream_keepalive_config(config: str, app_port: int, connections: int) -> str:
+    """Send nginx's requests to waitress over up to `connections` kept-alive connections.
+
+    By default nginx opens a new connection to waitress for every request and closes it, which
+    leaves a TIME_WAIT socket on an ephemeral port for twice the maximum segment lifetime. On
+    macOS (16,384 ephemeral ports, 30 s in TIME_WAIT) a few thousand requests per second use
+    them all up within seconds, and later connections fail. An upstream block with `keepalive`
+    reuses connections instead; it needs HTTP/1.1 and an empty Connection header. Host stays
+    127.0.0.1:<app_port>, what nginx sends by default, so only Connection differs at the app.
+    """
+    check_upstream_keepalive(connections)
+    server = f"{HOST}:{app_port}"
+    config = config.replace(f"proxy_pass http://{server};", f"proxy_pass http://{UPSTREAM_NAME};",
+                            1)
+    config = insert_directives(config, f"proxy_pass http://{UPSTREAM_NAME};",
+                               "--upstream-keepalive", str(connections),
+                               ["proxy_http_version 1.1;", 'proxy_set_header Connection "";',
+                                f"proxy_set_header Host {server};"])
+    server_line = next(line for line in config.splitlines() if line.strip() == "server {")
+    indent = server_line[:len(server_line) - len(server_line.lstrip())]
+    block = [f"# Not a default: --upstream-keepalive {connections}.",
+             f"upstream {UPSTREAM_NAME} {{", f"    server {server};",
+             f"    keepalive {connections};", "}", ""]
+    return config.replace(server_line, "\n".join([*(indent + line if line else line
+                                                    for line in block), server_line]), 1)
+
+
 @contextmanager
 def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                 run_dir: str | Path | None = None, timeout: float = 60.0,
-                proxy_buffers: str | None = None, header_buffers: str | None = None):
+                proxy_buffers: str | None = None, header_buffers: str | None = None,
+                upstream_keepalive: int | None = None):
     """Start the application server and the reverse proxy; yield a Stack and stop both on exit.
 
     proxy_buffers, such as "16k", sets nginx's upstream response buffers (see
-    proxy_buffer_directives), and header_buffers, such as "512k", raises nginx's request header
-    line limit (see header_buffer_directives); None keeps nginx's defaults, as
-    transport/nginx.conf.template does.
+    proxy_buffer_directives), header_buffers, such as "512k", raises nginx's request header
+    line limit (see header_buffer_directives), and upstream_keepalive, such as 64, keeps that
+    many idle connections from nginx to waitress open (see upstream_keepalive_config); None
+    keeps nginx's defaults, as transport/nginx.conf.template does.
     """
     for name, port in (("proxy_port", proxy_port), ("app_port", app_port)):
         if port is not None and not valid_port(port):
@@ -304,6 +348,8 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
     check_timeout(timeout)
     buffer_directives = None if proxy_buffers is None else proxy_buffer_directives(proxy_buffers)
     header_directives = None if header_buffers is None else header_buffer_directives(header_buffers)
+    if upstream_keepalive is not None:
+        check_upstream_keepalive(upstream_keepalive)
 
     manifest = {layer["role"]: layer for layer in load_manifest()["layers"]}
     # Error messages name the layer by role and component, e.g. "proxy (nginx)".
@@ -347,6 +393,8 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
         if header_directives is not None:
             config = insert_directives(config, HEADER_BUFFERS_ANCHOR, "--header-buffers",
                                        header_buffers, header_directives)
+        if upstream_keepalive is not None:
+            config = upstream_keepalive_config(config, app_port, upstream_keepalive)
         config_path = run_dir / "nginx" / "nginx.conf"
         config_path.write_text(config, encoding="utf-8")
         error_log = logs / "proxy-error.log"
@@ -354,7 +402,8 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                                  "-e", str(error_log)], run_dir, error_log))
         wait_ready(names["proxy"], processes[-1], proxy_url, deadline, timeout, error_log, True)
 
-        yield Stack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir)
+        yield Stack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir,
+                    upstream_keepalive=upstream_keepalive)
     finally:
         for process in reversed(processes):
             stop_process(process)
@@ -463,6 +512,95 @@ def algorithm_name(text: str) -> str:
     return text
 
 
+def finite_seconds(text: str, name: str, allow_zero: bool) -> float:
+    """Parse a finite number of seconds above zero (or at zero, with allow_zero) for `name`."""
+    try:
+        seconds = float(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid {name}: {text!r}") from None
+    if not math.isfinite(seconds) or seconds < 0 or (seconds == 0 and not allow_zero):
+        bound = "at least 0" if allow_zero else "more than 0"
+        raise argparse.ArgumentTypeError(f"{name} must be a finite number of seconds {bound}, "
+                                         f"got {text}")
+    return seconds
+
+
+def duration_seconds(text: str) -> float:
+    """Parse --duration: the measured seconds of each load cell, more than zero."""
+    return finite_seconds(text, "duration", allow_zero=False)
+
+
+def warmup_seconds(text: str) -> float:
+    """Parse --warmup: the unrecorded seconds before each load cell, zero or more."""
+    return finite_seconds(text, "warmup", allow_zero=True)
+
+
+def concurrency_level(text: str) -> int:
+    """Parse a number of closed-loop workers, from 1 to the load command's maximum."""
+    from scripts.transport_load import MAX_CONCURRENCY  # Only load loads the crypto libraries.
+
+    try:
+        level = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid concurrency: {text!r}") from None
+    if not 1 <= level <= MAX_CONCURRENCY:
+        raise argparse.ArgumentTypeError(f"concurrency must be from 1 to {MAX_CONCURRENCY}, "
+                                         f"got {level}")
+    return level
+
+
+def keepalive_connections(text: str) -> int:
+    """Parse --upstream-keepalive: a number of idle connections nginx may keep to waitress."""
+    try:
+        connections = int(text)
+        check_upstream_keepalive(connections)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from None
+    return connections
+
+
+# Each run_load setting, mapped to the attribute of the load command's option that sets it.
+LOAD_SETTING_OPTIONS = {
+    "algorithms": "alg", "transport": "transport", "clients": "client", "claims": "claims",
+    "concurrency": "concurrency", "duration": "duration", "warmup": "warmup",
+    "reference": "reference", "size_controls": "size_controls", "timeout": "timeout",
+    "proxy_buffers": "proxy_buffers", "header_buffers": "header_buffers",
+    "upstream_keepalive": "upstream_keepalive",
+}
+
+
+def load_command_settings(parser: argparse.ArgumentParser, args: argparse.Namespace) -> dict:
+    """Return the load command's run_load settings; exit 2 on a usage error, before any start.
+
+    Each setting comes from its option when it was given, else from the --settings file, else
+    from run_load's default. The load command's options default to None, so a value given on
+    the command line is never mistaken for a default. Ports, --run-dir, and --output-dir are
+    never taken from the file.
+    """
+    from scripts.transport_load import default_settings, checked_settings, read_saved_settings
+
+    for option, values in (("--alg", args.alg), ("--client", args.client),
+                           ("--concurrency", args.concurrency)):
+        if values and len(set(values)) != len(values):
+            parser.error(f"{option} must not repeat a value, got {' '.join(map(str, values))}")
+    output_dir = args.output_dir
+    if output_dir.exists() and (not output_dir.is_dir() or any(output_dir.iterdir())):
+        parser.error(f"--output-dir {output_dir} exists and is not empty; choose a new directory")
+
+    settings = default_settings()
+    if args.settings is not None:
+        try:
+            settings.update(read_saved_settings(args.settings))
+        except ValueError as error:
+            parser.error(f"--settings: {error}")
+    given = {name: getattr(args, option) for name, option in LOAD_SETTING_OPTIONS.items()}
+    settings.update({name: value for name, value in given.items() if value is not None})
+    try:
+        return checked_settings(**settings)
+    except ValueError as error:  # Options are checked as they are parsed, so a saved value.
+        parser.error(f"--settings: {error}")
+
+
 def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
     """Summarize each pair on stderr, and exit 1 if a pair did not match the documented limits."""
     from scripts.transport_tokens import mismatch_message, summary_lines
@@ -479,17 +617,19 @@ def interrupt(signum: int, frame) -> None:
     raise KeyboardInterrupt
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__,
-                                     formatter_class=argparse.RawDescriptionHelpFormatter)
-    commands = parser.add_subparsers(dest="command", required=True)
+def stack_options(timeout_default: float | None = 60.0) -> argparse.ArgumentParser:
+    """Return the parent parser of the options shared by every command that starts the stack.
+
+    load uses timeout_default=None, so it can tell a --timeout given on the command line from
+    one it should take from --settings; it then falls back to 60 seconds itself.
+    """
     options = argparse.ArgumentParser(add_help=False)
     options.add_argument("--proxy-port", type=port_number, help="proxy port (default: a free port)")
     options.add_argument("--app-port", type=port_number,
                          help="application port (default: a free port)")
     options.add_argument("--run-dir", type=Path,
                          help="directory for configs and logs (default: a new temporary directory)")
-    options.add_argument("--timeout", type=positive_seconds, default=60.0,
+    options.add_argument("--timeout", type=positive_seconds, default=timeout_default,
                          help="seconds allowed for startup and for each browser step (default: 60)")
     options.add_argument("--proxy-buffers", metavar="SIZE",
                          help="set nginx's proxy_buffer_size to SIZE and proxy_buffers to 8 SIZE, "
@@ -497,6 +637,54 @@ def main() -> None:
     options.add_argument("--header-buffers", metavar="SIZE",
                          help="set nginx's large_client_header_buffers to 4 SIZE, raising the "
                               "request header line limit, e.g. 512k (default: 4 8k)")
+    return options
+
+
+def add_load_command(commands) -> None:
+    """Add the load command; its options default to None so --settings can fill them in."""
+    load = commands.add_parser("load", parents=[stack_options(timeout_default=None)],
+                               help="measure end-to-end latency and throughput of authenticated "
+                                    "requests through the stack")
+    load.add_argument("--transport", choices=("bearer", "cookie"),
+                      help="carry the token in an Authorization: Bearer header (default) or a "
+                           "jwt cookie")
+    load.add_argument("--client", action="extend", nargs="+", choices=("direct", "browser"),
+                      help="send from http.client threads (direct), from Chromium's test page "
+                           "(browser), or both (default: direct browser)")
+    load.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                      help="configuration to measure; repeat or list several (default: all six; "
+                           "the reference is always measured)")
+    load.add_argument("--claims", choices=("minimal", "oidc"),
+                      help="claims fixture of every token (default: minimal)")
+    load.add_argument("--concurrency", action="extend", nargs="+", type=concurrency_level,
+                      metavar="N", help="closed-loop workers, 1-64; repeat or list several "
+                                        "(default: 1 4)")
+    load.add_argument("--duration", type=duration_seconds, metavar="SECONDS",
+                      help="measured seconds per cell (default: 5)")
+    load.add_argument("--warmup", type=warmup_seconds, metavar="SECONDS",
+                      help="unrecorded seconds before each cell's measurement (default: 1)")
+    load.add_argument("--reference", type=algorithm_name, metavar="NAME",
+                      help="configuration every other one is compared with (default: ES256)")
+    load.add_argument("--no-size-controls", dest="size_controls", action="store_const",
+                      const=False, help="skip the size-matched control cells (the reference's "
+                                        "token padded to each configuration's size)")
+    load.add_argument("--settings", type=Path, metavar="PATH",
+                      help="reuse the settings of an earlier run's load.json; options given here "
+                           "override the saved values")
+    load.add_argument("--upstream-keepalive", type=keepalive_connections, metavar="N",
+                      help="not a default: let nginx keep up to N idle connections to waitress, "
+                           "so a sustained load does not run out of ephemeral ports on macOS "
+                           "(default: a new connection per request)")
+    load.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
+                      help="save load.json, raw.csv.gz, the logs, and nginx.conf here; it must "
+                           "not exist yet or be empty")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    commands = parser.add_subparsers(dest="command", required=True)
+    options = stack_options()
     commands.add_parser("check", parents=[options],
                         help="start the stack, send one browser request through it, and stop it")
     tokens = commands.add_parser("tokens", parents=[options],
@@ -527,6 +715,7 @@ def main() -> None:
                        help="largest token to probe (default: 24,576)")
     sweep.add_argument("--output-dir", type=Path,
                        help="save sweep.json, the logs, and nginx.conf here")
+    add_load_command(commands)
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -548,11 +737,20 @@ def main() -> None:
         parser.error("--proxy-port and --app-port must differ")
     if args.command in ("tokens", "sweep") and args.alg and len(set(args.alg)) != len(args.alg):
         parser.error(f"--alg must not repeat a configuration, got {' '.join(args.alg)}")
+    upstream_keepalive = None
+    if args.command == "load":
+        settings = load_command_settings(parser, args)
+        # These configure the new stack too, and may have come from --settings.
+        args.timeout = settings["timeout"]
+        args.proxy_buffers = settings["proxy_buffers"]
+        args.header_buffers = settings["header_buffers"]
+        upstream_keepalive = settings["upstream_keepalive"]
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, interrupt)
     try:
         with start_stack(args.proxy_port, args.app_port, args.run_dir, args.timeout,
-                         args.proxy_buffers, args.header_buffers) as stack:
+                         args.proxy_buffers, args.header_buffers,
+                         upstream_keepalive=upstream_keepalive) as stack:
             if args.command == "check":
                 result = run_check(stack, args.timeout)
             elif args.command == "tokens":
@@ -565,6 +763,11 @@ def main() -> None:
                                    args.proxy_buffers, args.header_buffers)
                 if args.output_dir:
                     write_results(result, args.output_dir)
+            elif args.command == "load":
+                from scripts.transport_load import run_load, write_load_results
+
+                result = run_load(stack, **settings)
+                write_load_results(result, args.output_dir)
             else:
                 print(json.dumps({"proxy_url": stack.proxy_url, "app_url": stack.app_url,
                                   "run_dir": str(stack.run_dir)}), flush=True)
@@ -582,6 +785,12 @@ def main() -> None:
         from scripts.transport_sweep import summary_lines as sweep_summary
 
         sys.stdout.write("".join(f"{line}\n" for line in sweep_summary(result)))
+        return
+    if args.command == "load":
+        from scripts.transport_load import summary_lines as load_summary
+
+        sys.stdout.write("".join(f"{line}\n" for line in load_summary(result)))
+        sys.stdout.write(f"Saved the results to {args.output_dir}\n")
         return
     sys.stdout.write(json.dumps(result, indent=2) + "\n")
     if args.command == "tokens":

@@ -4,8 +4,9 @@ GET / returns the test page and GET /api/echo describes the request as the appli
 it. GET /api/token/issue signs a claims fixture (fixtures/claims.json by default), padded to a
 chosen size if asked, with one configuration from scripts/algorithms.py, verifies it, and delivers
 the token in a `jwt` Set-Cookie header or in a JSON body; GET
-/api/token/verify verifies the token sent in the `jwt` cookie or an Authorization: Bearer header.
-Tokens are signed with ephemeral experiment keys: one key pair per configuration, generated in
+/api/token/verify verifies the token sent in the `jwt` cookie or an Authorization: Bearer header,
+and with timing=1 also reports how long verification and the whole handler took. Tokens are
+signed with ephemeral experiment keys: one key pair per configuration, generated in
 memory by this process on first use and never stored, logged, or returned. They are not
 production credentials, and a token from another process does not verify here. Every request
 the application handles writes one log line with the sizes of the headers it received.
@@ -17,6 +18,7 @@ import logging
 from pathlib import Path
 import sys
 import threading
+import time
 from urllib.parse import parse_qsl
 
 if __package__ in (None, ""):  # Allow `python scripts/<name>.py` as well as package imports.
@@ -234,16 +236,20 @@ def unverified_algorithm(token: str) -> str | None:
     return algorithm if isinstance(algorithm, str) and algorithm in ADAPTERS else None
 
 
-def verify_failure(status: str, source: str | None, error: str, received: dict) -> Response:
-    """Build a 400 or 401 verify response that says why no token was verified."""
-    return json_response(status, {
+def failure_body(source: str | None, error: str, received: dict) -> dict:
+    """Build the body of a 400 or 401 verify response that says why no token was verified."""
+    return {
         "layer": "application", "verified": False, "source": source, "error": error,
         "experiment_key": True, "received": received,
-    })
+    }
 
 
-def verify_endpoint(environ: dict) -> tuple[Response, dict]:
-    """Verify the one token sent in the jwt cookie or an Authorization: Bearer header."""
+def verify_request(environ: dict) -> tuple[str, dict, dict, int | None]:
+    """Verify the one token sent in the jwt cookie or an Authorization: Bearer header.
+
+    Returns the response status, the response body, the token fields for the log line, and how
+    long the adapter's verify_token call took in nanoseconds (None when it was not called).
+    """
     headers = received_headers(environ)
     received = received_sizes(headers)
     tokens = [("cookie", value) for value in jwt_cookies(headers.get("cookie"))]
@@ -252,36 +258,59 @@ def verify_endpoint(environ: dict) -> tuple[Response, dict]:
         tokens.append(("bearer", bearer))
     log_fields = {"alg": None, "token_bytes": None, "verified": False}
     if not tokens:
-        return verify_failure("401 Unauthorized", None, "no token: send a jwt cookie or an "
-                              "Authorization: Bearer header", received), log_fields
+        body = failure_body(None, "no token: send a jwt cookie or an Authorization: Bearer "
+                            "header", received)
+        return "401 Unauthorized", body, log_fields, None
     if len(tokens) > 1:
-        return verify_failure("400 Bad Request", None, "more than one token: send one jwt "
-                              "cookie or one Bearer header, not both", received), log_fields
+        body = failure_body(None, "more than one token: send one jwt cookie or one Bearer "
+                            "header, not both", received)
+        return "400 Bad Request", body, log_fields, None
 
     source, token = tokens[0]
     algorithm = unverified_algorithm(token)
     log_fields.update(alg=algorithm, token_bytes=len(token))
     if algorithm is None:
-        return verify_failure("401 Unauthorized", source, "the token header has no readable "
-                              f"alg naming one of {', '.join(ALGORITHM_NAMES)}",
-                              received), log_fields
+        body = failure_body(source, "the token header has no readable alg naming one of "
+                            f"{', '.join(ALGORITHM_NAMES)}", received)
+        return "401 Unauthorized", body, log_fields, None
     _, public_key = experiment_keypair(algorithm)
+    verify_ns = None
     try:
         # An experiment shortcut: tokens with an aud claim must name APP_AUDIENCE, and tokens
         # without one (claims=minimal) are verified without an audience.
         audience = APP_AUDIENCE if "aud" in unverified_claims(token) else None
-        claims = ADAPTERS[algorithm].verify_token(token, public_key, audience=audience)
+        verify_started = time.perf_counter_ns()
+        try:
+            claims = ADAPTERS[algorithm].verify_token(token, public_key, audience=audience)
+        finally:  # A failed verification is timed too.
+            verify_ns = time.perf_counter_ns() - verify_started
     except Exception as error:  # Untrusted input: any failure means "not verified", never a 500.
         reason = str(error) or type(error).__name__
-        return verify_failure("401 Unauthorized", source, f"verification failed: {reason}",
-                              received), log_fields
+        body = failure_body(source, f"verification failed: {reason}", received)
+        return "401 Unauthorized", body, log_fields, verify_ns
 
     log_fields["verified"] = True
-    return json_response("200 OK", {
+    return "200 OK", {
         "layer": "application", "verified": True, "algorithm": algorithm, "source": source,
         "token_bytes": len(token), "claims": claims, "experiment_key": True,
         "received": received,
-    }), log_fields
+    }, log_fields, verify_ns
+
+
+def verify_endpoint(environ: dict) -> tuple[Response, dict]:
+    """Answer GET /api/token/verify; with timing=1, the body also reports server timings.
+
+    The timing object holds verify_ns, the duration of the adapter's verify_token call (null
+    when it was not called), and handler_ns, the duration of this whole handler up to just before
+    the body is serialized, both from time.perf_counter_ns. It is opt-in, like the issue
+    endpoint's sizing parameters, so responses to requests without timing=1 are unchanged.
+    """
+    handler_started = time.perf_counter_ns()
+    status, body, log_fields, verify_ns = verify_request(environ)
+    if query_parameters(environ).get("timing") == "1":
+        body["timing"] = {"verify_ns": verify_ns,
+                          "handler_ns": time.perf_counter_ns() - handler_started}
+    return json_response(status, body), log_fields
 
 
 def route(environ: dict) -> tuple[Response, dict]:

@@ -12,7 +12,7 @@ LOGS := $(RUN_DIR)/logs
 STACK := PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/transport_stack.py
 
 .DEFAULT_GOAL := help
-.PHONY: help serve logs check tokens sweep versions test benchmark setup
+.PHONY: help serve logs check tokens sweep load versions test benchmark setup
 
 help:
 	@echo "make serve      start nginx (http://localhost:$(PROXY_PORT)) and the app (port $(APP_PORT)); Ctrl+C stops both"
@@ -20,6 +20,7 @@ help:
 	@echo "make check      send one browser request through the stack, then stop it"
 	@echo "make tokens     send every configuration's token as a cookie and a Bearer header"
 	@echo "make sweep      cookie and Bearer sweeps of all six, at default and raised nginx buffers (SWEEP_DIR=$(SWEEP_DIR))"
+	@echo "make load       end-to-end latency and throughput of all six through the stack (LOAD_DIR=$(LOAD_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -47,6 +48,18 @@ sweep:
 	$(STACK) sweep --proxy-buffers 16k --output-dir "$(SWEEP_DIR)/cookie-16k"
 	$(STACK) sweep --transport bearer --output-dir "$(SWEEP_DIR)/bearer-default"
 	$(STACK) sweep --transport bearer --header-buffers 512k --step 16384 --max-bytes 327680 --output-dir "$(SWEEP_DIR)/bearer-512k"
+
+# The run directory names the machine, as results/transport/ does: macos, wsl2, or linux.
+LOAD_PLATFORM ?= $(shell if [ "$$(uname -s)" = Darwin ]; then echo macos; \
+	elif grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then echo wsl2; \
+	else echo linux; fi)
+LOAD_DIR ?= results/load/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
+# Not defaults, and recorded in load.json's settings (see END_TO_END_RESULTS.md):
+# --upstream-keepalive keeps macOS from running out of ephemeral ports, because nginx otherwise
+# opens a new connection to waitress per request, and 2 s cells keep every committed file under
+# 10 MiB.
+load:
+	$(STACK) load --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(LOAD_DIR)"
 
 versions:
 	$(STACK) versions
