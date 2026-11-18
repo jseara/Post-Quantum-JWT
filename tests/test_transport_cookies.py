@@ -2404,13 +2404,15 @@ class UnchangedTests(unittest.TestCase):
         self.assertIn("timer_resolution 100ms;", template)
         self.assertNotIn("Not a default", template)
 
-    def test_only_the_cookies_module_is_added(self):
+    def test_cookies_module_added_and_nothing_removed(self):
+        # Later mitigations (reference tokens) add their own modules, so this checks only that
+        # the cookies module is present and no earlier file is gone.
         for directory, added in (("scripts", {"transport_cookies.py"}), ("fixtures", set())):
             with self.subTest(directory=directory):
                 listing = self.require(git("ls-tree", "--name-only", f"{BASE_COMMIT}:{directory}"))
                 on_disk = {path.name for path in (REPO / directory).iterdir()
                            if path.is_file() and not path.name.startswith(".")}
-                self.assertEqual(on_disk, {*listing.split(), *added})
+                self.assertLessEqual({*listing.split(), *added}, on_disk)
 
     def test_transport_results_only_gains_links(self):
         before = self.require(git_show("TRANSPORT_RESULTS.md")).splitlines()
