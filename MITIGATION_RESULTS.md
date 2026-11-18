@@ -302,24 +302,24 @@ The question: if the application issues an oversized token as several cookies an
 - **What it does not get past:** the limits on the whole token. Every chunk travels in one `Cookie` header line, so nginx's 8,192-byte line still rejects SLH-DSA-SHA2-128s (an 11,391-byte split line, 400), and every chunk's `Set-Cookie` header has to fit in nginx's 16 KiB response buffer, which SLH-DSA-SHA2-128f's 24,263-byte issue response does not (502). At the documented defaults only ML-DSA-44 moves, from rejected by the browser to verified; the largest split ML-DSA-44 token that got through was 8,154 bytes, whose `Cookie` line is exactly 8,192 bytes. With nginx's header and response buffers raised to 32k, every split pair verified, while Chromium still refused every post-quantum single cookie.
 - **Cookie count:** 180 chunk cookies were stored and verified; with 181, Chromium kept only 150, so a split token and the site's other cookies together cannot exceed 180 cookies per domain.
 - **Missing and reordered chunks:** reversed, rotated, and interleaved chunks verified. A missing chunk got 401 and a repeated chunk, a chunk from another split, or an index out of range got 400, all before any verification; a chunk from another token got 401 from the signature check; chunks together with a `jwt` cookie or a Bearer header got 400. Chromium sent the chunks in index order in every split pair.
-- **Latency:** over loopback from http.client at concurrency 1, splitting cost 0.001 ms per request for ML-DSA-44, 0.017 ms for SLH-DSA-SHA2-128s, and 0.054 ms for SLH-DSA-SHA2-128f, against same-size noise of 0.001 ms; the application's own handling grew with the number of chunks, by 0.006–0.013 ms for 2–6 chunks, and the classical tokens, in one chunk, were 0.004–0.006 ms faster, which is drift between the two runs. The larger differences at concurrency 4 are not attributed to splitting (see [Latency](#latency-1)). From Chromium only the classical tokens can be compared, because Chromium refuses every post-quantum single cookie, while split it delivered all six. The calculated network cost is 4–54 more request bytes, at most 0.432 ms on a 1 Mbit/s uplink.
+- **Latency:** over loopback from http.client at concurrency 1, splitting cost 0.011 ms per request for SLH-DSA-SHA2-128s and 0.023 ms for SLH-DSA-SHA2-128f, while ML-DSA-44's +0.005 ms is within the 0.003–0.006 ms same-size noise; the application's own handling grew with the number of chunks, by 0.006–0.010 ms for 2–6 chunks, and the classical tokens, in one chunk, were 0.004–0.007 ms faster, which is drift between the two runs. The differences at concurrency 4, single-chunk tokens included, are not attributed to splitting (see [Latency](#latency-1)). From Chromium only the classical tokens can be compared, because Chromium refuses every post-quantum single cookie, while split it delivered all six. The calculated network cost is 4–54 more request bytes, at most 0.432 ms on a 1 Mbit/s uplink.
 
-Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores, macOS 26.5.1, arm64, 16 KiB memory pages; Python 3.15.2, Playwright 1.64.1, Chromium 156.0.8078.4, nginx 1.31.8, waitress 3.0.2 with its default 4 threads), recorded with `make cookies` on November 18, 2026 (UTC, 10:57–11:00; just before 6 a.m. local time) at commit `440075e`, with no uncommitted change to `scripts/` or `fixtures/`. Every token was signed with **ephemeral experiment keys, not production credentials**: each key was generated in memory by the run's applications and discarded, so the tokens and chunks in its browser logs are not credentials either. Calculated figures are labeled as such; everything else was measured.
+Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores, macOS 26.5.1, arm64, 16 KiB memory pages; Python 3.15.2, Playwright 1.64.1, Chromium 156.0.8078.4, nginx 1.31.8, waitress 3.0.2 with its default 4 threads), recorded with `make cookies` on November 18, 2026 (UTC, 17:44–17:46; 12:44 p.m. local time) at commit `6f6c3e6`, with no uncommitted change to `scripts/` or `fixtures/`. Every token was signed with **ephemeral experiment keys, not production credentials**: each key was generated in memory by the run's applications and discarded, so the tokens and chunks in its browser logs are not credentials either. Calculated figures are labeled as such; everything else was measured.
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| Apple M5 Pro (macOS) | [`20261118T105758Z-macos`](results/cookies/20261118T105758Z-macos/) | [cookies.json](results/cookies/20261118T105758Z-macos/cookies.json) |
+| Apple M5 Pro (macOS) | [`20261118T174416Z-macos`](results/cookies/20261118T174416Z-macos/) | [cookies.json](results/cookies/20261118T174416Z-macos/cookies.json) |
 
 | Phase | Evidence |
 | --- | --- |
-| Size limits and boundary, at the documented defaults | [nginx.conf](results/cookies/20261118T105758Z-macos/limits-default/nginx.conf), [app.log.gz](results/cookies/20261118T105758Z-macos/limits-default/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T105758Z-macos/limits-default/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T105758Z-macos/limits-default/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T105758Z-macos/limits-default/logs/proxy-error.log.gz) |
-| Size limits, probes, and chunk handling, with raised buffers | [nginx.conf](results/cookies/20261118T105758Z-macos/limits-raised/nginx.conf), [app.log.gz](results/cookies/20261118T105758Z-macos/limits-raised/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T105758Z-macos/limits-raised/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T105758Z-macos/limits-raised/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T105758Z-macos/limits-raised/logs/proxy-error.log.gz) |
-| Latency, one `jwt` cookie | [load.json](results/cookies/20261118T105758Z-macos/latency-cookie/load.json), [raw.csv.gz](results/cookies/20261118T105758Z-macos/latency-cookie/raw.csv.gz), [logs](results/cookies/20261118T105758Z-macos/latency-cookie/logs/), [nginx.conf](results/cookies/20261118T105758Z-macos/latency-cookie/nginx.conf) |
-| Latency, split cookies | [load.json](results/cookies/20261118T105758Z-macos/latency-split/load.json), [raw.csv.gz](results/cookies/20261118T105758Z-macos/latency-split/raw.csv.gz), [logs](results/cookies/20261118T105758Z-macos/latency-split/logs/), [nginx.conf](results/cookies/20261118T105758Z-macos/latency-split/nginx.conf) |
+| Size limits and boundary, at the documented defaults | [nginx.conf](results/cookies/20261118T174416Z-macos/limits-default/nginx.conf), [app.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/proxy-error.log.gz) |
+| Size limits, probes, and chunk handling, with raised buffers | [nginx.conf](results/cookies/20261118T174416Z-macos/limits-raised/nginx.conf), [app.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/proxy-error.log.gz) |
+| Latency, one `jwt` cookie | [load.json](results/cookies/20261118T174416Z-macos/latency-cookie/load.json), [raw.csv.gz](results/cookies/20261118T174416Z-macos/latency-cookie/raw.csv.gz), [logs](results/cookies/20261118T174416Z-macos/latency-cookie/logs/), [nginx.conf](results/cookies/20261118T174416Z-macos/latency-cookie/nginx.conf) |
+| Latency, split cookies | [load.json](results/cookies/20261118T174416Z-macos/latency-split/load.json), [raw.csv.gz](results/cookies/20261118T174416Z-macos/latency-split/raw.csv.gz), [logs](results/cookies/20261118T174416Z-macos/latency-split/logs/), [nginx.conf](results/cookies/20261118T174416Z-macos/latency-split/nginx.conf) |
 
 `cookies.json` holds the settings, the environment, the chunk format and plan, every size-limit pair, boundary probe, and probe with its bytes, evidence, and nonces, the chunk-handling cases, and the latency comparison; each latency directory is exactly what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `cookies.json`, both `load.json` and `raw.csv.gz` files, and every `app.log.gz` and `proxy-access.log.gz` hold no token, chunk, or cookie value. The two size-limit phases' `browser.log.gz` files hold the tokens and chunks Chromium sent, received, and stored, and `limits-default/logs/proxy-error.log.gz` holds nginx's own truncated prefix of each rejected `Cookie` line.
 
-**Machine state.** The other S3-02 candidates were being built and tested on the same Mac and share its CPU and ephemeral ports. When the run started (10:57:58 UTC), none of their stacks, load runs, or test suites was running (no other nginx, application, or test process), 185 sockets were in TIME_WAIT, and the 1-minute load average was 3.0 on 18 cores; the `make serve` stack from the main checkout was not running (nothing listened on ports 8080 or 8081 a minute before). Another candidate's full test suite started about 7 seconds before the run ended, during the split latency run's last Chromium cells, and the load average was 3.3 at the end, including the run's own load. This is one candidate's run; the run of the implementation that is kept is to be recorded again on an idle Mac.
+**Machine state.** Nothing else from the project was running: no other stack, load run, or test suite, and the `make serve` stack from the main checkout was not running (nothing listened on ports 8080 or 8081). When the run started (17:44:16 UTC), 0 sockets were in TIME_WAIT and the 1-minute load average was 1.3 on 18 cores; it was 3.9 at the end, including the run's own load. Spotify and Steam were open. This run replaces a provisional one recorded earlier the same day, while the other S3-02 candidates were being built and tested on the same Mac.
 
 ### Format
 
@@ -355,7 +355,7 @@ Against the documented limits (calculated): every split fits Chromium's per-cook
 
 **Measured on this Mac.** Each stack sent each configuration's OIDC token once as a single `jwt` cookie and once split at the default count, both with production attributes, from a new Chromium context through nginx to the application, and named the rejecting layer of each rejected pair from every layer's log (issue, then cookie jar, then verify). Every one of the 24 tokens also verified when its cookie or chunks were sent straight to the application.
 
-**At the documented defaults** (stack `limits-default`; its [nginx.conf](results/cookies/20261118T105758Z-macos/limits-default/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page):
+**At the documented defaults** (stack `limits-default`; its [nginx.conf](results/cookies/20261118T174416Z-macos/limits-default/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page):
 
 | Configuration | Token | Single cookie | Chunks | Chunks stored | Split cookies | Moved |
 | --- | ---: | --- | ---: | ---: | --- | --- |
@@ -370,7 +370,7 @@ Against the documented limits (calculated): every split fits Chromium's per-cook
 - **Rejected by the proxy (400):** SLH-DSA-SHA2-128s's three chunks were stored, but the verify request's 11,391-byte `Cookie` line is longer than nginx's 8,192-byte line: nginx logged `client sent too long header line` and answered 400, and the request never reached the application.
 - **Rejected by the proxy (502):** SLH-DSA-SHA2-128f's issue response, measured straight from the application, has a 23,864-byte header block as one cookie and 24,263 bytes split, both over nginx's 16 KiB `proxy_buffer_size`: the application answered 200, and nginx logged `upstream sent too big header` and answered 502, so Chromium never saw a chunk.
 
-**With nginx's buffers raised** (stack `limits-raised`; its [nginx.conf](results/cookies/20261118T105758Z-macos/limits-raised/nginx.conf) marks `--header-buffers 32k`, `large_client_header_buffers 4 32k`, and `--proxy-buffers 32k`, `proxy_buffer_size 32k; proxy_buffers 8 32k`, as not defaults):
+**With nginx's buffers raised** (stack `limits-raised`; its [nginx.conf](results/cookies/20261118T174416Z-macos/limits-raised/nginx.conf) marks `--header-buffers 32k`, `large_client_header_buffers 4 32k`, and `--proxy-buffers 32k`, `proxy_buffer_size 32k; proxy_buffers 8 32k`, as not defaults):
 
 | Configuration | Token | Single cookie | Chunks | Chunks stored | Split cookies | Moved |
 | --- | ---: | --- | ---: | ---: | --- | --- |
@@ -436,7 +436,7 @@ Every case got the status the application's rules give it. Order does not matter
 
 ### Latency
 
-The S3-01 workload ([END_TO_END_RESULTS.md](END_TO_END_RESULTS.md#workload)) ran twice, first with one `jwt` cookie and then with split cookies, each on a new stack: a closed loop of `GET /api/token/verify?timing=1&nonce=<32 hex digits>` requests with OIDC tokens, from http.client threads and from Chromium's test page, at concurrency 1 and 4, with 1 second of warm-up and 2 seconds measured per cell, `--header-buffers 32k`, `--proxy-buffers 32k`, and `--upstream-keepalive 64`. Size-control cells were off. Each cell's token was issued with the default attributes, as in S3-01. The single cookie is the baseline, not a Bearer header, so the comparison isolates the cost of splitting; Bearer comparisons are in [END_TO_END_RESULTS.md](END_TO_END_RESULTS.md). Every measured request verified: 144,255 with one cookie and 169,012 split, none failed, and every delivered cell had at least 2,118 verified requests. Chromium refused the single cookie of ML-DSA-44 and both SLH-DSA tokens, so those six browser cells of the cookie run were not delivered and sent no request.
+The S3-01 workload ([END_TO_END_RESULTS.md](END_TO_END_RESULTS.md#workload)) ran twice, first with one `jwt` cookie and then with split cookies, each on a new stack: a closed loop of `GET /api/token/verify?timing=1&nonce=<32 hex digits>` requests with OIDC tokens, from http.client threads and from Chromium's test page, at concurrency 1 and 4, with 1 second of warm-up and 2 seconds measured per cell, `--header-buffers 32k`, `--proxy-buffers 32k`, and `--upstream-keepalive 64`. Size-control cells were off. Each cell's token was issued with the default attributes, as in S3-01. The single cookie is the baseline, not a Bearer header, so the comparison isolates the cost of splitting; Bearer comparisons are in [END_TO_END_RESULTS.md](END_TO_END_RESULTS.md). Every measured request verified: 144,292 with one cookie and 167,165 split, none failed, and every delivered cell had at least 2,162 verified requests. Chromium refused the single cookie of ML-DSA-44 and both SLH-DSA tokens, so those six browser cells of the cookie run were not delivered and sent no request.
 
 Latency is the client-measured time from sending a request to reading its whole response body, in milliseconds; p95 is nearest-rank. The difference is the split mean minus the single-cookie mean, so a positive difference means splitting was slower. Chromium coarsens its timer to about 0.1 ms, so its medians and p95 values are multiples of 0.1 ms.
 
@@ -444,62 +444,62 @@ Latency is the client-measured time from sending a request to reading its whole 
 
 | Configuration | Token | Chunks | Cookie mean | Split mean | Difference | Cookie median | Split median | Cookie p95 | Split p95 | Cookie req/s | Split req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 1 | 0.203 | 0.197 | -0.006 | 0.202 | 0.197 | 0.218 | 0.209 | 4,892 | 5,046 |
-| ES256 | 948 | 1 | 0.218 | 0.215 | -0.004 | 0.217 | 0.214 | 0.231 | 0.226 | 4,557 | 4,642 |
-| EdDSA | 948 | 1 | 0.218 | 0.214 | -0.004 | 0.217 | 0.213 | 0.230 | 0.225 | 4,572 | 4,663 |
-| ML-DSA-44 | 4,095 | 2 | 0.231 | 0.232 | +0.001 | 0.230 | 0.230 | 0.244 | 0.246 | 4,311 | 4,302 |
-| SLH-DSA-SHA2-128s | 11,353 | 3 | 0.418 | 0.435 | +0.017 | 0.418 | 0.435 | 0.432 | 0.451 | 2,385 | 2,290 |
-| SLH-DSA-SHA2-128f | 23,662 | 6 | 0.697 | 0.751 | +0.054 | 0.695 | 0.750 | 0.716 | 0.766 | 1,432 | 1,330 |
+| RS256 | 1,204 | 1 | 0.209 | 0.204 | -0.004 | 0.206 | 0.202 | 0.225 | 0.220 | 4,771 | 4,870 |
+| ES256 | 948 | 1 | 0.224 | 0.219 | -0.005 | 0.221 | 0.217 | 0.243 | 0.232 | 4,446 | 4,541 |
+| EdDSA | 948 | 1 | 0.230 | 0.223 | -0.007 | 0.220 | 0.221 | 0.272 | 0.236 | 4,333 | 4,470 |
+| ML-DSA-44 | 4,095 | 2 | 0.233 | 0.239 | +0.005 | 0.231 | 0.238 | 0.249 | 0.252 | 4,265 | 4,169 |
+| SLH-DSA-SHA2-128s | 11,353 | 3 | 0.408 | 0.418 | +0.011 | 0.406 | 0.416 | 0.424 | 0.433 | 2,446 | 2,383 |
+| SLH-DSA-SHA2-128f | 23,662 | 6 | 0.700 | 0.724 | +0.023 | 0.698 | 0.720 | 0.722 | 0.739 | 1,425 | 1,380 |
 
 **http.client (direct), concurrency 4**
 
 | Configuration | Token | Chunks | Cookie mean | Split mean | Difference | Cookie median | Split median | Cookie p95 | Split p95 | Cookie req/s | Split req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 1 | 0.647 | 0.637 | -0.010 | 0.624 | 0.607 | 0.951 | 0.955 | 6,166 | 6,266 |
-| ES256 | 948 | 1 | 0.630 | 0.614 | -0.016 | 0.608 | 0.593 | 0.911 | 0.917 | 6,338 | 6,498 |
-| EdDSA | 948 | 1 | 0.623 | 0.609 | -0.014 | 0.603 | 0.586 | 0.916 | 0.906 | 6,407 | 6,553 |
-| ML-DSA-44 | 4,095 | 2 | 0.575 | 0.602 | +0.026 | 0.553 | 0.565 | 0.852 | 0.879 | 6,936 | 6,637 |
-| SLH-DSA-SHA2-128s | 11,353 | 3 | 1.107 | 1.369 | +0.262 | 1.083 | 1.235 | 1.605 | 2.365 | 3,610 | 2,917 |
-| SLH-DSA-SHA2-128f | 23,662 | 6 | 2.145 | 2.470 | +0.325 | 2.127 | 2.271 | 2.995 | 4.096 | 1,863 | 1,617 |
+| RS256 | 1,204 | 1 | 0.647 | 0.663 | +0.016 | 0.623 | 0.640 | 0.965 | 0.971 | 6,171 | 6,023 |
+| ES256 | 948 | 1 | 0.630 | 0.646 | +0.016 | 0.610 | 0.624 | 0.922 | 0.940 | 6,337 | 6,184 |
+| EdDSA | 948 | 1 | 0.621 | 0.640 | +0.019 | 0.599 | 0.620 | 0.920 | 0.933 | 6,429 | 6,238 |
+| ML-DSA-44 | 4,095 | 2 | 0.572 | 0.614 | +0.042 | 0.550 | 0.582 | 0.839 | 0.884 | 6,977 | 6,497 |
+| SLH-DSA-SHA2-128s | 11,353 | 3 | 1.134 | 1.163 | +0.028 | 1.108 | 1.139 | 1.652 | 1.673 | 3,522 | 3,435 |
+| SLH-DSA-SHA2-128f | 23,662 | 6 | 2.149 | 2.185 | +0.036 | 2.120 | 2.164 | 3.124 | 3.169 | 1,860 | 1,829 |
 
 **Chromium (browser), concurrency 1**
 
 | Configuration | Token | Chunks | Cookie mean | Split mean | Difference | Cookie median | Split median | Cookie p95 | Split p95 | Cookie req/s | Split req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 1 | 0.434 | 0.417 | -0.017 | 0.400 | 0.400 | 0.500 | 0.500 | 2,300 | 2,392 |
-| ES256 | 948 | 1 | 0.477 | 0.482 | +0.005 | 0.500 | 0.500 | 0.600 | 0.600 | 2,095 | 2,073 |
-| EdDSA | 948 | 1 | 0.459 | 0.485 | +0.025 | 0.400 | 0.500 | 0.500 | 0.600 | 2,175 | 2,062 |
-| ML-DSA-44 | 4,095 | 2 | not delivered | 0.494 | — | — | 0.500 | — | 0.600 | — | 2,022 |
-| SLH-DSA-SHA2-128s | 11,353 | 3 | not delivered | 0.631 | — | — | 0.600 | — | 0.700 | — | 1,584 |
-| SLH-DSA-SHA2-128f | 23,662 | 6 | not delivered | 0.944 | — | — | 0.900 | — | 1.100 | — | 1,059 |
+| RS256 | 1,204 | 1 | 0.421 | 0.439 | +0.017 | 0.400 | 0.400 | 0.500 | 0.500 | 2,373 | 2,279 |
+| ES256 | 948 | 1 | 0.479 | 0.549 | +0.070 | 0.500 | 0.500 | 0.600 | 1.000 | 2,086 | 1,820 |
+| EdDSA | 948 | 1 | 0.450 | 0.505 | +0.055 | 0.400 | 0.500 | 0.500 | 0.700 | 2,219 | 1,979 |
+| ML-DSA-44 | 4,095 | 2 | not delivered | 0.487 | — | — | 0.500 | — | 0.600 | — | 2,050 |
+| SLH-DSA-SHA2-128s | 11,353 | 3 | not delivered | 0.621 | — | — | 0.600 | — | 0.700 | — | 1,610 |
+| SLH-DSA-SHA2-128f | 23,662 | 6 | not delivered | 0.925 | — | — | 0.900 | — | 1.000 | — | 1,081 |
 
 **Chromium (browser), concurrency 4**
 
 | Configuration | Token | Chunks | Cookie mean | Split mean | Difference | Cookie median | Split median | Cookie p95 | Split p95 | Cookie req/s | Split req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 1 | 0.994 | 0.993 | -0.001 | 0.900 | 0.900 | 1.400 | 1.400 | 4,022 | 4,027 |
-| ES256 | 948 | 1 | 1.005 | 0.976 | -0.029 | 0.900 | 0.900 | 1.400 | 1.300 | 3,978 | 4,099 |
-| EdDSA | 948 | 1 | 0.981 | 0.977 | -0.004 | 0.900 | 0.900 | 1.300 | 1.300 | 4,074 | 4,091 |
-| ML-DSA-44 | 4,095 | 2 | not delivered | 0.965 | — | — | 0.900 | — | 1.300 | — | 4,142 |
-| SLH-DSA-SHA2-128s | 11,353 | 3 | not delivered | 1.562 | — | — | 1.500 | — | 2.200 | — | 2,560 |
-| SLH-DSA-SHA2-128f | 23,662 | 6 | not delivered | 2.572 | — | — | 2.500 | — | 3.800 | — | 1,554 |
+| RS256 | 1,204 | 1 | 0.964 | 0.990 | +0.025 | 0.900 | 0.900 | 1.400 | 1.400 | 4,146 | 4,040 |
+| ES256 | 948 | 1 | 0.965 | 0.990 | +0.025 | 0.900 | 0.900 | 1.300 | 1.300 | 4,142 | 4,039 |
+| EdDSA | 948 | 1 | 0.962 | 0.973 | +0.011 | 0.900 | 0.900 | 1.300 | 1.300 | 4,154 | 4,109 |
+| ML-DSA-44 | 4,095 | 2 | not delivered | 0.955 | — | — | 0.900 | — | 1.300 | — | 4,185 |
+| SLH-DSA-SHA2-128s | 11,353 | 3 | not delivered | 1.480 | — | — | 1.400 | — | 2.100 | — | 2,700 |
+| SLH-DSA-SHA2-128f | 23,662 | 6 | not delivered | 2.455 | — | — | 2.400 | — | 3.600 | — | 1,628 |
 
-**Noise level.** EdDSA and ES256 tokens are the same size, so the difference between their means shows how much two cells differ without any change in size. With one cookie it is -0.001 ms from http.client at concurrency 1 and -0.007 ms at concurrency 4, and -0.018 and -0.024 ms from Chromium; split, -0.001 and -0.005 ms from http.client and +0.003 and +0.002 ms from Chromium. This measures noise within one run only; the two runs ran one after the other, always the single cookie first, so a drift between them affects every configuration's difference alike.
+**Noise level.** EdDSA and ES256 tokens are the same size, so the difference between their means shows how much two cells differ without any change in size. With one cookie it is +0.006 ms from http.client at concurrency 1 and -0.009 ms at concurrency 4, and -0.028 and -0.003 ms from Chromium; split, +0.003 and -0.006 ms from http.client and -0.044 and -0.017 ms from Chromium. This measures noise within one run only; the two runs ran one after the other, always the single cookie first, so a drift between them affects every configuration's difference alike.
 
 Where the difference is clearest, http.client at concurrency 1, the components show where it comes from (difference of each component's mean, split minus single cookie, in ms):
 
 | Configuration | Chunks | Total | Transfer | Other handling | Verification |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1 | -0.006 | -0.010 | +0.004 | +0.001 |
-| ES256 | 1 | -0.004 | -0.009 | +0.004 | +0.002 |
-| EdDSA | 1 | -0.004 | -0.010 | +0.003 | +0.002 |
-| ML-DSA-44 | 2 | +0.001 | -0.009 | +0.006 | +0.003 |
-| SLH-DSA-SHA2-128s | 3 | +0.017 | +0.010 | +0.009 | -0.002 |
-| SLH-DSA-SHA2-128f | 6 | +0.054 | +0.016 | +0.013 | +0.025 |
+| RS256 | 1 | -0.004 | -0.008 | +0.004 | -0.000 |
+| ES256 | 1 | -0.005 | -0.008 | +0.004 | -0.001 |
+| EdDSA | 1 | -0.007 | -0.008 | +0.004 | -0.003 |
+| ML-DSA-44 | 2 | +0.005 | +0.001 | +0.006 | -0.001 |
+| SLH-DSA-SHA2-128s | 3 | +0.011 | +0.000 | +0.006 | +0.004 |
+| SLH-DSA-SHA2-128f | 6 | +0.023 | +0.002 | +0.010 | +0.011 |
 
-- **http.client, concurrency 1:** other handling, the verify handler outside `verify_token`, grows with the number of chunks: 0.003–0.004 ms for one chunk, 0.006 ms for two, 0.009 ms for three, and 0.013 ms for six. That is consistent with the work splitting adds by design, the application parsing the chunk cookies and joining them. Transfer is 0.009–0.010 ms lower in the split run for every token of up to two chunks, which no size difference explains (the split request is 4–14 bytes longer), so it is drift between the two runs; for the SLH-DSA tokens transfer is 0.010 and 0.016 ms higher. ML-DSA-44's total difference, +0.001 ms, equals the noise level, and the classical configurations' -0.004 to -0.006 ms is the same drift. SLH-DSA-SHA2-128f's +0.025 ms of verification is not caused by splitting, since `verify_token` gets the same token either way; it is part of the run-to-run variation.
-- **http.client, concurrency 4:** the classical configurations were 0.010–0.016 ms faster split, ML-DSA-44 0.026 ms slower, and SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f 0.262 and 0.325 ms slower, almost all of it in transfer, with much longer p95 tails (2.365 against 1.605 ms, 4.096 against 2.995 ms). Within these cells, `raw.csv.gz` shows the split run's transfer times stepping up partway through ML-DSA-44's cell, staying up through SLH-DSA-SHA2-128s's, and falling back before the end of SLH-DSA-SHA2-128f's, while the single-cookie cells are flat. A change in the middle of a cell is not a property of the token being sent, so these differences are reported as measured and not attributed to splitting; on this shared machine, other work is the likelier cause.
-- **Chromium:** only the classical configurations can be compared, at -0.029 to +0.025 ms against same-size noise of up to 0.024 ms and a 0.1 ms timer: no effect is measurable. For the post-quantum configurations splitting is the difference between no request at all and a working cookie: split, Chromium sent ML-DSA-44's token at 0.494 ms per request at concurrency 1, close to the classical tokens' 0.417–0.485 ms.
+- **http.client, concurrency 1:** other handling, the verify handler outside `verify_token`, grows with the number of chunks: 0.004 ms for one chunk, 0.006 ms for two and for three, and 0.010 ms for six. That is consistent with the work splitting adds by design, the application parsing the chunk cookies and joining them. Transfer is 0.008 ms lower in the split run for the single-chunk classical tokens, which no size difference explains (the split request is 4 bytes longer), so it is drift between the two runs; for the post-quantum tokens it is within 0.002 ms. ML-DSA-44's total difference, +0.005 ms, is within the noise level, and the classical configurations' -0.004 to -0.007 ms is the same drift. SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f are 0.011 and 0.023 ms slower split, mostly in other handling; SLH-DSA-SHA2-128f's +0.011 ms of verification is not caused by splitting, since `verify_token` gets the same token either way, and is part of the run-to-run variation.
+- **http.client, concurrency 4:** every configuration was slower split: the single-chunk classical tokens by 0.016–0.019 ms, ML-DSA-44 by 0.042 ms, and SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f by 0.028 and 0.036 ms, against same-size noise of 0.006–0.009 ms. The single-chunk requests differ only by a 4-byte longer cookie name, so at least that much is drift between the two runs, which always ran the single cookie first; these differences are reported as measured and not attributed to splitting.
+- **Chromium:** only the classical configurations can be compared. They were 0.011–0.070 ms slower split, against same-size noise of up to 0.044 ms and a 0.1 ms timer; their requests differ only by a 4-byte name, so this is drift between the runs, not an effect of splitting. For the post-quantum configurations splitting is the difference between no request at all and a working cookie: split, Chromium sent ML-DSA-44's token at 0.487 ms per request at concurrency 1, close to the classical tokens' 0.439–0.549 ms.
 
 **Modeled network cost (calculated, not measured).** Loopback makes transfer nearly free. From each run's `network_model`, the modeled upload time of the direct client's request on a new or idle TCP connection (the S3-01 model: bytes at the uplink rate plus one round trip per extra slow-start round, with an initial window of 14,600 bytes) grows by, at each illustrative profile:
 
@@ -523,9 +523,9 @@ make cookies
 # the same command, which make cookies runs with --output-dir results/cookies/<UTC time>-<platform>:
 "$TRANSPORT_ENV/bin/python" scripts/transport_stack.py cookies --header-buffers 32k --proxy-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir results/cookies/<YYYYMMDDTHHMMSSZ>-macos
 # the same settings, from this run's cookies.json:
-"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py cookies --settings results/cookies/20261118T105758Z-macos/cookies.json --output-dir results/cookies/<YYYYMMDDTHHMMSSZ>-macos
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py cookies --settings results/cookies/20261118T174416Z-macos/cookies.json --output-dir results/cookies/<YYYYMMDDTHHMMSSZ>-macos
 # one latency run alone, from its saved load.json:
-"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py load --settings results/cookies/20261118T105758Z-macos/latency-split/load.json --output-dir /tmp/latency-split
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py load --settings results/cookies/20261118T174416Z-macos/latency-split/load.json --output-dir /tmp/latency-split
 ```
 
 The run took under 3 minutes. `--output-dir` must not exist yet or be empty. [TRANSPORT.md](TRANSPORT.md#the-cookies-command) describes every option and output file. The tables above come from `cookies.json`, and each latency cell's numbers can be recomputed from its rows in the `raw.csv.gz` files.
@@ -569,31 +569,31 @@ handling out_of_range_index    status 400  not verified  source split  verify_to
 handling mixed_tokens          status 401  not verified  source split  verify_token called  received [0, 1, 2]
 handling with_jwt_cookie       status 400  not verified  source -      verify_token not called
 handling with_bearer           status 400  not verified  source -      verify_token not called
-latency  direct  c=1   RS256               1,204 B x1  mean 0.203 -> 0.197 ms (-0.006)  median 0.202 -> 0.197  p95 0.218 -> 0.209  4,891.6 -> 5,045.9 req/s
-latency  direct  c=1   ES256                 948 B x1  mean 0.218 -> 0.215 ms (-0.004)  median 0.217 -> 0.214  p95 0.231 -> 0.226  4,557.3 -> 4,642.0 req/s
-latency  direct  c=1   EdDSA                 948 B x1  mean 0.218 -> 0.214 ms (-0.004)  median 0.217 -> 0.213  p95 0.230 -> 0.225  4,572.0 -> 4,662.7 req/s
-latency  direct  c=1   ML-DSA-44           4,095 B x2  mean 0.231 -> 0.232 ms (+0.001)  median 0.230 -> 0.230  p95 0.244 -> 0.246  4,310.6 -> 4,301.7 req/s
-latency  direct  c=1   SLH-DSA-SHA2-128s  11,353 B x3  mean 0.418 -> 0.435 ms (+0.017)  median 0.418 -> 0.435  p95 0.432 -> 0.451  2,384.5 -> 2,290.3 req/s
-latency  direct  c=1   SLH-DSA-SHA2-128f  23,662 B x6  mean 0.697 -> 0.751 ms (+0.054)  median 0.695 -> 0.750  p95 0.716 -> 0.766  1,432.3 -> 1,329.6 req/s
-latency  direct  c=4   RS256               1,204 B x1  mean 0.647 -> 0.637 ms (-0.010)  median 0.624 -> 0.607  p95 0.951 -> 0.955  6,166.4 -> 6,265.7 req/s
-latency  direct  c=4   ES256                 948 B x1  mean 0.630 -> 0.614 ms (-0.016)  median 0.608 -> 0.593  p95 0.911 -> 0.917  6,338.1 -> 6,498.2 req/s
-latency  direct  c=4   EdDSA                 948 B x1  mean 0.623 -> 0.609 ms (-0.014)  median 0.603 -> 0.586  p95 0.916 -> 0.906  6,407.4 -> 6,552.9 req/s
-latency  direct  c=4   ML-DSA-44           4,095 B x2  mean 0.575 -> 0.602 ms (+0.026)  median 0.553 -> 0.565  p95 0.852 -> 0.879  6,936.2 -> 6,637.2 req/s
-latency  direct  c=4   SLH-DSA-SHA2-128s  11,353 B x3  mean 1.107 -> 1.369 ms (+0.262)  median 1.083 -> 1.235  p95 1.605 -> 2.365  3,609.8 -> 2,917.2 req/s
-latency  direct  c=4   SLH-DSA-SHA2-128f  23,662 B x6  mean 2.145 -> 2.470 ms (+0.325)  median 2.127 -> 2.271  p95 2.995 -> 4.096  1,862.6 -> 1,616.9 req/s
-latency  browser c=1   RS256               1,204 B x1  mean 0.434 -> 0.417 ms (-0.017)  median 0.400 -> 0.400  p95 0.500 -> 0.500  2,300.5 -> 2,392.5 req/s
-latency  browser c=1   ES256                 948 B x1  mean 0.477 -> 0.482 ms (+0.005)  median 0.500 -> 0.500  p95 0.600 -> 0.600  2,094.6 -> 2,072.7 req/s
-latency  browser c=1   EdDSA                 948 B x1  mean 0.459 -> 0.485 ms (+0.025)  median 0.400 -> 0.500  p95 0.500 -> 0.600  2,174.8 -> 2,061.6 req/s
+latency  direct  c=1   RS256               1,204 B x1  mean 0.209 -> 0.204 ms (-0.004)  median 0.206 -> 0.202  p95 0.225 -> 0.220  4,770.8 -> 4,870.2 req/s
+latency  direct  c=1   ES256                 948 B x1  mean 0.224 -> 0.219 ms (-0.005)  median 0.221 -> 0.217  p95 0.243 -> 0.232  4,446.0 -> 4,541.2 req/s
+latency  direct  c=1   EdDSA                 948 B x1  mean 0.230 -> 0.223 ms (-0.007)  median 0.220 -> 0.221  p95 0.272 -> 0.236  4,332.7 -> 4,470.4 req/s
+latency  direct  c=1   ML-DSA-44           4,095 B x2  mean 0.233 -> 0.239 ms (+0.005)  median 0.231 -> 0.238  p95 0.249 -> 0.252  4,265.5 -> 4,168.9 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128s  11,353 B x3  mean 0.408 -> 0.418 ms (+0.011)  median 0.406 -> 0.416  p95 0.424 -> 0.433  2,445.5 -> 2,383.3 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128f  23,662 B x6  mean 0.700 -> 0.724 ms (+0.023)  median 0.698 -> 0.720  p95 0.722 -> 0.739  1,425.5 -> 1,379.8 req/s
+latency  direct  c=4   RS256               1,204 B x1  mean 0.647 -> 0.663 ms (+0.016)  median 0.623 -> 0.640  p95 0.965 -> 0.971  6,171.3 -> 6,023.1 req/s
+latency  direct  c=4   ES256                 948 B x1  mean 0.630 -> 0.646 ms (+0.016)  median 0.610 -> 0.624  p95 0.922 -> 0.940  6,337.3 -> 6,184.0 req/s
+latency  direct  c=4   EdDSA                 948 B x1  mean 0.621 -> 0.640 ms (+0.019)  median 0.599 -> 0.620  p95 0.920 -> 0.933  6,429.5 -> 6,238.2 req/s
+latency  direct  c=4   ML-DSA-44           4,095 B x2  mean 0.572 -> 0.614 ms (+0.042)  median 0.550 -> 0.582  p95 0.839 -> 0.884  6,976.6 -> 6,496.9 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128s  11,353 B x3  mean 1.134 -> 1.163 ms (+0.028)  median 1.108 -> 1.139  p95 1.652 -> 1.673  3,522.1 -> 3,435.5 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128f  23,662 B x6  mean 2.149 -> 2.185 ms (+0.036)  median 2.120 -> 2.164  p95 3.124 -> 3.169  1,859.6 -> 1,828.6 req/s
+latency  browser c=1   RS256               1,204 B x1  mean 0.421 -> 0.439 ms (+0.017)  median 0.400 -> 0.400  p95 0.500 -> 0.500  2,372.6 -> 2,278.7 req/s
+latency  browser c=1   ES256                 948 B x1  mean 0.479 -> 0.549 ms (+0.070)  median 0.500 -> 0.500  p95 0.600 -> 1.000  2,086.4 -> 1,819.9 req/s
+latency  browser c=1   EdDSA                 948 B x1  mean 0.450 -> 0.505 ms (+0.055)  median 0.400 -> 0.500  p95 0.500 -> 0.700  2,219.0 -> 1,978.7 req/s
 latency  browser c=1   ML-DSA-44           4,095 B x2  no verified request: cookie not delivered
 latency  browser c=1   SLH-DSA-SHA2-128s  11,353 B x3  no verified request: cookie not delivered
 latency  browser c=1   SLH-DSA-SHA2-128f  23,662 B x6  no verified request: cookie not delivered
-latency  browser c=4   RS256               1,204 B x1  mean 0.994 -> 0.993 ms (-0.001)  median 0.900 -> 0.900  p95 1.400 -> 1.400  4,021.6 -> 4,027.0 req/s
-latency  browser c=4   ES256                 948 B x1  mean 1.005 -> 0.976 ms (-0.029)  median 0.900 -> 0.900  p95 1.400 -> 1.300  3,978.1 -> 4,098.6 req/s
-latency  browser c=4   EdDSA                 948 B x1  mean 0.981 -> 0.977 ms (-0.004)  median 0.900 -> 0.900  p95 1.300 -> 1.300  4,074.0 -> 4,090.7 req/s
+latency  browser c=4   RS256               1,204 B x1  mean 0.964 -> 0.990 ms (+0.025)  median 0.900 -> 0.900  p95 1.400 -> 1.400  4,146.0 -> 4,039.6 req/s
+latency  browser c=4   ES256                 948 B x1  mean 0.965 -> 0.990 ms (+0.025)  median 0.900 -> 0.900  p95 1.300 -> 1.300  4,141.6 -> 4,039.1 req/s
+latency  browser c=4   EdDSA                 948 B x1  mean 0.962 -> 0.973 ms (+0.011)  median 0.900 -> 0.900  p95 1.300 -> 1.300  4,154.3 -> 4,109.0 req/s
 latency  browser c=4   ML-DSA-44           4,095 B x2  no verified request: cookie not delivered
 latency  browser c=4   SLH-DSA-SHA2-128s  11,353 B x3  no verified request: cookie not delivered
 latency  browser c=4   SLH-DSA-SHA2-128f  23,662 B x6  no verified request: cookie not delivered
-Saved the results to results/cookies/20261118T105758Z-macos
+Saved the results to results/cookies/20261118T174416Z-macos
 ```
 
 ### Limitations
@@ -606,4 +606,4 @@ Saved the results to results/cookies/20261118T105758Z-macos
 - **Stale chunks are refused, not cleaned up.** If a later issue splits a token into fewer chunks, the old higher-index chunks stay in the browser until they expire, and the application answers 400 for the conflicting counts (the `conflicting_count` case). A deployment would have to delete stale chunks when it issues new ones (for example with `Max-Age=0` for every old name); this run does not measure that.
 - **Not the default limits.** The raised-limits stack and both latency stacks use `--header-buffers 32k` and `--proxy-buffers 32k`, and the latency stacks the non-default `--upstream-keepalive 64`, as recorded in `cookies.json` and marked in each `nginx.conf`; the default-limits stack keeps every default.
 - **Tokens in two logs.** The size-limit phases' `browser.log.gz` files hold the tokens and chunks Chromium handled, and nginx's error log in `limits-default/` holds a truncated prefix of each rejected `Cookie` line (`client sent too long header line`); all were signed with discarded experiment keys.
-- **Machine state.** The other candidates for this task were being built and tested on the same Mac, sharing its CPU and ephemeral ports; none of their stacks or tests ran when this run started, but another candidate's test suite started in its last seconds. The concurrency-4 latency differences may reflect such activity, and the kept implementation's run is to be recorded again on an idle Mac.
+- **Machine state.** Nothing else from the project was running, but Spotify and Steam were open. The 1-minute load average was 1.3 when the run started and 3.9 when it ended, including the run's own load.
