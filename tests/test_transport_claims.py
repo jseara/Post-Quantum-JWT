@@ -1996,8 +1996,9 @@ class ProgressTests(unittest.TestCase):
         body = section(PROGRESS.read_text(encoding="utf-8"), "S3-02", level=3)
         self.assertIsNotNone(body, "missing heading: ### S3-02")
         items = re.findall(r"(?m)^- \[( |x)\] (.*)$", body)
-        self.assertEqual(items, [("x", S3_02_ITEMS[0]), (" ", S3_02_ITEMS[1]),
-                                 (" ", S3_02_ITEMS[2])])
+        # The smaller-claim-sets item is ticked; the later mitigations tick their own items.
+        self.assertEqual([text for _, text in items], list(S3_02_ITEMS))
+        self.assertEqual(items[0][0], "x")
         status = [line for line in body.splitlines() if line.startswith("**Status:**")]
         self.assertEqual(len(status), 1, status)
         for term in ("claims", "macOS", "MITIGATION_RESULTS.md", "ML-DSA-44", "WSL2"):
@@ -2085,14 +2086,16 @@ class UnchangedTests(unittest.TestCase):
         self.assertIn("timer_resolution 100ms;", template)
         self.assertNotIn("Not a default", template)
 
-    def test_only_the_claims_module_and_fixture_are_new(self):
+    def test_claims_module_and_fixture_added_and_nothing_removed(self):
+        # Later S3-02 mitigations (cookie splitting, reference tokens) add their own modules, so
+        # this checks only that the claims run's files are present and no earlier file is gone.
         for directory, added in (("scripts", "transport_claims.py"),
                                  ("fixtures", "claims_essential.json")):
             with self.subTest(directory=directory):
                 listing = self.require(git("ls-tree", "--name-only", f"{BASE_COMMIT}:{directory}"))
                 on_disk = {path.name for path in (REPO / directory).iterdir()
                            if path.is_file() and not path.name.startswith(".")}
-                self.assertEqual(on_disk, {*listing.split(), added})
+                self.assertLessEqual({*listing.split(), added}, on_disk)
 
     def test_transport_results_only_gains_a_link(self):
         before = self.require(git_show("TRANSPORT_RESULTS.md")).splitlines()
