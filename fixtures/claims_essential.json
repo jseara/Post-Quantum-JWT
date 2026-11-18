@@ -1,0 +1,7 @@
+{
+  "iss": "https://login.example.test/realms/cis628",
+  "sub": "248289761001",
+  "aud": "cis628-transport-client",
+  "exp": 4102444800,
+  "iat": 1793836800
+}

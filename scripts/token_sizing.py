@@ -21,20 +21,33 @@ from scripts.algorithms import ADAPTERS
 
 
 REPO = Path(__file__).resolve().parents[1]
+# The Sprint 2 fixtures, which `sweep --claims` offers.
 CLAIM_SETS = {
     "minimal": REPO / "fixtures" / "claims.json",  # The Sprint 1 fixture.
     "oidc": REPO / "fixtures" / "claims_oidc.json",  # Typical OpenID Connect ID token claims.
 }
+# S3-02's smaller claim set: the five ID Token claims that OpenID Connect Core 1.0 section 2
+# marks REQUIRED, with the oidc fixture's values. Kept apart so CLAIM_SETS stays Sprint 2's.
+MITIGATION_CLAIM_SETS = {
+    "essential": REPO / "fixtures" / "claims_essential.json",
+}
+CLAIM_SET_NAMES = (*CLAIM_SETS, *MITIGATION_CLAIM_SETS)  # ("minimal", "oidc", "essential")
 PAD_CLAIM = "pad"
 PAD_CHARACTER = "x"
 MAX_PAD = 1_000_000
 
 
+def claim_set_path(name: str) -> Path:
+    """Return the fixture file of a named claim set; raise ValueError for an unknown name."""
+    paths = {**CLAIM_SETS, **MITIGATION_CLAIM_SETS}
+    if not isinstance(name, str) or name not in paths:
+        raise ValueError(f"claims must be one of {', '.join(CLAIM_SET_NAMES)}, got {name!r}")
+    return paths[name]
+
+
 def claim_set(name: str) -> dict:
     """Return a named claims fixture; raise ValueError for an unknown name."""
-    if name not in CLAIM_SETS:
-        raise ValueError(f"claims must be one of {', '.join(CLAIM_SETS)}, got {name!r}")
-    return json.loads(CLAIM_SETS[name].read_text(encoding="utf-8"))
+    return json.loads(claim_set_path(name).read_text(encoding="utf-8"))
 
 
 def padded_claims(claims: dict, pad: int) -> dict:

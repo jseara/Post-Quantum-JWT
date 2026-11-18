@@ -57,7 +57,8 @@ from waitress.adjustments import Adjustments
 from scripts.algorithms import ADAPTER_LIST, ADAPTERS
 from scripts.benchmark import environment
 from scripts.rsa_jwt import summarize
-from scripts.token_sizing import CLAIM_SETS, claim_set, pad_for_target, padded_claims, token_bytes
+from scripts.token_sizing import (CLAIM_SET_NAMES, claim_set, pad_for_target, padded_claims,
+                                  token_bytes)
 from scripts.transport_app import COOKIE_NAME
 from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout,
                                      check_upstream_keepalive, http_get, load_manifest,
@@ -322,7 +323,7 @@ def checked_settings(algorithms, transport, clients, concurrency, duration, warm
     levels = concurrency_levels(concurrency)
     check_seconds("duration", duration, allow_zero=False)
     check_seconds("warmup", warmup, allow_zero=True)
-    check_name("claims", claims, CLAIM_SETS)
+    check_name("claims", claims, CLAIM_SET_NAMES)
     check_name("reference", reference, ADAPTERS)
     if not isinstance(size_controls, bool):
         raise ValueError(f"size_controls must be a bool, got {size_controls!r}")

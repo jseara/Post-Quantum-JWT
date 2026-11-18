@@ -1,15 +1,16 @@
 """Serve the transport test page, the echo, and the token endpoints with waitress on 127.0.0.1.
 
 GET / returns the test page and GET /api/echo describes the request as the application received
-it. GET /api/token/issue signs a claims fixture (fixtures/claims.json by default), padded to a
-chosen size if asked, with one configuration from scripts/algorithms.py, verifies it, and delivers
-the token in a `jwt` Set-Cookie header or in a JSON body; GET
-/api/token/verify verifies the token sent in the `jwt` cookie or an Authorization: Bearer header,
-and with timing=1 also reports how long verification and the whole handler took. Tokens are
-signed with ephemeral experiment keys: one key pair per configuration, generated in
-memory by this process on first use and never stored, logged, or returned. They are not
-production credentials, and a token from another process does not verify here. Every request
-the application handles writes one log line with the sizes of the headers it received.
+it. GET /api/token/issue signs a claims fixture (fixtures/claims.json by default; claims=oidc or
+claims=essential chooses another), padded to a chosen size if asked, with one configuration
+from scripts/algorithms.py, verifies it, and delivers the token in a `jwt` Set-Cookie header or
+in a JSON body; GET /api/token/verify verifies the token sent in the `jwt` cookie or an
+Authorization: Bearer header, and with timing=1 also reports how long verification and the
+whole handler took. Tokens are signed with ephemeral experiment keys: one key pair per
+configuration, generated in memory by this process on first use and never stored, logged, or
+returned. They are not production credentials, and a token from another process does not verify
+here. Every request the application handles writes one log line with the sizes of the headers it
+received.
 """
 
 import argparse
@@ -31,7 +32,7 @@ from waitress.parser import HTTPRequestParser
 
 from scripts.algorithms import ADAPTER_LIST, ADAPTERS
 from scripts.compact_jws import decode_json_object
-from scripts.token_sizing import CLAIM_SETS, MAX_PAD, claim_set, padded_token
+from scripts.token_sizing import CLAIM_SET_NAMES, MAX_PAD, claim_set, padded_token
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -44,7 +45,8 @@ COOKIE_ATTRIBUTES = "Path=/; HttpOnly; SameSite=Strict"
 # attrs=full adds the attributes a production session cookie typically carries (S2-04).
 COOKIE_ATTRIBUTE_SETS = {"default": COOKIE_ATTRIBUTES,
                          "full": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600"}
-# The audience the application expects in tokens that carry an aud claim (claims=oidc).
+# The audience the application expects in tokens that carry an aud claim (claims=oidc or
+# claims=essential).
 APP_AUDIENCE = "cis628-transport-client"
 DELIVERIES = ("cookie", "body")
 ALGORITHM_NAMES = [adapter.name for adapter in ADAPTER_LIST]
@@ -141,8 +143,8 @@ def issue_problem(algorithm: str | None, delivery: str, claims: str = "minimal",
         return f"unknown alg {algorithm!r}"
     if delivery not in DELIVERIES:
         return f"delivery must be one of {', '.join(DELIVERIES)}, got {delivery!r}"
-    if claims not in CLAIM_SETS:
-        return f"claims must be one of {', '.join(CLAIM_SETS)}, got {claims!r}"
+    if claims not in CLAIM_SET_NAMES:
+        return f"claims must be one of {', '.join(CLAIM_SET_NAMES)}, got {claims!r}"
     # Check the length before int(), which raises ValueError on strings of over 4,300 digits.
     if not (pad.isascii() and pad.isdigit() and len(pad) <= len(str(MAX_PAD))
             and int(pad) <= MAX_PAD):
@@ -155,8 +157,9 @@ def issue_problem(algorithm: str | None, delivery: str, claims: str = "minimal",
 def issue_endpoint(environ: dict) -> tuple[Response, dict]:
     """Sign a claims fixture, padded if asked, and deliver it in a Set-Cookie header or the body.
 
-    Optional parameters: claims (minimal, the default, or oidc), pad (characters in a `pad`
-    claim, default 0, see scripts/token_sizing.py), and attrs (default or full cookie attributes).
+    Optional parameters: claims (minimal, the default, oidc, or essential), pad (characters in a
+    `pad` claim, default 0, see scripts/token_sizing.py), and attrs (default or full cookie
+    attributes).
     """
     query = query_parameters(environ)
     algorithm, delivery = query.get("alg"), query.get("delivery", "cookie")
@@ -276,8 +279,8 @@ def verify_request(environ: dict) -> tuple[str, dict, dict, int | None]:
     _, public_key = experiment_keypair(algorithm)
     verify_ns = None
     try:
-        # An experiment shortcut: tokens with an aud claim must name APP_AUDIENCE, and tokens
-        # without one (claims=minimal) are verified without an audience.
+        # An experiment shortcut: tokens with an aud claim (claims=oidc or essential) must name
+        # APP_AUDIENCE, and tokens without one (claims=minimal) are verified without an audience.
         audience = APP_AUDIENCE if "aud" in unverified_claims(token) else None
         verify_started = time.perf_counter_ns()
         try:

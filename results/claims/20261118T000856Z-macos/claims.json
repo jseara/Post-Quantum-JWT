@@ -1,0 +1,2198 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-11-18T00:08:56.684047+00:00",
+  "finished_utc": "2026-11-18T00:11:46.734966+00:00",
+  "recorded_utc": "2026-11-18T00:11:46.734979+00:00",
+  "settings": {
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA",
+      "ML-DSA-44",
+      "SLH-DSA-SHA2-128s",
+      "SLH-DSA-SHA2-128f"
+    ],
+    "clients": [
+      "direct",
+      "browser"
+    ],
+    "concurrency": [
+      1,
+      4
+    ],
+    "duration": 2.0,
+    "warmup": 1.0,
+    "timeout": 60.0,
+    "header_buffers": "32k",
+    "upstream_keepalive": 64
+  },
+  "environment": {
+    "python": "3.15.2",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_count": 18,
+    "cryptography": "50.0.2",
+    "pyjwt": "2.15.1",
+    "pqcrypto": "1.0.0",
+    "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+    "timer": "perf_counter_ns",
+    "git_commit": "828cf0548c1aa7293c4bf338aa24fdf096a1a110",
+    "git_dirty_scripts_or_fixtures": false,
+    "page_size_bytes": 16384,
+    "waitress_threads": 4
+  },
+  "layers": [
+    {
+      "role": "automation",
+      "component": "Playwright for Python",
+      "version": "1.64.1"
+    },
+    {
+      "role": "browser",
+      "component": "Chromium (Chrome for Testing)",
+      "version": "156.0.8078.4"
+    },
+    {
+      "role": "proxy",
+      "component": "nginx",
+      "version": "1.31.8"
+    },
+    {
+      "role": "app_server",
+      "component": "waitress",
+      "version": "3.0.2"
+    }
+  ],
+  "browser": {
+    "version": "156.0.8078.4",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+  },
+  "experiment_keys": true,
+  "claim_sets": [
+    {
+      "name": "minimal",
+      "file": "fixtures/claims.json",
+      "claims": [
+        "sub",
+        "name",
+        "role"
+      ],
+      "payload_bytes": 63
+    },
+    {
+      "name": "oidc",
+      "file": "fixtures/claims_oidc.json",
+      "claims": [
+        "iss",
+        "sub",
+        "aud",
+        "exp",
+        "iat",
+        "auth_time",
+        "nonce",
+        "acr",
+        "amr",
+        "azp",
+        "sid",
+        "name",
+        "given_name",
+        "family_name",
+        "preferred_username",
+        "email",
+        "email_verified",
+        "locale",
+        "zoneinfo",
+        "picture",
+        "groups",
+        "roles"
+      ],
+      "payload_bytes": 618
+    },
+    {
+      "name": "essential",
+      "file": "fixtures/claims_essential.json",
+      "claims": [
+        "iss",
+        "sub",
+        "aud",
+        "exp",
+        "iat"
+      ],
+      "payload_bytes": 137
+    }
+  ],
+  "sizes": [
+    {
+      "algorithm": "RS256",
+      "signature_bytes": 256,
+      "fixed_bytes": 380,
+      "token_bytes": {
+        "minimal": 464,
+        "oidc": 1204,
+        "essential": 563
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 53.23920265780731
+    },
+    {
+      "algorithm": "ES256",
+      "signature_bytes": 64,
+      "fixed_bytes": 124,
+      "token_bytes": {
+        "minimal": 208,
+        "oidc": 948,
+        "essential": 307
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 67.61603375527426
+    },
+    {
+      "algorithm": "EdDSA",
+      "signature_bytes": 64,
+      "fixed_bytes": 124,
+      "token_bytes": {
+        "minimal": 208,
+        "oidc": 948,
+        "essential": 307
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 67.61603375527426
+    },
+    {
+      "algorithm": "ML-DSA-44",
+      "signature_bytes": 2420,
+      "fixed_bytes": 3271,
+      "token_bytes": {
+        "minimal": 3355,
+        "oidc": 4095,
+        "essential": 3454
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 15.653235653235653
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "signature_bytes": 7856,
+      "fixed_bytes": 10529,
+      "token_bytes": {
+        "minimal": 10613,
+        "oidc": 11353,
+        "essential": 10712
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 5.646084735312252
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "signature_bytes": 17088,
+      "fixed_bytes": 22838,
+      "token_bytes": {
+        "minimal": 22922,
+        "oidc": 23662,
+        "essential": 23021
+      },
+      "shrink_bytes": 641,
+      "shrink_percent": 2.708984870256107
+    }
+  ],
+  "boundaries": [
+    {
+      "name": "cookie-default",
+      "transport": "cookie",
+      "source": "results/transport/20261113T074114Z-wsl2/cookie-default/sweep.json",
+      "largest_verified_token_bytes": 3915,
+      "rows": [
+        {
+          "algorithm": "RS256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 2711,
+            "essential": 3352
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ES256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 2967,
+            "essential": 3608
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "EdDSA",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 2967,
+            "essential": 3608
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "fits": {
+            "oidc": false,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": -180,
+            "essential": 461
+          },
+          "moved": true
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -7438,
+            "essential": -6797
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -19747,
+            "essential": -19106
+          },
+          "moved": false
+        }
+      ]
+    },
+    {
+      "name": "cookie-16k",
+      "transport": "cookie",
+      "source": "results/transport/20261113T074114Z-wsl2/cookie-16k/sweep.json",
+      "largest_verified_token_bytes": 4093,
+      "rows": [
+        {
+          "algorithm": "RS256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 2889,
+            "essential": 3530
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ES256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 3145,
+            "essential": 3786
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "EdDSA",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 3145,
+            "essential": 3786
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "fits": {
+            "oidc": false,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": -2,
+            "essential": 639
+          },
+          "moved": true
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -7260,
+            "essential": -6619
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -19569,
+            "essential": -18928
+          },
+          "moved": false
+        }
+      ]
+    },
+    {
+      "name": "bearer-default",
+      "transport": "bearer",
+      "source": "results/transport/20261113T074114Z-wsl2/bearer-default/sweep.json",
+      "largest_verified_token_bytes": 8168,
+      "rows": [
+        {
+          "algorithm": "RS256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 6964,
+            "essential": 7605
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ES256",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 7220,
+            "essential": 7861
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "EdDSA",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 7220,
+            "essential": 7861
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "fits": {
+            "oidc": true,
+            "essential": true
+          },
+          "headroom_bytes": {
+            "oidc": 4073,
+            "essential": 4714
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -3185,
+            "essential": -2544
+          },
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "fits": {
+            "oidc": false,
+            "essential": false
+          },
+          "headroom_bytes": {
+            "oidc": -15494,
+            "essential": -14853
+          },
+          "moved": false
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "cookie_attributes": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600",
+    "results": [
+      {
+        "algorithm": "RS256",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 1204,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "fe3b2dd7e1d9409de85fcd6d1bec2476",
+        "verify_nonce": "c91586216214561e918da6f320dc3cdf",
+        "evidence": "verified: the browser sent the 1,204-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 563,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "76de00762c14c196ceca308a3a112b96",
+        "verify_nonce": "dffee9a2e08a908c73db6992bc8b9511",
+        "evidence": "verified: the browser sent the 563-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 1204,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "5df44ab93bad834b8c85e6c2e4b1e36a",
+        "verify_nonce": "5a473d478342cfc1cc541a37439f960e",
+        "evidence": "verified: the browser sent the 1,204-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 563,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "44d2f1cfee9e317266fd550c642127df",
+        "verify_nonce": "2592f08c00e7402e158ed93dd3b9cace",
+        "evidence": "verified: the browser sent the 563-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 948,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "c467c3590c8df3e47557caa0fe8d862e",
+        "verify_nonce": "653ecf101f3485edb37b217bb5964a90",
+        "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 307,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "98c81603d08a2a6770d657c2795de970",
+        "verify_nonce": "cc4738d8a4119a3f0135405cae4dc4d6",
+        "evidence": "verified: the browser sent the 307-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 948,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "257515db7ecf78b89a57eb84437366dc",
+        "verify_nonce": "22d7c87cc6331386ebf65895bcce8e7a",
+        "evidence": "verified: the browser sent the 948-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 307,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "4c5148da3526b6f597bd984441514c69",
+        "verify_nonce": "ca8b855ef6602cdc69cc3267ec4dfb3f",
+        "evidence": "verified: the browser sent the 307-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 948,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "3b08e461cab98afc6feb2087030f9a65",
+        "verify_nonce": "ce6c09f8487bdb0c2328995fb5e2af5c",
+        "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 307,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "b9a6b5663b734a259a7499eaa8972571",
+        "verify_nonce": "6776cb9e63e85d3722ec01557a944fce",
+        "evidence": "verified: the browser sent the 307-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 948,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "c446f02ad94754a33420b495cac0a86a",
+        "verify_nonce": "1de5e16aa1952f5e5e7dd3727762084c",
+        "evidence": "verified: the browser sent the 948-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 307,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "e0dfe48901b5e138f75e60bf28f48aae",
+        "verify_nonce": "4ccf3d8f357da65fefb6ad2819c47c4c",
+        "evidence": "verified: the browser sent the 307-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 4095,
+        "outcome": "rejected",
+        "rejected_by": "browser",
+        "verified_directly": true,
+        "cookie_stored": false,
+        "issue_nonce": "1c2e7dde3445c3657a33084127343760",
+        "verify_nonce": "f89d66beb00dc8a989eff6fc938ba36e",
+        "evidence": "browser: the issue response carried a 4,156-byte Set-Cookie (browser.log) whose name + value is 4,098 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 3454,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_nonce": "e461d8460e99fb1d5ccf1c538637c90e",
+        "verify_nonce": "80e78973c607f130ca0be500b18a9e77",
+        "evidence": "verified: the browser sent the 3,454-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 4095,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "262b8662c8d41cde463e3a4f4020f294",
+        "verify_nonce": "f0c50147af0098cdb97b6119b71b05b7",
+        "evidence": "verified: the browser sent the 4,095-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 3454,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "bd9f48a86b0c287c95e56ad8e622253f",
+        "verify_nonce": "3979e194b464f8938e1f01d783ee2e52",
+        "evidence": "verified: the browser sent the 3,454-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 11353,
+        "outcome": "rejected",
+        "rejected_by": "browser",
+        "verified_directly": true,
+        "cookie_stored": false,
+        "issue_nonce": "cabe178c3f9828b562cbfcc969c1d845",
+        "verify_nonce": "db54c8bb8107c53106e1bc76beb55d1c",
+        "evidence": "browser: the issue response carried a 11,414-byte Set-Cookie (browser.log) whose name + value is 11,356 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 10712,
+        "outcome": "rejected",
+        "rejected_by": "browser",
+        "verified_directly": true,
+        "cookie_stored": false,
+        "issue_nonce": "d13d96bb3cb894956820953875b642bc",
+        "verify_nonce": "97c295bc8c7392552c190687273adc04",
+        "evidence": "browser: the issue response carried a 10,773-byte Set-Cookie (browser.log) whose name + value is 10,715 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 11353,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "eb4bd874168e07b7f6c70cdb391882d8",
+        "verify_nonce": "29a7036be72b5b4dd0683e75fb3126d9",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:00 -0500] \"GET /api/token/verify?nonce=29a7036be72b5b4dd0683e75fb3126d9 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:00 [info] 68083#13956023: *75 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=29a7036be7...\"; its nonce is not in app.log, so nginx did not forward it"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 10712,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "dd6fb8ad7797f2a2de5d1c62ee69d50e",
+        "verify_nonce": "715b1c40535e7afd5920103712586050",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:00 -0500] \"GET /api/token/verify?nonce=715b1c40535e7afd5920103712586050 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:00 [info] 68083#13956023: *78 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=715b1c4053...\"; its nonce is not in app.log, so nginx did not forward it"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "cookie",
+        "claims": "oidc",
+        "token_bytes": 23662,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": false,
+        "issue_nonce": "20c241dc9701a0589e25ff32ba01b531",
+        "verify_nonce": "f4d3e1f825af09457509b31ace530bc7",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01b531 HTTP/1.1\" 502 559 request_length=700 upstream_status=502\"; proxy-error.log: \"2026/11/17 19:09:01 [error] 68083#13956023: *81 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01...\"; app.log shows the application answered 200: \"2026-11-17 19:09:01,139 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01b531 HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128f t...\""
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "cookie",
+        "claims": "essential",
+        "token_bytes": 23021,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": false,
+        "issue_nonce": "3a77bc3cf23f25c04b01b4c9bdf15707",
+        "verify_nonce": "041ac55a8f296c9a407ce0f2f251153a",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c9bdf15707 HTTP/1.1\" 502 559 request_length=705 upstream_status=502\"; proxy-error.log: \"2026/11/17 19:09:01 [error] 68083#13956023: *85 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c...\"; app.log shows the application answered 200: \"2026-11-17 19:09:01,257 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c9bdf15707 HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-1...\""
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "bearer",
+        "claims": "oidc",
+        "token_bytes": 23662,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "2bddf236726ef79788169d1a511356a5",
+        "verify_nonce": "692df98462a27794cf3b5e269d51be3a",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/verify?nonce=692df98462a27794cf3b5e269d51be3a HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:01 [info] 68083#13956023: *89 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=692df98462...\"; its nonce is not in app.log, so nginx did not forward it"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "bearer",
+        "claims": "essential",
+        "token_bytes": 23021,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_nonce": "7c60fc098b0f71ed31e3c07a95c1e5d5",
+        "verify_nonce": "61d22e9dea182fdba4384533307c2269",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/verify?nonce=61d22e9dea182fdba4384533307c2269 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:01 [info] 68083#13956023: *92 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=61d22e9dea...\"; its nonce is not in app.log, so nginx did not forward it"
+      }
+    ],
+    "moved": [
+      {
+        "algorithm": "RS256",
+        "transport": "cookie",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "bearer",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "cookie",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "bearer",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "cookie",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "bearer",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "cookie",
+        "oidc": "rejected",
+        "essential": "verified",
+        "moved": true
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "bearer",
+        "oidc": "verified",
+        "essential": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "cookie",
+        "oidc": "rejected",
+        "essential": "rejected",
+        "moved": false
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "bearer",
+        "oidc": "rejected",
+        "essential": "rejected",
+        "moved": false
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "cookie",
+        "oidc": "rejected",
+        "essential": "rejected",
+        "moved": false
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "bearer",
+        "oidc": "rejected",
+        "essential": "rejected",
+        "moved": false
+      }
+    ]
+  },
+  "latency": {
+    "transport": "bearer",
+    "reference": "ES256",
+    "size_controls": false,
+    "runs": {
+      "oidc": "latency-oidc/load.json",
+      "essential": "latency-essential/load.json"
+    },
+    "rows": [
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": {
+          "oidc": 1204,
+          "essential": 563
+        },
+        "verified": {
+          "oidc": 9834,
+          "essential": 11762
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4916.744943856037,
+          "essential": 5880.66957987798
+        },
+        "median_ms": {
+          "oidc": 0.201,
+          "essential": 0.168083
+        },
+        "p95_ms": {
+          "oidc": 0.220208,
+          "essential": 0.184167
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.20243978391295506,
+            "transfer": 0.1388472533048607,
+            "other_handling": 0.01474828177750661,
+            "verification": 0.04884424883058776
+          },
+          "essential": {
+            "total": 0.16919055721816018,
+            "transfer": 0.122637000765176,
+            "other_handling": 0.01130357031117157,
+            "verification": 0.035249986141812614
+          }
+        },
+        "difference_ms": {
+          "total": -0.03324922669479488,
+          "transfer": -0.016210252539684694,
+          "other_handling": -0.0034447114663350396,
+          "verification": -0.013594262688775144
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 9158,
+          "essential": 10881
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4578.733002631784,
+          "essential": 5440.293834624843
+        },
+        "median_ms": {
+          "oidc": 0.216292,
+          "essential": 0.182542
+        },
+        "p95_ms": {
+          "oidc": 0.233875,
+          "essential": 0.194916
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.2174772255951081,
+            "transfer": 0.1363517417558419,
+            "other_handling": 0.014598808473465822,
+            "verification": 0.06652667536580038
+          },
+          "essential": {
+            "total": 0.18298972943663266,
+            "transfer": 0.11836744848819042,
+            "other_handling": 0.011032022056796249,
+            "verification": 0.05359025889164599
+          }
+        },
+        "difference_ms": {
+          "total": -0.034487496158475434,
+          "transfer": -0.01798429326765147,
+          "other_handling": -0.0035667864166695727,
+          "verification": -0.012936416474154395
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 9088,
+          "essential": 10701
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4543.623447206813,
+          "essential": 5350.436241526528
+        },
+        "median_ms": {
+          "oidc": 0.2170205,
+          "essential": 0.184792
+        },
+        "p95_ms": {
+          "oidc": 0.237667,
+          "essential": 0.200667
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.21916916857394367,
+            "transfer": 0.1377216277508803,
+            "other_handling": 0.014702551496478873,
+            "verification": 0.0667449893265845
+          },
+          "essential": {
+            "total": 0.1860373598729091,
+            "transfer": 0.12129253275394822,
+            "other_handling": 0.011100468273993086,
+            "verification": 0.053644358844967766
+          }
+        },
+        "difference_ms": {
+          "total": -0.033131808701034576,
+          "transfer": -0.01642909499693207,
+          "other_handling": -0.0036020832224857875,
+          "verification": -0.013100630481616735
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": {
+          "oidc": 4095,
+          "essential": 3454
+        },
+        "verified": {
+          "oidc": 8620,
+          "essential": 9255
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4309.86899722196,
+          "essential": 4627.309026329174
+        },
+        "median_ms": {
+          "oidc": 0.229542,
+          "essential": 0.21425
+        },
+        "p95_ms": {
+          "oidc": 0.245208,
+          "essential": 0.232666
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.23108003700696056,
+            "transfer": 0.15934048573085846,
+            "other_handling": 0.015566503364269142,
+            "verification": 0.056173047911832946
+          },
+          "essential": {
+            "total": 0.2152527277147488,
+            "transfer": 0.14709013041599137,
+            "other_handling": 0.012722925553754727,
+            "verification": 0.0554396717450027
+          }
+        },
+        "difference_ms": {
+          "total": -0.015827309292211766,
+          "transfer": -0.012250355314867095,
+          "other_handling": -0.002843577810514414,
+          "verification": -0.0007333761668302449
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": {
+          "oidc": 11353,
+          "essential": 10712
+        },
+        "verified": {
+          "oidc": 4911,
+          "essential": 4931
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2455.118637829071,
+          "essential": 2465.0539792956215
+        },
+        "median_ms": {
+          "oidc": 0.4045,
+          "essential": 0.4025
+        },
+        "p95_ms": {
+          "oidc": 0.426459,
+          "essential": 0.420875
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.40617629505192426,
+            "transfer": 0.27085963551211567,
+            "other_handling": 0.016849528405620037,
+            "verification": 0.11846713113418855
+          },
+          "essential": {
+            "total": 0.4045021904279051,
+            "transfer": 0.2676318493206246,
+            "other_handling": 0.014245328128168729,
+            "verification": 0.12262501297911174
+          }
+        },
+        "difference_ms": {
+          "total": -0.0016741046240191793,
+          "transfer": -0.0032277861914910555,
+          "other_handling": -0.0026042002774513077,
+          "verification": 0.004157881844923189
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": {
+          "oidc": 23662,
+          "essential": 23021
+        },
+        "verified": {
+          "oidc": 2915,
+          "essential": 2890
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 1457.0473442012428,
+          "essential": 1444.804831428956
+        },
+        "median_ms": {
+          "oidc": 0.683417,
+          "essential": 0.686417
+        },
+        "p95_ms": {
+          "oidc": 0.710375,
+          "essential": 0.726042
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.6851997320754717,
+            "transfer": 0.3591552360205832,
+            "other_handling": 0.020777171869639795,
+            "verification": 0.3052673241852487
+          },
+          "essential": {
+            "total": 0.6908524747404844,
+            "transfer": 0.3647450034602076,
+            "other_handling": 0.01863562837370242,
+            "verification": 0.30747184290657437
+          }
+        },
+        "difference_ms": {
+          "total": 0.0056527426650127,
+          "transfer": 0.005589767439624416,
+          "other_handling": -0.0021415434959373737,
+          "verification": 0.0022045187213256545
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": {
+          "oidc": 1204,
+          "essential": 563
+        },
+        "verified": {
+          "oidc": 12263,
+          "essential": 14504
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 6129.826045649063,
+          "essential": 7250.296633434683
+        },
+        "median_ms": {
+          "oidc": 0.626375,
+          "essential": 0.529084
+        },
+        "p95_ms": {
+          "oidc": 0.962833,
+          "essential": 0.828125
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.651362805267879,
+            "transfer": 0.4576974131126152,
+            "other_handling": 0.016369487564217564,
+            "verification": 0.17729590459104624
+          },
+          "essential": {
+            "total": 0.5505789298124656,
+            "transfer": 0.39334061196911196,
+            "other_handling": 0.01312860355763927,
+            "verification": 0.14410971428571429
+          }
+        },
+        "difference_ms": {
+          "total": -0.10078387545541345,
+          "transfer": -0.06435680114350323,
+          "other_handling": -0.003240884006578293,
+          "verification": -0.03318619030533196
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 12782,
+          "essential": 15018
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 6389.576986893615,
+          "essential": 7507.257220265344
+        },
+        "median_ms": {
+          "oidc": 0.603875,
+          "essential": 0.511521
+        },
+        "p95_ms": {
+          "oidc": 0.912,
+          "essential": 0.797625
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.6248546225160382,
+            "transfer": 0.4141352425285558,
+            "other_handling": 0.015975424894382726,
+            "verification": 0.1947439550930997
+          },
+          "essential": {
+            "total": 0.5316861129311493,
+            "transfer": 0.37492745278998535,
+            "other_handling": 0.012743910041283793,
+            "verification": 0.14401475009988016
+          }
+        },
+        "difference_ms": {
+          "total": -0.09316850958488887,
+          "transfer": -0.039207789738570475,
+          "other_handling": -0.003231514853098933,
+          "verification": -0.050729204993219534
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 12915,
+          "essential": 15481
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 6455.638219759974,
+          "essential": 7738.37098068394
+        },
+        "median_ms": {
+          "oidc": 0.596333,
+          "essential": 0.493042
+        },
+        "p95_ms": {
+          "oidc": 0.925041,
+          "essential": 0.772125
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.6184730027874565,
+            "transfer": 0.4215585487417731,
+            "other_handling": 0.015788148277197055,
+            "verification": 0.18112630576848626
+          },
+          "essential": {
+            "total": 0.5157480483172922,
+            "transfer": 0.3628437530521284,
+            "other_handling": 0.012661627737226278,
+            "verification": 0.1402426675279375
+          }
+        },
+        "difference_ms": {
+          "total": -0.10272495447016439,
+          "transfer": -0.058714795689644717,
+          "other_handling": -0.003126520539970777,
+          "verification": -0.040883638240548775
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": {
+          "oidc": 4095,
+          "essential": 3454
+        },
+        "verified": {
+          "oidc": 14707,
+          "essential": 15211
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 7352.2646651386995,
+          "essential": 7603.519758322942
+        },
+        "median_ms": {
+          "oidc": 0.5215,
+          "essential": 0.489459
+        },
+        "p95_ms": {
+          "oidc": 0.795166,
+          "essential": 0.790833
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.5429145903991297,
+            "transfer": 0.3754982510369212,
+            "other_handling": 0.016420275515060853,
+            "verification": 0.15099606384714762
+          },
+          "essential": {
+            "total": 0.5248843045822102,
+            "transfer": 0.37089110591019653,
+            "other_handling": 0.013664307146144238,
+            "verification": 0.14032889152586944
+          }
+        },
+        "difference_ms": {
+          "total": -0.018030285816919456,
+          "transfer": -0.0046071451267246655,
+          "other_handling": -0.0027559683689166153,
+          "verification": -0.010667172321278173
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": {
+          "oidc": 11353,
+          "essential": 10712
+        },
+        "verified": {
+          "oidc": 7260,
+          "essential": 7480
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 3628.7860948467655,
+          "essential": 3738.4247212830696
+        },
+        "median_ms": {
+          "oidc": 1.0741045,
+          "essential": 1.044687
+        },
+        "p95_ms": {
+          "oidc": 1.611125,
+          "essential": 1.584834
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 1.1008962898071626,
+            "transfer": 0.9507011020661157,
+            "other_handling": 0.01927879077134986,
+            "verification": 0.13091639696969698
+          },
+          "essential": {
+            "total": 1.0684629612299466,
+            "transfer": 0.9201982260695187,
+            "other_handling": 0.01595696590909091,
+            "verification": 0.1323077692513369
+          }
+        },
+        "difference_ms": {
+          "total": -0.032433328577216036,
+          "transfer": -0.030502875996596956,
+          "other_handling": -0.0033218248622589493,
+          "verification": 0.0013913722816399077
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": {
+          "oidc": 23662,
+          "essential": 23021
+        },
+        "verified": {
+          "oidc": 3761,
+          "essential": 3911
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 1878.6709184790852,
+          "essential": 1953.8954854510414
+        },
+        "median_ms": {
+          "oidc": 2.1035,
+          "essential": 2.017542
+        },
+        "p95_ms": {
+          "oidc": 3.089209,
+          "essential": 2.934208
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 2.126334371709652,
+            "transfer": 1.7752791568731718,
+            "other_handling": 0.02318332464770008,
+            "verification": 0.32787189018877955
+          },
+          "essential": {
+            "total": 2.044769435182818,
+            "transfer": 1.7090463684479673,
+            "other_handling": 0.01993371311684991,
+            "verification": 0.31578935361800053
+          }
+        },
+        "difference_ms": {
+          "total": -0.08156493652683405,
+          "transfer": -0.06623278842520453,
+          "other_handling": -0.003249611530850169,
+          "verification": -0.012082536570779012
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": {
+          "oidc": 1204,
+          "essential": 563
+        },
+        "verified": {
+          "oidc": 4667,
+          "essential": 4988
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2333.1500274958753,
+          "essential": 2493.7506249375065
+        },
+        "median_ms": {
+          "oidc": 0.4,
+          "essential": 0.4
+        },
+        "p95_ms": {
+          "oidc": 0.5,
+          "essential": 0.5
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.4282836940218556,
+            "transfer": 0.35787348746518105,
+            "other_handling": 0.018165874866080994,
+            "verification": 0.052244331690593525
+          },
+          "essential": {
+            "total": 0.40068163592622297,
+            "transfer": 0.3487132800721732,
+            "other_handling": 0.014965521050521251,
+            "verification": 0.037002834803528464
+          }
+        },
+        "difference_ms": {
+          "total": -0.027602058095632653,
+          "transfer": -0.009160207393007824,
+          "other_handling": -0.0032003538155597425,
+          "verification": -0.01524149688706506
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 4335,
+          "essential": 5018
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2167.0665866826635,
+          "essential": 2509.0
+        },
+        "median_ms": {
+          "oidc": 0.4,
+          "essential": 0.4
+        },
+        "p95_ms": {
+          "oidc": 0.6,
+          "essential": 0.5
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.461199538638985,
+            "transfer": 0.37512906551326414,
+            "other_handling": 0.01776721014994233,
+            "verification": 0.06830326297577854
+          },
+          "essential": {
+            "total": 0.39816660023913913,
+            "transfer": 0.32919223455559987,
+            "other_handling": 0.014431438023116779,
+            "verification": 0.05454292766042248
+          }
+        },
+        "difference_ms": {
+          "total": -0.06303293839984586,
+          "transfer": -0.045936830957664265,
+          "other_handling": -0.0033357721268255525,
+          "verification": -0.013760335315356066
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 4402,
+          "essential": 3864
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2200.8899555022244,
+          "essential": 1932.0
+        },
+        "median_ms": {
+          "oidc": 0.4,
+          "essential": 0.5
+        },
+        "p95_ms": {
+          "oidc": 0.5,
+          "essential": 0.8
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.45415720127214904,
+            "transfer": 0.3681892526124489,
+            "other_handling": 0.01768687346660609,
+            "verification": 0.06828107519309405
+          },
+          "essential": {
+            "total": 0.5170807453416149,
+            "transfer": 0.4371435742753623,
+            "other_handling": 0.017787795289855073,
+            "verification": 0.062149375776397515
+          }
+        },
+        "difference_ms": {
+          "total": 0.06292354406946582,
+          "transfer": 0.06895432166291343,
+          "other_handling": 0.00010092182324898322,
+          "verification": -0.006131699416696536
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": {
+          "oidc": 4095,
+          "essential": 3454
+        },
+        "verified": {
+          "oidc": 4032,
+          "essential": 4068
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2015.8992050397478,
+          "essential": 2033.694945758136
+        },
+        "median_ms": {
+          "oidc": 0.5,
+          "essential": 0.5
+        },
+        "p95_ms": {
+          "oidc": 0.6,
+          "essential": 0.7
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.49565972222222227,
+            "transfer": 0.41836960168650794,
+            "other_handling": 0.018809883680555556,
+            "verification": 0.058480236855158726
+          },
+          "essential": {
+            "total": 0.49137168141592924,
+            "transfer": 0.411821302114061,
+            "other_handling": 0.018082460668633234,
+            "verification": 0.06146791863323501
+          }
+        },
+        "difference_ms": {
+          "total": -0.004288040806293025,
+          "transfer": -0.006548299572446958,
+          "other_handling": -0.0007274230119223221,
+          "verification": 0.002987681778076283
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": {
+          "oidc": 11353,
+          "essential": 10712
+        },
+        "verified": {
+          "oidc": 3216,
+          "essential": 3187
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 1607.5981004748812,
+          "essential": 1593.1813637272546
+        },
+        "median_ms": {
+          "oidc": 0.6,
+          "essential": 0.6
+        },
+        "p95_ms": {
+          "oidc": 0.7,
+          "essential": 0.8
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.6214863184079602,
+            "transfer": 0.48077345708955227,
+            "other_handling": 0.021078470460199006,
+            "verification": 0.11963439085820896
+          },
+          "essential": {
+            "total": 0.627141512394101,
+            "transfer": 0.48393711233134606,
+            "other_handling": 0.020802656416692815,
+            "verification": 0.12240174364606213
+          }
+        },
+        "difference_ms": {
+          "total": 0.005655193986140783,
+          "transfer": 0.0031636552417937946,
+          "other_handling": -0.00027581404350619093,
+          "verification": 0.0027673527878531723
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": {
+          "oidc": 23662,
+          "essential": 23021
+        },
+        "verified": {
+          "oidc": 2179,
+          "essential": 2071
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 1089.2821435712858,
+          "essential": 1035.0342345944325
+        },
+        "median_ms": {
+          "oidc": 0.9,
+          "essential": 0.9
+        },
+        "p95_ms": {
+          "oidc": 1.0,
+          "essential": 1.2
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.9174850849013308,
+            "transfer": 0.5790540449747591,
+            "other_handling": 0.024569149609912806,
+            "verification": 0.313861890316659
+          },
+          "essential": {
+            "total": 0.965620473201352,
+            "transfer": 0.6088364171897634,
+            "other_handling": 0.025227820376629646,
+            "verification": 0.33155623563495895
+          }
+        },
+        "difference_ms": {
+          "total": 0.048135388300021176,
+          "transfer": 0.02978237221500435,
+          "other_handling": 0.0006586707667168394,
+          "verification": 0.017694345318299942
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": {
+          "oidc": 1204,
+          "essential": 563
+        },
+        "verified": {
+          "oidc": 8140,
+          "essential": 8756
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4068.5759984005595,
+          "essential": 4376.2495001999205
+        },
+        "median_ms": {
+          "oidc": 0.9,
+          "essential": 0.8
+        },
+        "p95_ms": {
+          "oidc": 1.4,
+          "essential": 1.3
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.9827272727272727,
+            "transfer": 0.7881758142506142,
+            "other_handling": 0.02134058194103194,
+            "verification": 0.17321087653562653
+          },
+          "essential": {
+            "total": 0.913533576975788,
+            "transfer": 0.7556299625399726,
+            "other_handling": 0.018018244175422565,
+            "verification": 0.13988537026039286
+          }
+        },
+        "difference_ms": {
+          "total": -0.06919369575148471,
+          "transfer": -0.032545851710641616,
+          "other_handling": -0.003322337765609376,
+          "verification": -0.033325506275233674
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 8185,
+          "essential": 8417
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4091.068126155845,
+          "essential": 4207.448137965508
+        },
+        "median_ms": {
+          "oidc": 0.9,
+          "essential": 0.9
+        },
+        "p95_ms": {
+          "oidc": 1.3,
+          "essential": 1.4
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.9771899816737936,
+            "transfer": 0.7580735927916922,
+            "other_handling": 0.021109176175931582,
+            "verification": 0.1980072127061698
+          },
+          "essential": {
+            "total": 0.9497564452892955,
+            "transfer": 0.7612872826422716,
+            "other_handling": 0.019288429963169776,
+            "verification": 0.16918073268385408
+          }
+        },
+        "difference_ms": {
+          "total": -0.02743353638449808,
+          "transfer": 0.0032136898505794598,
+          "other_handling": -0.0018207462127618063,
+          "verification": -0.02882648002231572
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": {
+          "oidc": 948,
+          "essential": 307
+        },
+        "verified": {
+          "oidc": 7773,
+          "essential": 8761
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 3885.7228554289145,
+          "essential": 4379.186244126762
+        },
+        "median_ms": {
+          "oidc": 0.9,
+          "essential": 0.8
+        },
+        "p95_ms": {
+          "oidc": 1.4,
+          "essential": 1.2
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 1.0288048372571723,
+            "transfer": 0.7994266145632317,
+            "other_handling": 0.02235187366525151,
+            "verification": 0.20702634902868905
+          },
+          "essential": {
+            "total": 0.9129094852185823,
+            "transfer": 0.7392402194954913,
+            "other_handling": 0.018232927747973977,
+            "verification": 0.155436337975117
+          }
+        },
+        "difference_ms": {
+          "total": -0.11589535203859003,
+          "transfer": -0.06018639506774037,
+          "other_handling": -0.004118945917277534,
+          "verification": -0.051590011053572055
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": {
+          "oidc": 4095,
+          "essential": 3454
+        },
+        "verified": {
+          "oidc": 8122,
+          "essential": 8616
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 4059.782065380386,
+          "essential": 4306.492727545359
+        },
+        "median_ms": {
+          "oidc": 0.9,
+          "essential": 0.8
+        },
+        "p95_ms": {
+          "oidc": 1.3,
+          "essential": 1.3
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 0.9846958877123861,
+            "transfer": 0.790242080891406,
+            "other_handling": 0.023982601329721742,
+            "verification": 0.1704712054912583
+          },
+          "essential": {
+            "total": 0.9284818941504179,
+            "transfer": 0.7556807963091922,
+            "other_handling": 0.020124683727948,
+            "verification": 0.15267641411327762
+          }
+        },
+        "difference_ms": {
+          "total": -0.05621399356196821,
+          "transfer": -0.03456128458221386,
+          "other_handling": -0.003857917601773741,
+          "verification": -0.01779479137798068
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": {
+          "oidc": 11353,
+          "essential": 10712
+        },
+        "verified": {
+          "oidc": 5385,
+          "essential": 5631
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 2691.288919986006,
+          "essential": 2813.811712972217
+        },
+        "median_ms": {
+          "oidc": 1.4,
+          "essential": 1.3
+        },
+        "p95_ms": {
+          "oidc": 2.1,
+          "essential": 2.0
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 1.4851810584958216,
+            "transfer": 1.312702348003714,
+            "other_handling": 0.023501388115134633,
+            "verification": 0.1489773223769731
+          },
+          "essential": {
+            "total": 1.4205647309536493,
+            "transfer": 1.2611614231930384,
+            "other_handling": 0.01976106943704493,
+            "verification": 0.13964223832356598
+          }
+        },
+        "difference_ms": {
+          "total": -0.06461632754217228,
+          "transfer": -0.05154092481067574,
+          "other_handling": -0.003740318678089702,
+          "verification": -0.009335084053407106
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": {
+          "oidc": 23662,
+          "essential": 23021
+        },
+        "verified": {
+          "oidc": 3280,
+          "essential": 3324
+        },
+        "failed": {
+          "oidc": 0,
+          "essential": 0
+        },
+        "throughput_rps": {
+          "oidc": 1638.9346924499075,
+          "essential": 1660.3396603396604
+        },
+        "median_ms": {
+          "oidc": 2.4,
+          "essential": 2.4
+        },
+        "p95_ms": {
+          "oidc": 3.6,
+          "essential": 3.6
+        },
+        "mean_ms": {
+          "oidc": {
+            "total": 2.4384451219512195,
+            "transfer": 2.0620210100609757,
+            "other_handling": 0.026447515243902438,
+            "verification": 0.34997659664634145
+          },
+          "essential": {
+            "total": 2.4057460890493383,
+            "transfer": 2.0429013586040914,
+            "other_handling": 0.023577719314079423,
+            "verification": 0.3392670111311673
+          }
+        },
+        "difference_ms": {
+          "total": -0.03269903290188125,
+          "transfer": -0.019119651456884323,
+          "other_handling": -0.002869795929823015,
+          "verification": -0.010709585515174147
+        }
+      }
+    ],
+    "network_model": [
+      {
+        "algorithm": "RS256",
+        "request_bytes": {
+          "oidc": 1360,
+          "essential": 719
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.05128000000000001
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5128
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.128000000000001
+          }
+        ]
+      },
+      {
+        "algorithm": "ES256",
+        "request_bytes": {
+          "oidc": 1104,
+          "essential": 463
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.05128
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5127999999999999
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.127999999999999
+          }
+        ]
+      },
+      {
+        "algorithm": "EdDSA",
+        "request_bytes": {
+          "oidc": 1104,
+          "essential": 463
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.05128
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5127999999999999
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.127999999999999
+          }
+        ]
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "request_bytes": {
+          "oidc": 4251,
+          "essential": 3610
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.05127999999999999
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5127999999999999
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.127999999999997
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "request_bytes": {
+          "oidc": 11509,
+          "essential": 10868
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.05127999999999999
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5128000000000004
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.128000000000014
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "request_bytes": {
+          "oidc": 23818,
+          "essential": 23177
+        },
+        "saved_bytes": 641,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.051280000000000214
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.5127999999999986
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 5.127999999999986
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": {
+    "limits": {
+      "logs": {
+        "app.log": "limits/logs/app.log.gz",
+        "browser.log": "limits/logs/browser.log.gz",
+        "proxy-access.log": "limits/logs/proxy-access.log.gz",
+        "proxy-error.log": "limits/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "limits/nginx.conf"
+    },
+    "latency": {
+      "oidc": "latency-oidc/load.json",
+      "essential": "latency-essential/load.json"
+    }
+  }
+}

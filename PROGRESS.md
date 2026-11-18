@@ -139,11 +139,13 @@ Sprint 3 answers transport questions 4 and 5 in [RESULTS.md](RESULTS.md#question
 
 ### S3-02 — Compare mitigations
 
-- [ ] Smaller claim sets: measure how much each configuration's token shrinks with only essential claims, and whether that moves any Sprint 2 boundary.
+- [x] Smaller claim sets: measure how much each configuration's token shrinks with only essential claims, and whether that moves any Sprint 2 boundary.
 - [ ] Cookie splitting: split oversized tokens across several cookies and reassemble them in the application. Record the per-cookie, cookie-count, and total header limits it runs into, and how it handles missing or reordered chunks.
 - [ ] Reference tokens: replace the JWT in transit with a short opaque reference and look up the signed token on the server. Measure the lookup latency, and note what the design gives up, such as stateless and offline verification.
 
 **Done when:** Each mitigation has run under the S3-01 workload, with its effect on the size limits and on latency recorded.
+
+**Status:** Smaller claim sets are done: `"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py claims` (or `make claims`) compares the 22-claim OIDC fixture with [fixtures/claims_essential.json](fixtures/claims_essential.json), its five required ID Token claims, in one run: token sizes, the Sprint 2 boundaries (derived from the WSL2 sweeps), each token sent as a cookie and a Bearer header at the default limits, and the S3-01 Bearer workload with each claim set (see [TRANSPORT.md](TRANSPORT.md#the-claims-command)). Measured on macOS (Apple M5 Pro, November 18, 2026 UTC); results in [MITIGATION_RESULTS.md](MITIGATION_RESULTS.md). Every token shrinks by the same 641 bytes (53–68% for the classical configurations, 15.7% for ML-DSA-44, 2.7–5.6% for SLH-DSA), and only ML-DSA-44's cookie verdict moves: at 3,454 bytes instead of 4,095, Chromium stores it and it verifies. Nothing moves for Bearer or for SLH-DSA, and over loopback the latency saving is at most about 0.1 ms. Cookie splitting and reference tokens are not done yet, and the WSL2 run of `claims` has not been done.
 
 ### S3-03 — Publish the end-to-end and mitigation results
 

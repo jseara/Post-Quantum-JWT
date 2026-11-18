@@ -7,8 +7,11 @@ header, and names the layer that rejected any token that did not verify (see
 scripts/transport_tokens.py). sweep sends cookie-carried tokens of growing size and narrows
 each layer's rejection boundary (see scripts/transport_sweep.py). load measures the latency and
 throughput of authenticated requests through the stack for every configuration and saves the
-raw timings (see scripts/transport_load.py). serve starts the stack and keeps it running until
-SIGINT or SIGTERM. versions compares the installed component versions with transport/stack.json.
+raw timings (see scripts/transport_load.py). claims measures the smaller-claim-set mitigation
+(S3-02): token sizes, Sprint 2 boundaries, size limits at the defaults, and load latency with
+oidc and essential claims (see scripts/transport_claims.py). serve starts the stack and keeps it
+running until SIGINT or SIGTERM. versions compares the installed component versions with
+transport/stack.json.
 """
 
 import argparse
@@ -559,6 +562,28 @@ def keepalive_connections(text: str) -> int:
     return connections
 
 
+def header_buffer_size(text: str) -> str:
+    """Parse the claims command's --header-buffers: an nginx size such as 32k."""
+    try:
+        return nginx_size("header_buffers", text)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from None
+
+
+def reject_repeated_values(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Exit 2 if --alg, --client, or --concurrency repeats a value."""
+    for option, values in (("--alg", args.alg), ("--client", args.client),
+                           ("--concurrency", args.concurrency)):
+        if values and len(set(values)) != len(values):
+            parser.error(f"{option} must not repeat a value, got {' '.join(map(str, values))}")
+
+
+def reject_used_output_dir(parser: argparse.ArgumentParser, output_dir: Path) -> None:
+    """Exit 2 if --output-dir exists and is not an empty directory, so no run is overwritten."""
+    if output_dir.exists() and (not output_dir.is_dir() or any(output_dir.iterdir())):
+        parser.error(f"--output-dir {output_dir} exists and is not empty; choose a new directory")
+
+
 # Each run_load setting, mapped to the attribute of the load command's option that sets it.
 LOAD_SETTING_OPTIONS = {
     "algorithms": "alg", "transport": "transport", "clients": "client", "claims": "claims",
@@ -579,13 +604,8 @@ def load_command_settings(parser: argparse.ArgumentParser, args: argparse.Namesp
     """
     from scripts.transport_load import default_settings, checked_settings, read_saved_settings
 
-    for option, values in (("--alg", args.alg), ("--client", args.client),
-                           ("--concurrency", args.concurrency)):
-        if values and len(set(values)) != len(values):
-            parser.error(f"{option} must not repeat a value, got {' '.join(map(str, values))}")
-    output_dir = args.output_dir
-    if output_dir.exists() and (not output_dir.is_dir() or any(output_dir.iterdir())):
-        parser.error(f"--output-dir {output_dir} exists and is not empty; choose a new directory")
+    reject_repeated_values(parser, args)
+    reject_used_output_dir(parser, args.output_dir)
 
     settings = default_settings()
     if args.settings is not None:
@@ -599,6 +619,62 @@ def load_command_settings(parser: argparse.ArgumentParser, args: argparse.Namesp
         return checked_settings(**settings)
     except ValueError as error:  # Options are checked as they are parsed, so a saved value.
         parser.error(f"--settings: {error}")
+
+
+# Each run_claims setting, mapped to the attribute of the claims command's option that sets it.
+CLAIMS_SETTING_OPTIONS = {
+    "algorithms": "alg", "clients": "client", "concurrency": "concurrency",
+    "duration": "duration", "warmup": "warmup", "timeout": "timeout",
+    "header_buffers": "header_buffers", "upstream_keepalive": "upstream_keepalive",
+}
+
+
+def claims_command_settings(parser: argparse.ArgumentParser, args: argparse.Namespace) -> dict:
+    """Return the claims command's run_claims settings; exit 2 on a usage error, before any start.
+
+    As for load, each setting comes from its option when it was given, else from the --settings
+    file (an earlier claims.json), else from run_claims's default. --output-dir and --run-dir
+    are never taken from the file.
+    """
+    from scripts.transport_claims import checked_settings, default_settings, read_saved_settings
+
+    reject_repeated_values(parser, args)
+    reject_used_output_dir(parser, args.output_dir)
+
+    settings = default_settings()
+    if args.settings is not None:
+        try:
+            settings.update(read_saved_settings(args.settings))
+        except ValueError as error:
+            parser.error(f"--settings: {error}")
+    given = {name: getattr(args, option) for name, option in CLAIMS_SETTING_OPTIONS.items()}
+    settings.update({name: value for name, value in given.items() if value is not None})
+    try:
+        return checked_settings(**settings)
+    except ValueError as error:  # Options are checked as they are parsed, so a saved value.
+        parser.error(f"--settings: {error}")
+
+
+def run_claims_command(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Run every phase of the claims command, print its summary, and say where it was saved.
+
+    Usage errors exit 2 before any process starts. Runtime failures and SIGINT or SIGTERM print
+    'Error: ...' and exit 1, after every started process has been stopped. Rejected pairs are
+    results, not failures, so they still exit 0.
+    """
+    settings = claims_command_settings(parser, args)
+    from scripts.transport_claims import run_claims, summary_lines
+
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, interrupt)
+    try:
+        result = run_claims(args.output_dir, run_dir=args.run_dir, **settings)
+    except KeyboardInterrupt:
+        parser.exit(1, "Error: interrupted\n")
+    except (OSError, RuntimeError, ValueError) as error:
+        parser.exit(1, f"Error: {error}\n")
+    sys.stdout.write("".join(f"{line}\n" for line in summary_lines(result)))
+    sys.stdout.write(f"Saved the results to {args.output_dir}\n")
 
 
 def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
@@ -654,7 +730,8 @@ def add_load_command(commands) -> None:
     load.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
                       help="configuration to measure; repeat or list several (default: all six; "
                            "the reference is always measured)")
-    load.add_argument("--claims", choices=("minimal", "oidc"),
+    # Literal names, so importing this module never loads scripts.token_sizing.
+    load.add_argument("--claims", choices=("minimal", "oidc", "essential"),
                       help="claims fixture of every token (default: minimal)")
     load.add_argument("--concurrency", action="extend", nargs="+", type=concurrency_level,
                       metavar="N", help="closed-loop workers, 1-64; repeat or list several "
@@ -678,6 +755,48 @@ def add_load_command(commands) -> None:
     load.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
                       help="save load.json, raw.csv.gz, the logs, and nginx.conf here; it must "
                            "not exist yet or be empty")
+
+
+def add_claims_command(commands) -> None:
+    """Add the claims command; its options default to None so --settings can fill them in.
+
+    It starts its own stacks, so it takes none of the shared stack options except --timeout,
+    --header-buffers, and --run-dir.
+    """
+    claims = commands.add_parser("claims",
+                                 help="measure the smaller-claim-set mitigation (S3-02): token "
+                                      "sizes, Sprint 2 boundaries, size limits, and latency")
+    claims.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
+                        help="save claims.json, limits/, latency-oidc/, and latency-essential/ "
+                             "here; it must not exist yet or be empty")
+    claims.add_argument("--settings", type=Path, metavar="PATH",
+                        help="reuse the settings of an earlier run's claims.json; options given "
+                             "here override the saved values")
+    claims.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                        help="configuration to measure; repeat or list several (default: all "
+                             "six; ES256, the latency reference, is always measured)")
+    claims.add_argument("--client", action="extend", nargs="+", choices=("direct", "browser"),
+                        help="latency clients: http.client threads (direct), Chromium's test "
+                             "page (browser), or both (default: direct browser)")
+    claims.add_argument("--concurrency", action="extend", nargs="+", type=concurrency_level,
+                        metavar="N", help="latency closed-loop workers, 1-64; repeat or list "
+                                          "several (default: 1 4)")
+    claims.add_argument("--duration", type=duration_seconds, metavar="SECONDS",
+                        help="measured seconds per latency cell (default: 5)")
+    claims.add_argument("--warmup", type=warmup_seconds, metavar="SECONDS",
+                        help="unrecorded seconds before each latency cell (default: 1)")
+    claims.add_argument("--timeout", type=positive_seconds, metavar="SECONDS",
+                        help="seconds allowed for startup and for each browser step (default: 60)")
+    claims.add_argument("--header-buffers", type=header_buffer_size, metavar="SIZE",
+                        help="latency stacks only: set nginx's large_client_header_buffers to 4 "
+                             "SIZE, e.g. 32k (default: 4 8k); the size-limits stack always "
+                             "keeps the defaults")
+    claims.add_argument("--upstream-keepalive", type=keepalive_connections, metavar="N",
+                        help="latency stacks only, not a default: let nginx keep up to N idle "
+                             "connections to waitress (default: a new connection per request)")
+    claims.add_argument("--run-dir", type=Path, metavar="DIR",
+                        help="put the three stacks' run directories (limits, latency-oidc, "
+                             "latency-essential) here (default: a new temporary directory each)")
 
 
 def main() -> None:
@@ -716,6 +835,7 @@ def main() -> None:
     sweep.add_argument("--output-dir", type=Path,
                        help="save sweep.json, the logs, and nginx.conf here")
     add_load_command(commands)
+    add_claims_command(commands)
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -731,6 +851,9 @@ def main() -> None:
         sys.stdout.write(json.dumps({"ok": not mismatched, "layers": layers}, indent=2) + "\n")
         if mismatched:
             parser.exit(1, f"Error: version mismatch: {', '.join(mismatched)}\n")
+        return
+    if args.command == "claims":  # It starts its own stacks, one per phase.
+        run_claims_command(parser, args)
         return
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:

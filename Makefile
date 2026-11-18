@@ -12,7 +12,7 @@ LOGS := $(RUN_DIR)/logs
 STACK := PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/transport_stack.py
 
 .DEFAULT_GOAL := help
-.PHONY: help serve logs check tokens sweep load versions test benchmark setup
+.PHONY: help serve logs check tokens sweep load claims versions test benchmark setup
 
 help:
 	@echo "make serve      start nginx (http://localhost:$(PROXY_PORT)) and the app (port $(APP_PORT)); Ctrl+C stops both"
@@ -21,6 +21,7 @@ help:
 	@echo "make tokens     send every configuration's token as a cookie and a Bearer header"
 	@echo "make sweep      cookie and Bearer sweeps of all six, at default and raised nginx buffers (SWEEP_DIR=$(SWEEP_DIR))"
 	@echo "make load       end-to-end latency and throughput of all six through the stack (LOAD_DIR=$(LOAD_DIR))"
+	@echo "make claims     smaller claim sets: token sizes, size limits, and latency, oidc vs essential (CLAIMS_DIR=$(CLAIMS_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -60,6 +61,12 @@ LOAD_DIR ?= results/load/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
 # 10 MiB.
 load:
 	$(STACK) load --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(LOAD_DIR)"
+
+CLAIMS_DIR ?= results/claims/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
+# S3-02's smaller claim sets (see MITIGATION_RESULTS.md). The size-limits stack keeps nginx's
+# defaults; the latency stacks repeat make load's recorded flags, without size controls.
+claims:
+	$(STACK) claims --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(CLAIMS_DIR)"
 
 versions:
 	$(STACK) versions
