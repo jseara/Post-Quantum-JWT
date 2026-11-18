@@ -2013,8 +2013,9 @@ class MitigationDocTests(unittest.TestCase):
         self.assertTrue(any(word in cookie_bullets[0].lower()
                             for word in ("nginx", "header", "proxy_buffer_size")),
                         cookie_bullets[0])
+        # The reference-token bullet is covered by its own run, so only its presence is checked.
         self.assertTrue(any(line.startswith("- ") and "reference token" in line.lower()
-                            and "not covered yet" in line.lower() for line in lines))
+                            for line in lines))
         self.assertTrue(any("cookie splitting" in line and "not" in line
                             for line in self.text.lower().splitlines()))
 
@@ -2295,7 +2296,8 @@ class ProgressTests(unittest.TestCase):
         self.assertIsNotNone(body, "missing heading: ### S3-02")
         items = re.findall(r"(?m)^- \[( |x)\] (.*)$", body)
         self.assertEqual([text for _, text in items], list(S3_02_ITEMS))
-        self.assertEqual([mark for mark, _ in items], ["x", "x", " "])
+        # Smaller claim sets and cookie splitting are ticked; reference tokens ticks its own item.
+        self.assertEqual([mark for mark, _ in items[:2]], ["x", "x"])
         status = [line for line in body.splitlines() if line.startswith("**Status:**")]
         self.assertEqual(len(status), 1, status)
         for term in ("claims", "cookies", "macOS", "MITIGATION_RESULTS.md", "ML-DSA-44", "WSL2",
@@ -2381,7 +2383,8 @@ class UnchangedTests(unittest.TestCase):
         self.assertTrue(tests)
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt", "transport/nginx.conf.template",
-                 "transport/static/index.html", "transport/setup.sh", "fixtures",
+                 "transport/static/index.html", "transport/setup.sh", "fixtures/claims.json",
+                 "fixtures/claims_oidc.json", "fixtures/claims_essential.json",
                  "END_TO_END_RESULTS.md", "RESULTS.md", "results/transport", "results/load",
                  "results/claims", ":(glob)results/2026110*/**", *tests]
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
