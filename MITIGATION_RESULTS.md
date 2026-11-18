@@ -12,24 +12,24 @@ The question: how much does each configuration's token shrink when it carries on
 
 - **Size:** every token shrinks by the same 641 bytes, from the 22-claim OpenID Connect fixture to its 5 required claims. That is 53.2% of RS256's token, 67.6% of ES256's and EdDSA's, 15.7% of ML-DSA-44's, and only 5.6% and 2.7% of SLH-DSA-SHA2-128s's and SLH-DSA-SHA2-128f's.
 - **Limits:** exactly one verdict moves. ML-DSA-44's cookie goes from 4,095 to 3,454 bytes, under Chromium's 4,096-byte cookie name + value limit and under WSL2's nginx response buffer, so the browser that rejected it with OIDC claims now stores and sends it. Nothing moves for Bearer headers or for SLH-DSA, whose header and signature alone exceed every default limit.
-- **Latency:** over loopback, the smaller payload saves 0.033–0.034 ms per request for the classical configurations and 0.016 ms for ML-DSA-44 from http.client at concurrency 1, and nothing measurable for SLH-DSA or from Chromium. On a real uplink, the calculated saving is 0.051–5.128 ms per request for every configuration.
+- **Latency:** over loopback, the smaller payload saves 0.022–0.025 ms per request for the classical configurations and 0.014 ms for ML-DSA-44 from http.client at concurrency 1, most of it in verification. The SLH-DSA differences, every difference at concurrency 4, and the Chromium differences cannot be told apart from noise and the fixed run order. On a real uplink, the calculated saving is 0.051–5.128 ms per request for every configuration.
 
-Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores, macOS 26.5.1, arm64, 16 KiB memory pages; Python 3.15.2, Playwright 1.64.1, Chromium 156.0.8078.4, nginx 1.31.8, waitress 3.0.2 with its default 4 threads), recorded with `make claims` on November 18, 2026 (UTC; the evening of November 17 local time) at commit `828cf05`, with no uncommitted change to `scripts/` or `fixtures/`. Every token was signed with **ephemeral experiment keys, not production credentials**: each key was generated in memory for the run and discarded, so the tokens in its logs are not credentials either.
+Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores, macOS 26.5.1, arm64, 16 KiB memory pages; Python 3.15.2, Playwright 1.64.1, Chromium 156.0.8078.4, nginx 1.31.8, waitress 3.0.2 with its default 4 threads), recorded with `make claims` on November 18, 2026 (UTC; just after midnight local time) at commit `df91e2e`, with no uncommitted change to `scripts/` or `fixtures/`. Every token was signed with **ephemeral experiment keys, not production credentials**: each key was generated in memory for the run and discarded, so the tokens in its logs are not credentials either.
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| Apple M5 Pro (macOS) | [`20261118T000856Z-macos`](results/claims/20261118T000856Z-macos/) | [claims.json](results/claims/20261118T000856Z-macos/claims.json) |
+| Apple M5 Pro (macOS) | [`20261118T053507Z-macos`](results/claims/20261118T053507Z-macos/) | [claims.json](results/claims/20261118T053507Z-macos/claims.json) |
 
 | Phase | Evidence |
 | --- | --- |
-| Size limits, at the documented defaults | [nginx.conf](results/claims/20261118T000856Z-macos/limits/nginx.conf), [app.log.gz](results/claims/20261118T000856Z-macos/limits/logs/app.log.gz), [browser.log.gz](results/claims/20261118T000856Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](results/claims/20261118T000856Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](results/claims/20261118T000856Z-macos/limits/logs/proxy-error.log.gz) |
-| Latency, OIDC claims | [load.json](results/claims/20261118T000856Z-macos/latency-oidc/load.json), [raw.csv.gz](results/claims/20261118T000856Z-macos/latency-oidc/raw.csv.gz), [logs](results/claims/20261118T000856Z-macos/latency-oidc/logs/), [nginx.conf](results/claims/20261118T000856Z-macos/latency-oidc/nginx.conf) |
-| Latency, essential claims | [load.json](results/claims/20261118T000856Z-macos/latency-essential/load.json), [raw.csv.gz](results/claims/20261118T000856Z-macos/latency-essential/raw.csv.gz), [logs](results/claims/20261118T000856Z-macos/latency-essential/logs/), [nginx.conf](results/claims/20261118T000856Z-macos/latency-essential/nginx.conf) |
+| Size limits, at the documented defaults | [nginx.conf](results/claims/20261118T053507Z-macos/limits/nginx.conf), [app.log.gz](results/claims/20261118T053507Z-macos/limits/logs/app.log.gz), [browser.log.gz](results/claims/20261118T053507Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](results/claims/20261118T053507Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](results/claims/20261118T053507Z-macos/limits/logs/proxy-error.log.gz) |
+| Latency, OIDC claims | [load.json](results/claims/20261118T053507Z-macos/latency-oidc/load.json), [raw.csv.gz](results/claims/20261118T053507Z-macos/latency-oidc/raw.csv.gz), [logs](results/claims/20261118T053507Z-macos/latency-oidc/logs/), [nginx.conf](results/claims/20261118T053507Z-macos/latency-oidc/nginx.conf) |
+| Latency, essential claims | [load.json](results/claims/20261118T053507Z-macos/latency-essential/load.json), [raw.csv.gz](results/claims/20261118T053507Z-macos/latency-essential/raw.csv.gz), [logs](results/claims/20261118T053507Z-macos/latency-essential/logs/), [nginx.conf](results/claims/20261118T053507Z-macos/latency-essential/nginx.conf) |
 | Sprint 2 boundaries (WSL2, committed earlier) | [cookie-default/sweep.json](results/transport/20261113T074114Z-wsl2/cookie-default/sweep.json), [cookie-16k/sweep.json](results/transport/20261113T074114Z-wsl2/cookie-16k/sweep.json), [bearer-default/sweep.json](results/transport/20261113T074114Z-wsl2/bearer-default/sweep.json) |
 
 `claims.json` holds the settings, the environment, the claim sets, the token sizes, the derived Sprint 2 verdicts, every size-limit pair with its evidence and nonces, and the latency comparison; each latency directory is exactly what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `claims.json`, both `load.json` and `raw.csv.gz` files, and every `app.log.gz` and `proxy-access.log.gz` hold no token. The size-limits phase's `browser.log.gz` holds the tokens Chromium sent and received, and its `proxy-error.log.gz` holds nginx's own truncated prefix of each of the four rejected Bearer header lines.
 
-**Machine state.** No other candidate's stack, load run, or test suite was running: before the run, the command waited until none had run for 30 seconds and 188 sockets were in TIME_WAIT, and a check every 2 seconds during the run found none. A `make serve` stack started earlier from the main checkout (its own nginx and waitress) was running and was not used by the run. Which desktop applications were open was not recorded. An earlier recording the same evening overlapped another candidate's `claims` run for its whole length and was discarded.
+**Machine state.** Nothing else from the project was running: no other stack, load run, or test suite, and the `make serve` stack from the main checkout had been stopped (nothing listened on ports 8080 or 8081). When the run started, 0 sockets were in TIME_WAIT and the 1-minute load average was 2.2 on 18 cores. Spotify and Steam were open. This run replaces a provisional one recorded a few hours earlier, while the other S3-02 candidates' work and an idle `make serve` stack were on the same Mac.
 
 ### Claim sets
 
@@ -95,7 +95,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 | SLH-DSA-SHA2-128s | 11,353 | -3,185 | no | 10,712 | -2,544 | no | no |
 | SLH-DSA-SHA2-128f | 23,662 | -15,494 | no | 23,021 | -14,853 | no | no |
 
-**Measured on this Mac at the documented default limits.** One stack with no raised limit (its [nginx.conf](results/claims/20261118T000856Z-macos/limits/nginx.conf) has no `Not a default` line) and headless Chromium sent each configuration's OIDC and essential token once as a `jwt` cookie with production attributes (`Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600`) and once as an `Authorization: Bearer` header, and named the rejecting layer of each rejected pair from every layer's log. Every one of the 24 tokens also verified when sent straight to the application.
+**Measured on this Mac at the documented default limits.** One stack with no raised limit (its [nginx.conf](results/claims/20261118T053507Z-macos/limits/nginx.conf) has no `Not a default` line) and headless Chromium sent each configuration's OIDC and essential token once as a `jwt` cookie with production attributes (`Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600`) and once as an `Authorization: Bearer` header, and named the rejecting layer of each rejected pair from every layer's log. Every one of the 24 tokens also verified when sent straight to the application.
 
 | Configuration | Transport | OIDC token | OIDC outcome | Essential token | Essential outcome | Moved |
 | --- | --- | ---: | --- | ---: | --- | --- |
@@ -120,7 +120,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 
 ### Latency
 
-The S3-01 workload ([END_TO_END_RESULTS.md](END_TO_END_RESULTS.md#workload)) ran twice, first with OIDC claims and then with the essential claims, each on a new stack: a closed loop of `GET /api/token/verify?timing=1&nonce=<32 hex digits>` requests with the token in an `Authorization: Bearer` header, from http.client threads and from Chromium's test page, at concurrency 1 and 4, with 1 second of warm-up and 2 seconds measured per cell, `--header-buffers 32k`, and `--upstream-keepalive 64`. Size-control cells were off: they answer a different question. Every measured request verified: 171,930 with OIDC claims and 188,726 with essential claims, none failed, and every cell had at least 2,071 verified requests.
+The S3-01 workload ([END_TO_END_RESULTS.md](END_TO_END_RESULTS.md#workload)) ran twice, first with OIDC claims and then with the essential claims, each on a new stack: a closed loop of `GET /api/token/verify?timing=1&nonce=<32 hex digits>` requests with the token in an `Authorization: Bearer` header, from http.client threads and from Chromium's test page, at concurrency 1 and 4, with 1 second of warm-up and 2 seconds measured per cell, `--header-buffers 32k`, and `--upstream-keepalive 64`. Size-control cells were off: they answer a different question. Every measured request verified: 172,110 with OIDC claims and 187,375 with essential claims, none failed, and every cell had at least 2,209 verified requests.
 
 Latency is the client-measured time from sending a request to reading its whole response body, in milliseconds; p95 is nearest-rank. The difference is the essential mean minus the OIDC mean, so a negative difference means the essential claims were faster. Chromium coarsens its timer to about 0.1 ms, so its medians and p95 values are multiples of 0.1 ms.
 
@@ -128,62 +128,62 @@ Latency is the client-measured time from sending a request to reading its whole 
 
 | Configuration | OIDC token | Essential token | OIDC mean | Essential mean | Difference | OIDC median | Essential median | OIDC p95 | Essential p95 | OIDC req/s | Essential req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 563 | 0.202 | 0.169 | -0.033 | 0.201 | 0.168 | 0.220 | 0.184 | 4,917 | 5,881 |
-| ES256 | 948 | 307 | 0.217 | 0.183 | -0.034 | 0.216 | 0.183 | 0.234 | 0.195 | 4,579 | 5,440 |
-| EdDSA | 948 | 307 | 0.219 | 0.186 | -0.033 | 0.217 | 0.185 | 0.238 | 0.201 | 4,544 | 5,350 |
-| ML-DSA-44 | 4,095 | 3,454 | 0.231 | 0.215 | -0.016 | 0.230 | 0.214 | 0.245 | 0.233 | 4,310 | 4,627 |
-| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 0.406 | 0.405 | -0.002 | 0.405 | 0.403 | 0.426 | 0.421 | 2,455 | 2,465 |
-| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 0.685 | 0.691 | +0.006 | 0.683 | 0.686 | 0.710 | 0.726 | 1,457 | 1,445 |
+| RS256 | 1,204 | 563 | 0.205 | 0.180 | -0.025 | 0.203 | 0.178 | 0.222 | 0.194 | 4,857 | 5,537 |
+| ES256 | 948 | 307 | 0.218 | 0.193 | -0.024 | 0.215 | 0.193 | 0.236 | 0.206 | 4,573 | 5,147 |
+| EdDSA | 948 | 307 | 0.214 | 0.193 | -0.022 | 0.212 | 0.192 | 0.229 | 0.204 | 4,649 | 5,166 |
+| ML-DSA-44 | 4,095 | 3,454 | 0.230 | 0.215 | -0.014 | 0.229 | 0.215 | 0.246 | 0.228 | 4,334 | 4,625 |
+| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 0.402 | 0.395 | -0.007 | 0.399 | 0.394 | 0.428 | 0.409 | 2,482 | 2,524 |
+| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 0.703 | 0.683 | -0.019 | 0.697 | 0.682 | 0.734 | 0.699 | 1,421 | 1,461 |
 
 **http.client (direct), concurrency 4**
 
 | Configuration | OIDC token | Essential token | OIDC mean | Essential mean | Difference | OIDC median | Essential median | OIDC p95 | Essential p95 | OIDC req/s | Essential req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 563 | 0.651 | 0.551 | -0.101 | 0.626 | 0.529 | 0.963 | 0.828 | 6,130 | 7,250 |
-| ES256 | 948 | 307 | 0.625 | 0.532 | -0.093 | 0.604 | 0.512 | 0.912 | 0.798 | 6,390 | 7,507 |
-| EdDSA | 948 | 307 | 0.618 | 0.516 | -0.103 | 0.596 | 0.493 | 0.925 | 0.772 | 6,456 | 7,738 |
-| ML-DSA-44 | 4,095 | 3,454 | 0.543 | 0.525 | -0.018 | 0.521 | 0.489 | 0.795 | 0.791 | 7,352 | 7,604 |
-| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 1.101 | 1.068 | -0.032 | 1.074 | 1.045 | 1.611 | 1.585 | 3,629 | 3,738 |
-| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 2.126 | 2.045 | -0.082 | 2.103 | 2.018 | 3.089 | 2.934 | 1,879 | 1,954 |
+| RS256 | 1,204 | 563 | 0.651 | 0.559 | -0.092 | 0.627 | 0.535 | 0.971 | 0.837 | 6,134 | 7,145 |
+| ES256 | 948 | 307 | 0.630 | 0.554 | -0.075 | 0.608 | 0.525 | 0.918 | 0.840 | 6,340 | 7,200 |
+| EdDSA | 948 | 307 | 0.625 | 0.529 | -0.096 | 0.604 | 0.507 | 0.917 | 0.781 | 6,388 | 7,552 |
+| ML-DSA-44 | 4,095 | 3,454 | 0.568 | 0.547 | -0.022 | 0.546 | 0.507 | 0.834 | 0.846 | 7,022 | 7,301 |
+| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 1.136 | 1.031 | -0.105 | 1.114 | 1.003 | 1.636 | 1.502 | 3,515 | 3,875 |
+| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 2.107 | 2.063 | -0.044 | 2.084 | 2.043 | 3.030 | 2.969 | 1,896 | 1,936 |
 
 **Chromium (browser), concurrency 1**
 
 | Configuration | OIDC token | Essential token | OIDC mean | Essential mean | Difference | OIDC median | Essential median | OIDC p95 | Essential p95 | OIDC req/s | Essential req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 563 | 0.428 | 0.401 | -0.028 | 0.400 | 0.400 | 0.500 | 0.500 | 2,333 | 2,494 |
-| ES256 | 948 | 307 | 0.461 | 0.398 | -0.063 | 0.400 | 0.400 | 0.600 | 0.500 | 2,167 | 2,509 |
-| EdDSA | 948 | 307 | 0.454 | 0.517 | +0.063 | 0.400 | 0.500 | 0.500 | 0.800 | 2,201 | 1,932 |
-| ML-DSA-44 | 4,095 | 3,454 | 0.496 | 0.491 | -0.004 | 0.500 | 0.500 | 0.600 | 0.700 | 2,016 | 2,034 |
-| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 0.621 | 0.627 | +0.006 | 0.600 | 0.600 | 0.700 | 0.800 | 1,608 | 1,593 |
-| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 0.917 | 0.966 | +0.048 | 0.900 | 0.900 | 1.000 | 1.200 | 1,089 | 1,035 |
+| RS256 | 1,204 | 563 | 0.462 | 0.422 | -0.041 | 0.400 | 0.400 | 0.500 | 0.500 | 2,162 | 2,370 |
+| ES256 | 948 | 307 | 0.489 | 0.401 | -0.087 | 0.500 | 0.400 | 0.600 | 0.500 | 2,045 | 2,490 |
+| EdDSA | 948 | 307 | 0.453 | 0.396 | -0.057 | 0.400 | 0.400 | 0.500 | 0.500 | 2,208 | 2,524 |
+| ML-DSA-44 | 4,095 | 3,454 | 0.488 | 0.472 | -0.016 | 0.500 | 0.500 | 0.600 | 0.500 | 2,048 | 2,118 |
+| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 0.622 | 0.612 | -0.010 | 0.600 | 0.600 | 0.700 | 0.700 | 1,607 | 1,633 |
+| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 0.905 | 0.892 | -0.013 | 0.900 | 0.900 | 1.000 | 1.000 | 1,104 | 1,120 |
 
 **Chromium (browser), concurrency 4**
 
 | Configuration | OIDC token | Essential token | OIDC mean | Essential mean | Difference | OIDC median | Essential median | OIDC p95 | Essential p95 | OIDC req/s | Essential req/s |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| RS256 | 1,204 | 563 | 0.983 | 0.914 | -0.069 | 0.900 | 0.800 | 1.400 | 1.300 | 4,069 | 4,376 |
-| ES256 | 948 | 307 | 0.977 | 0.950 | -0.027 | 0.900 | 0.900 | 1.300 | 1.400 | 4,091 | 4,207 |
-| EdDSA | 948 | 307 | 1.029 | 0.913 | -0.116 | 0.900 | 0.800 | 1.400 | 1.200 | 3,886 | 4,379 |
-| ML-DSA-44 | 4,095 | 3,454 | 0.985 | 0.928 | -0.056 | 0.900 | 0.800 | 1.300 | 1.300 | 4,060 | 4,306 |
-| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 1.485 | 1.421 | -0.065 | 1.400 | 1.300 | 2.100 | 2.000 | 2,691 | 2,814 |
-| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 2.438 | 2.406 | -0.033 | 2.400 | 2.400 | 3.600 | 3.600 | 1,639 | 1,660 |
+| RS256 | 1,204 | 563 | 0.973 | 0.916 | -0.057 | 0.900 | 0.800 | 1.300 | 1.200 | 4,110 | 4,366 |
+| ES256 | 948 | 307 | 0.977 | 0.905 | -0.072 | 0.900 | 0.800 | 1.300 | 1.200 | 4,094 | 4,419 |
+| EdDSA | 948 | 307 | 0.955 | 0.905 | -0.050 | 0.900 | 0.800 | 1.300 | 1.200 | 4,186 | 4,419 |
+| ML-DSA-44 | 4,095 | 3,454 | 0.917 | 0.916 | -0.000 | 0.800 | 0.800 | 1.200 | 1.200 | 4,362 | 4,364 |
+| SLH-DSA-SHA2-128s | 11,353 | 10,712 | 1.428 | 1.485 | +0.057 | 1.300 | 1.400 | 2.000 | 2.100 | 2,799 | 2,691 |
+| SLH-DSA-SHA2-128f | 23,662 | 23,021 | 2.418 | 2.565 | +0.147 | 2.400 | 2.500 | 3.500 | 3.900 | 1,653 | 1,558 |
 
-**Noise level.** EdDSA and ES256 tokens are the same size in both runs, so the difference between their means shows how much two cells differ without any change in size. From http.client at concurrency 1 it is +0.002 ms with OIDC claims and +0.003 ms with essential claims; at concurrency 4, -0.006 and -0.016 ms. From Chromium it is -0.007 and +0.119 ms at concurrency 1, and +0.052 and -0.037 ms at concurrency 4.
+**Noise level.** EdDSA and ES256 tokens are the same size in both runs, so the difference between their means shows how much two cells differ without any change in size. From http.client at concurrency 1 it is -0.004 ms with OIDC claims and -0.001 ms with essential claims; at concurrency 4, -0.005 and -0.026 ms. From Chromium it is -0.036 and -0.006 ms at concurrency 1, and -0.022 and -0.000 ms at concurrency 4. This measures noise within one run only; the two runs ran one after the other, always OIDC first, so a drift between them would affect every configuration's difference alike and does not show here.
 
 Where the saving is clear, http.client at concurrency 1, the components show where it comes from (difference of each component's mean, essential minus OIDC, in ms):
 
 | Configuration | Total | Transfer | Other handling | Verification |
 | --- | ---: | ---: | ---: | ---: |
-| RS256 | -0.033 | -0.016 | -0.003 | -0.014 |
-| ES256 | -0.034 | -0.018 | -0.004 | -0.013 |
-| EdDSA | -0.033 | -0.016 | -0.004 | -0.013 |
-| ML-DSA-44 | -0.016 | -0.012 | -0.003 | -0.001 |
-| SLH-DSA-SHA2-128s | -0.002 | -0.003 | -0.003 | +0.004 |
-| SLH-DSA-SHA2-128f | +0.006 | +0.006 | -0.002 | +0.002 |
+| RS256 | -0.025 | -0.009 | -0.003 | -0.013 |
+| ES256 | -0.024 | -0.007 | -0.003 | -0.014 |
+| EdDSA | -0.022 | -0.005 | -0.003 | -0.013 |
+| ML-DSA-44 | -0.014 | -0.005 | -0.003 | -0.006 |
+| SLH-DSA-SHA2-128s | -0.007 | -0.007 | -0.003 | +0.004 |
+| SLH-DSA-SHA2-128f | -0.019 | -0.009 | -0.004 | -0.006 |
 
-- **http.client, concurrency 1:** RS256, ES256, and EdDSA are 0.033–0.034 ms faster with the essential claims, more than ten times the +0.002 to +0.003 ms noise, and their throughput rises accordingly (ES256: 4,579 to 5,440 req/s). About half of it is transfer (the 641 fewer bytes through both connections) and the rest is verification and other handling: `verify_token` decodes and parses a smaller payload and checks fewer claims. ML-DSA-44 saves 0.016 ms, most of it in transfer. SLH-DSA-SHA2-128s (-0.002 ms) and SLH-DSA-SHA2-128f (+0.006 ms) show no saving beyond the noise: 641 bytes are a small part of their tokens. Because the two runs ran one after the other, these two rows also show that the later run was not faster overall.
-- **http.client, concurrency 4:** the classical configurations are 0.093–0.103 ms faster, against noise of 0.006–0.016 ms; ML-DSA-44 is 0.018 ms faster, and the SLH-DSA configurations 0.032 and 0.082 ms. At this concurrency a request also waits for the other workers' requests in waitress, so smaller requests shorten the queue too.
-- **Chromium:** the differences range from -0.116 to +0.063 ms with no consistent sign, against noise of up to 0.119 ms, so no effect is measurable from the browser.
+- **http.client, concurrency 1:** RS256, ES256, and EdDSA are 0.022–0.025 ms faster with the essential claims, more than five times the 0.001–0.004 ms noise, and their throughput rises accordingly (ES256: 4,573 to 5,147 req/s). Over half of it is verification (0.013–0.014 ms): `verify_token` decodes and parses a smaller payload and checks fewer claims. Transfer of the 641 fewer bytes through both connections saves 0.005–0.009 ms and other handling 0.003 ms. ML-DSA-44 saves 0.014 ms. The saving follows the share of the token that was removed, largest for the classical tokens and smaller for ML-DSA-44. SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f are 0.007 and 0.019 ms faster, although 641 bytes are only 5.6% and 2.7% of their tokens; SLH-DSA-SHA2-128f's difference is larger than that share suggests, so part of it may come from the run order rather than the claims.
+- **http.client, concurrency 4:** every configuration was faster with the essential claims: the classical configurations by 0.075–0.096 ms, ML-DSA-44 by 0.022 ms, and SLH-DSA-SHA2-128s and SLH-DSA-SHA2-128f by 0.105 and 0.044 ms, against same-size noise of 0.005–0.026 ms. These differences do not follow the share of the token that was removed: SLH-DSA-SHA2-128s, whose token shrank by 5.6%, gained more than ES256, whose token shrank by 67.6%. Because the OIDC run always ran first, a drift between the two runs cannot be separated from an effect of size here, so these differences are reported as measured and not attributed to the claims.
+- **Chromium:** at concurrency 1, every configuration was 0.010–0.087 ms faster with the essential claims, against same-size noise of up to 0.036 ms and a timer coarsened to about 0.1 ms; at concurrency 4 the differences range from -0.072 to +0.147 ms, with both signs. No consistent effect is measurable from the browser.
 
 **Modeled network saving (calculated, not measured).** Loopback makes transfer nearly free. From each run's `network_model`, the modeled upload time of the direct client's request on a new or idle TCP connection (the S3-01 model: bytes at the uplink rate plus one round trip per extra slow-start round, with an initial window of 14,600 bytes) saves, at each illustrative profile:
 
@@ -207,9 +207,9 @@ make claims
 # the same command, which make claims runs with --output-dir results/claims/<UTC time>-<platform>:
 "$TRANSPORT_ENV/bin/python" scripts/transport_stack.py claims --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir results/claims/<YYYYMMDDTHHMMSSZ>-macos
 # the same settings, from this run's claims.json:
-"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py claims --settings results/claims/20261118T000856Z-macos/claims.json --output-dir results/claims/<YYYYMMDDTHHMMSSZ>-macos
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py claims --settings results/claims/20261118T053507Z-macos/claims.json --output-dir results/claims/<YYYYMMDDTHHMMSSZ>-macos
 # one latency run alone, from its saved load.json:
-"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py load --settings results/claims/20261118T000856Z-macos/latency-essential/load.json --output-dir /tmp/latency-essential
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py load --settings results/claims/20261118T053507Z-macos/latency-essential/load.json --output-dir /tmp/latency-essential
 ```
 
 The run took under 3 minutes. `--output-dir` must not exist yet or be empty. [TRANSPORT.md](TRANSPORT.md#the-claims-command) describes every option and output file. The tables above come from `claims.json`, and each latency cell's numbers can be recomputed from its rows in the `raw.csv.gz` files.
@@ -253,38 +253,38 @@ limits   cookie SLH-DSA-SHA2-128s  oidc 11,353 B rejected by browser     essenti
 limits   bearer SLH-DSA-SHA2-128s  oidc 11,353 B rejected by proxy       essential 10,712 B rejected by proxy
 limits   cookie SLH-DSA-SHA2-128f  oidc 23,662 B rejected by proxy       essential 23,021 B rejected by proxy
 limits   bearer SLH-DSA-SHA2-128f  oidc 23,662 B rejected by proxy       essential 23,021 B rejected by proxy
-latency  direct  c=1   RS256               1,204 ->    563 B  mean 0.202 -> 0.169 ms (-0.033)  median 0.201 -> 0.168  p95 0.220 -> 0.184  4,916.7 -> 5,880.7 req/s
-latency  direct  c=1   ES256                 948 ->    307 B  mean 0.217 -> 0.183 ms (-0.034)  median 0.216 -> 0.183  p95 0.234 -> 0.195  4,578.7 -> 5,440.3 req/s
-latency  direct  c=1   EdDSA                 948 ->    307 B  mean 0.219 -> 0.186 ms (-0.033)  median 0.217 -> 0.185  p95 0.238 -> 0.201  4,543.6 -> 5,350.4 req/s
-latency  direct  c=1   ML-DSA-44           4,095 ->  3,454 B  mean 0.231 -> 0.215 ms (-0.016)  median 0.230 -> 0.214  p95 0.245 -> 0.233  4,309.9 -> 4,627.3 req/s
-latency  direct  c=1   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 0.406 -> 0.405 ms (-0.002)  median 0.405 -> 0.403  p95 0.426 -> 0.421  2,455.1 -> 2,465.1 req/s
-latency  direct  c=1   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 0.685 -> 0.691 ms (+0.006)  median 0.683 -> 0.686  p95 0.710 -> 0.726  1,457.0 -> 1,444.8 req/s
-latency  direct  c=4   RS256               1,204 ->    563 B  mean 0.651 -> 0.551 ms (-0.101)  median 0.626 -> 0.529  p95 0.963 -> 0.828  6,129.8 -> 7,250.3 req/s
-latency  direct  c=4   ES256                 948 ->    307 B  mean 0.625 -> 0.532 ms (-0.093)  median 0.604 -> 0.512  p95 0.912 -> 0.798  6,389.6 -> 7,507.3 req/s
-latency  direct  c=4   EdDSA                 948 ->    307 B  mean 0.618 -> 0.516 ms (-0.103)  median 0.596 -> 0.493  p95 0.925 -> 0.772  6,455.6 -> 7,738.4 req/s
-latency  direct  c=4   ML-DSA-44           4,095 ->  3,454 B  mean 0.543 -> 0.525 ms (-0.018)  median 0.521 -> 0.489  p95 0.795 -> 0.791  7,352.3 -> 7,603.5 req/s
-latency  direct  c=4   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 1.101 -> 1.068 ms (-0.032)  median 1.074 -> 1.045  p95 1.611 -> 1.585  3,628.8 -> 3,738.4 req/s
-latency  direct  c=4   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 2.126 -> 2.045 ms (-0.082)  median 2.103 -> 2.018  p95 3.089 -> 2.934  1,878.7 -> 1,953.9 req/s
-latency  browser c=1   RS256               1,204 ->    563 B  mean 0.428 -> 0.401 ms (-0.028)  median 0.400 -> 0.400  p95 0.500 -> 0.500  2,333.2 -> 2,493.8 req/s
-latency  browser c=1   ES256                 948 ->    307 B  mean 0.461 -> 0.398 ms (-0.063)  median 0.400 -> 0.400  p95 0.600 -> 0.500  2,167.1 -> 2,509.0 req/s
-latency  browser c=1   EdDSA                 948 ->    307 B  mean 0.454 -> 0.517 ms (+0.063)  median 0.400 -> 0.500  p95 0.500 -> 0.800  2,200.9 -> 1,932.0 req/s
-latency  browser c=1   ML-DSA-44           4,095 ->  3,454 B  mean 0.496 -> 0.491 ms (-0.004)  median 0.500 -> 0.500  p95 0.600 -> 0.700  2,015.9 -> 2,033.7 req/s
-latency  browser c=1   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 0.621 -> 0.627 ms (+0.006)  median 0.600 -> 0.600  p95 0.700 -> 0.800  1,607.6 -> 1,593.2 req/s
-latency  browser c=1   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 0.917 -> 0.966 ms (+0.048)  median 0.900 -> 0.900  p95 1.000 -> 1.200  1,089.3 -> 1,035.0 req/s
-latency  browser c=4   RS256               1,204 ->    563 B  mean 0.983 -> 0.914 ms (-0.069)  median 0.900 -> 0.800  p95 1.400 -> 1.300  4,068.6 -> 4,376.2 req/s
-latency  browser c=4   ES256                 948 ->    307 B  mean 0.977 -> 0.950 ms (-0.027)  median 0.900 -> 0.900  p95 1.300 -> 1.400  4,091.1 -> 4,207.4 req/s
-latency  browser c=4   EdDSA                 948 ->    307 B  mean 1.029 -> 0.913 ms (-0.116)  median 0.900 -> 0.800  p95 1.400 -> 1.200  3,885.7 -> 4,379.2 req/s
-latency  browser c=4   ML-DSA-44           4,095 ->  3,454 B  mean 0.985 -> 0.928 ms (-0.056)  median 0.900 -> 0.800  p95 1.300 -> 1.300  4,059.8 -> 4,306.5 req/s
-latency  browser c=4   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 1.485 -> 1.421 ms (-0.065)  median 1.400 -> 1.300  p95 2.100 -> 2.000  2,691.3 -> 2,813.8 req/s
-latency  browser c=4   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 2.438 -> 2.406 ms (-0.033)  median 2.400 -> 2.400  p95 3.600 -> 3.600  1,638.9 -> 1,660.3 req/s
-Saved the results to results/claims/20261118T000856Z-macos
+latency  direct  c=1   RS256               1,204 ->    563 B  mean 0.205 -> 0.180 ms (-0.025)  median 0.203 -> 0.178  p95 0.222 -> 0.194  4,856.8 -> 5,537.3 req/s
+latency  direct  c=1   ES256                 948 ->    307 B  mean 0.218 -> 0.193 ms (-0.024)  median 0.215 -> 0.193  p95 0.236 -> 0.206  4,572.9 -> 5,147.2 req/s
+latency  direct  c=1   EdDSA                 948 ->    307 B  mean 0.214 -> 0.193 ms (-0.022)  median 0.212 -> 0.192  p95 0.229 -> 0.204  4,649.3 -> 5,165.6 req/s
+latency  direct  c=1   ML-DSA-44           4,095 ->  3,454 B  mean 0.230 -> 0.215 ms (-0.014)  median 0.229 -> 0.215  p95 0.246 -> 0.228  4,334.3 -> 4,625.0 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 0.402 -> 0.395 ms (-0.007)  median 0.399 -> 0.394  p95 0.428 -> 0.409  2,482.0 -> 2,524.1 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 0.703 -> 0.683 ms (-0.019)  median 0.697 -> 0.682  p95 0.734 -> 0.699  1,420.9 -> 1,461.2 req/s
+latency  direct  c=4   RS256               1,204 ->    563 B  mean 0.651 -> 0.559 ms (-0.092)  median 0.627 -> 0.535  p95 0.971 -> 0.837  6,134.3 -> 7,144.9 req/s
+latency  direct  c=4   ES256                 948 ->    307 B  mean 0.630 -> 0.554 ms (-0.075)  median 0.608 -> 0.525  p95 0.918 -> 0.840  6,340.0 -> 7,199.9 req/s
+latency  direct  c=4   EdDSA                 948 ->    307 B  mean 0.625 -> 0.529 ms (-0.096)  median 0.604 -> 0.507  p95 0.917 -> 0.781  6,388.0 -> 7,552.0 req/s
+latency  direct  c=4   ML-DSA-44           4,095 ->  3,454 B  mean 0.568 -> 0.547 ms (-0.022)  median 0.546 -> 0.507  p95 0.834 -> 0.846  7,021.7 -> 7,300.6 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 1.136 -> 1.031 ms (-0.105)  median 1.114 -> 1.003  p95 1.636 -> 1.502  3,514.7 -> 3,875.4 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 2.107 -> 2.063 ms (-0.044)  median 2.084 -> 2.043  p95 3.030 -> 2.969  1,895.7 -> 1,936.0 req/s
+latency  browser c=1   RS256               1,204 ->    563 B  mean 0.462 -> 0.422 ms (-0.041)  median 0.400 -> 0.400  p95 0.500 -> 0.500  2,161.8 -> 2,370.3 req/s
+latency  browser c=1   ES256                 948 ->    307 B  mean 0.489 -> 0.401 ms (-0.087)  median 0.500 -> 0.400  p95 0.600 -> 0.500  2,045.4 -> 2,490.3 req/s
+latency  browser c=1   EdDSA                 948 ->    307 B  mean 0.453 -> 0.396 ms (-0.057)  median 0.400 -> 0.400  p95 0.500 -> 0.500  2,208.4 -> 2,524.2 req/s
+latency  browser c=1   ML-DSA-44           4,095 ->  3,454 B  mean 0.488 -> 0.472 ms (-0.016)  median 0.500 -> 0.500  p95 0.600 -> 0.500  2,047.9 -> 2,117.7 req/s
+latency  browser c=1   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 0.622 -> 0.612 ms (-0.010)  median 0.600 -> 0.600  p95 0.700 -> 0.700  1,607.3 -> 1,633.0 req/s
+latency  browser c=1   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 0.905 -> 0.892 ms (-0.013)  median 0.900 -> 0.900  p95 1.000 -> 1.000  1,104.2 -> 1,120.4 req/s
+latency  browser c=4   RS256               1,204 ->    563 B  mean 0.973 -> 0.916 ms (-0.057)  median 0.900 -> 0.800  p95 1.300 -> 1.200  4,110.3 -> 4,366.4 req/s
+latency  browser c=4   ES256                 948 ->    307 B  mean 0.977 -> 0.905 ms (-0.072)  median 0.900 -> 0.800  p95 1.300 -> 1.200  4,093.6 -> 4,418.7 req/s
+latency  browser c=4   EdDSA                 948 ->    307 B  mean 0.955 -> 0.905 ms (-0.050)  median 0.900 -> 0.800  p95 1.300 -> 1.200  4,186.0 -> 4,419.1 req/s
+latency  browser c=4   ML-DSA-44           4,095 ->  3,454 B  mean 0.917 -> 0.916 ms (-0.000)  median 0.800 -> 0.800  p95 1.200 -> 1.200  4,362.2 -> 4,364.5 req/s
+latency  browser c=4   SLH-DSA-SHA2-128s  11,353 -> 10,712 B  mean 1.428 -> 1.485 ms (+0.057)  median 1.300 -> 1.400  p95 2.000 -> 2.100  2,799.2 -> 2,691.4 req/s
+latency  browser c=4   SLH-DSA-SHA2-128f  23,662 -> 23,021 B  mean 2.418 -> 2.565 ms (+0.147)  median 2.400 -> 2.500  p95 3.500 -> 3.900  1,652.7 -> 1,557.5 req/s
+Saved the results to results/claims/20261118T053507Z-macos
 ```
 
 ### Limitations
 
 - **WSL2 has not been run yet.** The `claims` command has not been run on WSL2; the derived verdicts come from Sprint 2's WSL2 sweeps, but the measured size limits and latency are from this Mac only. On WSL2 the measured cookie verdicts should follow cookie-default, where nginx's 4 KiB buffer is the first limit.
 - **Loopback only.** Both latency runs ran over loopback on one machine; the network saving is only calculated.
-- **One run per claim set.** Each claim set ran once, the OIDC run first, so run-to-run variation was not measured; within the run, EdDSA's difference from ES256 shows the noise level.
+- **One run per claim set, in a fixed order.** Each claim set ran once, the OIDC run first, so run-to-run variation was not measured, and a drift between the two runs cannot be told apart from an effect of size. Within each run, EdDSA's difference from ES256 shows the noise level. For this reason the concurrency-4 differences are reported but not attributed to the claims.
 - **Illustrative fixture values.** The fixture's values (an `example.test` issuer, a made-up subject, a name and an email address) are illustrative. The 641-byte saving is the size of the dropped claims' values; a real provider's claims could be larger or smaller.
 - **The essential set is a team assumption.** It is OpenID Connect's five required ID Token claims; other plausible sets, such as RFC 9068's access-token claims (adding `client_id` and `jti`) or keeping `roles` for authorization, were not measured. Changing the fixture file and rerunning `make claims` would measure one.
 - **The dropped claims' cost is not measured.** Getting them from the userinfo endpoint or a server-side session adds a lookup that a self-contained token avoids.
@@ -292,4 +292,4 @@ Saved the results to results/claims/20261118T000856Z-macos
 - **Not the default limits for latency.** The latency stacks use `--header-buffers 32k` and the non-default `--upstream-keepalive 64`, as S3-01 did; the size-limits stack keeps every default.
 - **Derived cookie verdicts use the default attributes.** The Sprint 2 cookie sweeps used `Path=/; HttpOnly; SameSite=Strict`, so their `Set-Cookie` lines were 22 bytes shorter than with the production attributes used here. That matters only at cookie-default, where nginx counts the whole response header block, and changes no verdict: the smallest headroom of a token that fits there is ML-DSA-44's +461 bytes.
 - **One browser, one size per pair, HTTP/1.1 without TLS.** Only Chromium was used, each size-limit pair was sent once at the fixture's size (not swept), and HTTPS and HTTP/2 are S3-04's work.
-- **Machine state.** No other candidate's run was active (checked every 2 seconds), but an unused `make serve` stack was running, and which desktop applications were open was not recorded. An earlier recording that overlapped another candidate's run was discarded.
+- **Machine state.** Nothing else from the project was running, but Spotify and Steam were open. The 1-minute load average was 2.2 when the run started and 4.7 when it ended, including the run's own load.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "started_utc": "2026-11-18T00:10:24.033410+00:00",
-  "finished_utc": "2026-11-18T00:11:45.793842+00:00",
+  "started_utc": "2026-11-18T05:36:34.865156+00:00",
+  "finished_utc": "2026-11-18T05:37:56.280908+00:00",
   "settings": {
     "algorithms": [
       "RS256",
@@ -61,7 +61,7 @@
     "pqcrypto": "1.0.0",
     "openssl": "OpenSSL 4.0.3 29 Sep 2026",
     "timer": "perf_counter_ns",
-    "git_commit": "828cf0548c1aa7293c4bf338aa24fdf096a1a110",
+    "git_commit": "df91e2ef910d2bb6c9aee567a3ac1a2929300118",
     "git_dirty_scripts_or_fixtures": false,
     "page_size_bytes": 16384,
     "waitress_threads": 4
@@ -92,9 +92,9 @@
     "version": "156.0.8078.4",
     "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
   },
-  "proxy_url": "http://127.0.0.1:64834",
-  "app_url": "http://127.0.0.1:64835",
-  "run_dir": "/tmp/transport-stack-rylo_lkm",
+  "proxy_url": "http://127.0.0.1:62110",
+  "app_url": "http://127.0.0.1:62111",
+  "run_dir": "/tmp/transport-stack-z6ouv9ib",
   "experiment_keys": true,
   "results": [
     {
@@ -111,34 +111,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 11762,
-      "verified": 11762,
+      "requests": 11075,
+      "verified": 11075,
       "failed": 0,
       "statuses": {
-        "200": 11762
+        "200": 11075
       },
-      "measured_seconds": 2.000112375,
-      "throughput_rps": 5880.66957987798,
+      "measured_seconds": 2.000054334,
+      "throughput_rps": 5537.349566824318,
       "latency": {
         "total": {
-          "median_ms": 0.168083,
-          "p95_ms": 0.184167,
-          "mean_ms": 0.16919055721816018
+          "median_ms": 0.178458,
+          "p95_ms": 0.194416,
+          "mean_ms": 0.17965721146726862
         },
         "transfer": {
-          "median_ms": 0.12175,
-          "p95_ms": 0.136126,
-          "mean_ms": 0.122637000765176
+          "median_ms": 0.131292,
+          "p95_ms": 0.144875,
+          "mean_ms": 0.13212765489841985
         },
         "other_handling": {
-          "median_ms": 0.011208,
-          "p95_ms": 0.012333,
-          "mean_ms": 0.01130357031117157
+          "median_ms": 0.012334,
+          "p95_ms": 0.013625,
+          "mean_ms": 0.012147926410835215
         },
         "verification": {
-          "median_ms": 0.035042,
-          "p95_ms": 0.036666,
-          "mean_ms": 0.035249986141812614
+          "median_ms": 0.035292,
+          "p95_ms": 0.039292,
+          "mean_ms": 0.035381630158013544
         }
       },
       "bytes": {
@@ -161,34 +161,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 10881,
-      "verified": 10881,
+      "requests": 10295,
+      "verified": 10295,
       "failed": 0,
       "statuses": {
-        "200": 10881
+        "200": 10295
       },
-      "measured_seconds": 2.000075792,
-      "throughput_rps": 5440.293834624843,
+      "measured_seconds": 2.0001075,
+      "throughput_rps": 5147.22333674565,
       "latency": {
         "total": {
-          "median_ms": 0.182542,
-          "p95_ms": 0.194916,
-          "mean_ms": 0.18298972943663266
+          "median_ms": 0.192666,
+          "p95_ms": 0.205834,
+          "mean_ms": 0.19337552238950947
         },
         "transfer": {
-          "median_ms": 0.117876,
-          "p95_ms": 0.129583,
-          "mean_ms": 0.11836744848819042
+          "median_ms": 0.127833,
+          "p95_ms": 0.139916,
+          "mean_ms": 0.12840006002914037
         },
         "other_handling": {
-          "median_ms": 0.010959,
-          "p95_ms": 0.011834,
-          "mean_ms": 0.011032022056796249
+          "median_ms": 0.012251,
+          "p95_ms": 0.013375,
+          "mean_ms": 0.012136992909179212
         },
         "verification": {
-          "median_ms": 0.053416,
-          "p95_ms": 0.054833,
-          "mean_ms": 0.05359025889164599
+          "median_ms": 0.05275,
+          "p95_ms": 0.055709,
+          "mean_ms": 0.0528384694511899
         }
       },
       "bytes": {
@@ -211,40 +211,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 10701,
-      "verified": 10701,
+      "requests": 10332,
+      "verified": 10332,
       "failed": 0,
       "statuses": {
-        "200": 10701
+        "200": 10332
       },
-      "measured_seconds": 2.000023833,
-      "throughput_rps": 5350.436241526528,
+      "measured_seconds": 2.000160584,
+      "throughput_rps": 5165.585244829522,
       "latency": {
         "total": {
-          "median_ms": 0.184792,
-          "p95_ms": 0.200667,
-          "mean_ms": 0.1860373598729091
+          "median_ms": 0.1915,
+          "p95_ms": 0.204375,
+          "mean_ms": 0.19269454374758033
         },
         "transfer": {
-          "median_ms": 0.120417,
-          "p95_ms": 0.134375,
-          "mean_ms": 0.12129253275394822
+          "median_ms": 0.126875,
+          "p95_ms": 0.138792,
+          "mean_ms": 0.12805002855207123
         },
         "other_handling": {
-          "median_ms": 0.011,
-          "p95_ms": 0.012166,
-          "mean_ms": 0.011100468273993086
+          "median_ms": 0.012208,
+          "p95_ms": 0.013334,
+          "mean_ms": 0.012062244096012389
         },
         "verification": {
-          "median_ms": 0.053333,
-          "p95_ms": 0.055209,
-          "mean_ms": 0.053644358844967766
+          "median_ms": 0.0525,
+          "p95_ms": 0.05525,
+          "mean_ms": 0.052582271099496716
         }
       },
       "bytes": {
         "header_line": 331,
         "app_received_headers": 381,
-        "response_body": 516
+        "response_body": 515
       }
     },
     {
@@ -261,34 +261,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 9255,
-      "verified": 9255,
+      "requests": 9250,
+      "verified": 9250,
       "failed": 0,
       "statuses": {
-        "200": 9255
+        "200": 9250
       },
-      "measured_seconds": 2.000082542,
-      "throughput_rps": 4627.309026329174,
+      "measured_seconds": 2.000020167,
+      "throughput_rps": 4624.953364282751,
       "latency": {
         "total": {
-          "median_ms": 0.21425,
-          "p95_ms": 0.232666,
-          "mean_ms": 0.2152527277147488
+          "median_ms": 0.2147915,
+          "p95_ms": 0.228417,
+          "mean_ms": 0.21534190854054056
         },
         "transfer": {
-          "median_ms": 0.146667,
-          "p95_ms": 0.161209,
-          "mean_ms": 0.14709013041599137
+          "median_ms": 0.148041,
+          "p95_ms": 0.160334,
+          "mean_ms": 0.14848883221621623
         },
         "other_handling": {
-          "median_ms": 0.012583,
-          "p95_ms": 0.014625,
-          "mean_ms": 0.012722925553754727
+          "median_ms": 0.012916,
+          "p95_ms": 0.014249,
+          "mean_ms": 0.012910450054054053
         },
         "verification": {
-          "median_ms": 0.055625,
-          "p95_ms": 0.060542,
-          "mean_ms": 0.0554396717450027
+          "median_ms": 0.053542,
+          "p95_ms": 0.056708,
+          "mean_ms": 0.05394262627027027
         }
       },
       "bytes": {
@@ -311,34 +311,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 4931,
-      "verified": 4931,
+      "requests": 5049,
+      "verified": 5049,
       "failed": 0,
       "statuses": {
-        "200": 4931
+        "200": 5049
       },
-      "measured_seconds": 2.000361875,
-      "throughput_rps": 2465.0539792956215,
+      "measured_seconds": 2.000330291,
+      "throughput_rps": 2524.083159024661,
       "latency": {
         "total": {
-          "median_ms": 0.4025,
-          "p95_ms": 0.420875,
-          "mean_ms": 0.4045021904279051
+          "median_ms": 0.394083,
+          "p95_ms": 0.409459,
+          "mean_ms": 0.3950485886314122
         },
         "transfer": {
-          "median_ms": 0.266625,
-          "p95_ms": 0.280125,
-          "mean_ms": 0.2676318493206246
+          "median_ms": 0.26075,
+          "p95_ms": 0.274458,
+          "mean_ms": 0.26194429312735196
         },
         "other_handling": {
-          "median_ms": 0.013626,
-          "p95_ms": 0.016917,
-          "mean_ms": 0.014245328128168729
+          "median_ms": 0.013209,
+          "p95_ms": 0.016625,
+          "mean_ms": 0.013702165577342048
         },
         "verification": {
-          "median_ms": 0.121375,
-          "p95_ms": 0.131542,
-          "mean_ms": 0.12262501297911174
+          "median_ms": 0.118708,
+          "p95_ms": 0.123417,
+          "mean_ms": 0.11940212992671816
         }
       },
       "bytes": {
@@ -361,34 +361,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 2890,
-      "verified": 2890,
+      "requests": 2923,
+      "verified": 2923,
       "failed": 0,
       "statuses": {
-        "200": 2890
+        "200": 2923
       },
-      "measured_seconds": 2.000270166,
-      "throughput_rps": 1444.804831428956,
+      "measured_seconds": 2.000435375,
+      "throughput_rps": 1461.1819189610162,
       "latency": {
         "total": {
-          "median_ms": 0.686417,
-          "p95_ms": 0.726042,
-          "mean_ms": 0.6908524747404844
+          "median_ms": 0.681792,
+          "p95_ms": 0.699417,
+          "mean_ms": 0.6831347054396169
         },
         "transfer": {
-          "median_ms": 0.3628545,
-          "p95_ms": 0.388125,
-          "mean_ms": 0.3647450034602076
+          "median_ms": 0.352208,
+          "p95_ms": 0.364041,
+          "mean_ms": 0.35286374307218615
         },
         "other_handling": {
-          "median_ms": 0.018666,
-          "p95_ms": 0.021583,
-          "mean_ms": 0.01863562837370242
+          "median_ms": 0.015958,
+          "p95_ms": 0.020542,
+          "mean_ms": 0.017135059527882312
         },
         "verification": {
-          "median_ms": 0.303167,
-          "p95_ms": 0.328709,
-          "mean_ms": 0.30747184290657437
+          "median_ms": 0.312,
+          "p95_ms": 0.323333,
+          "mean_ms": 0.3131359028395484
         }
       },
       "bytes": {
@@ -411,34 +411,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 14504,
-      "verified": 14504,
+      "requests": 14292,
+      "verified": 14292,
       "failed": 0,
       "statuses": {
-        "200": 14504
+        "200": 14292
       },
-      "measured_seconds": 2.000469875,
-      "throughput_rps": 7250.296633434683,
+      "measured_seconds": 2.000319958,
+      "throughput_rps": 7144.856972926328,
       "latency": {
         "total": {
-          "median_ms": 0.529084,
-          "p95_ms": 0.828125,
-          "mean_ms": 0.5505789298124656
+          "median_ms": 0.5355,
+          "p95_ms": 0.837084,
+          "mean_ms": 0.5586425622726
         },
         "transfer": {
-          "median_ms": 0.375396,
-          "p95_ms": 0.624084,
-          "mean_ms": 0.39334061196911196
+          "median_ms": 0.3779795,
+          "p95_ms": 0.609375,
+          "mean_ms": 0.3947114445843829
         },
         "other_handling": {
-          "median_ms": 0.012917,
-          "p95_ms": 0.01625,
-          "mean_ms": 0.01312860355763927
+          "median_ms": 0.013333,
+          "p95_ms": 0.016166,
+          "mean_ms": 0.013500701511335013
         },
         "verification": {
-          "median_ms": 0.1294585,
-          "p95_ms": 0.310875,
-          "mean_ms": 0.14410971428571429
+          "median_ms": 0.133125,
+          "p95_ms": 0.324459,
+          "mean_ms": 0.15043041617688216
         }
       },
       "bytes": {
@@ -461,40 +461,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 15018,
-      "verified": 15018,
+      "requests": 14403,
+      "verified": 14403,
       "failed": 0,
       "statuses": {
-        "200": 15018
+        "200": 14403
       },
-      "measured_seconds": 2.000464292,
-      "throughput_rps": 7507.257220265344,
+      "measured_seconds": 2.000452708,
+      "throughput_rps": 7199.8702805625135,
       "latency": {
         "total": {
-          "median_ms": 0.511521,
-          "p95_ms": 0.797625,
-          "mean_ms": 0.5316861129311493
+          "median_ms": 0.524708,
+          "p95_ms": 0.84025,
+          "mean_ms": 0.5543706130667222
         },
         "transfer": {
-          "median_ms": 0.3536455,
-          "p95_ms": 0.616083,
-          "mean_ms": 0.37492745278998535
+          "median_ms": 0.362,
+          "p95_ms": 0.653666,
+          "mean_ms": 0.38869749205026727
         },
         "other_handling": {
-          "median_ms": 0.012667,
-          "p95_ms": 0.015459,
-          "mean_ms": 0.012743910041283793
+          "median_ms": 0.013042,
+          "p95_ms": 0.016207,
+          "mean_ms": 0.013364543706172327
         },
         "verification": {
-          "median_ms": 0.133792,
-          "p95_ms": 0.264625,
-          "mean_ms": 0.14401475009988016
+          "median_ms": 0.140125,
+          "p95_ms": 0.281459,
+          "mean_ms": 0.15230857731028258
         }
       },
       "bytes": {
         "header_line": 331,
         "app_received_headers": 381,
-        "response_body": 517
+        "response_body": 515
       }
     },
     {
@@ -511,34 +511,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 15481,
-      "verified": 15481,
+      "requests": 15107,
+      "verified": 15107,
       "failed": 0,
       "statuses": {
-        "200": 15481
+        "200": 15107
       },
-      "measured_seconds": 2.00055025,
-      "throughput_rps": 7738.37098068394,
+      "measured_seconds": 2.000385958,
+      "throughput_rps": 7552.042614368323,
       "latency": {
         "total": {
-          "median_ms": 0.493042,
-          "p95_ms": 0.772125,
-          "mean_ms": 0.5157480483172922
+          "median_ms": 0.50675,
+          "p95_ms": 0.78075,
+          "mean_ms": 0.5285001079631959
         },
         "transfer": {
-          "median_ms": 0.3425,
-          "p95_ms": 0.598459,
-          "mean_ms": 0.3628437530521284
+          "median_ms": 0.348625,
+          "p95_ms": 0.601626,
+          "mean_ms": 0.3696402570993579
         },
         "other_handling": {
-          "median_ms": 0.012583,
-          "p95_ms": 0.015541,
-          "mean_ms": 0.012661627737226278
+          "median_ms": 0.012958,
+          "p95_ms": 0.016001,
+          "mean_ms": 0.013067735486860396
         },
         "verification": {
-          "median_ms": 0.127666,
-          "p95_ms": 0.274583,
-          "mean_ms": 0.1402426675279375
+          "median_ms": 0.132833,
+          "p95_ms": 0.290292,
+          "mean_ms": 0.14579211537697756
         }
       },
       "bytes": {
@@ -561,40 +561,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 15211,
-      "verified": 15211,
+      "requests": 14604,
+      "verified": 14604,
       "failed": 0,
       "statuses": {
-        "200": 15211
+        "200": 14604
       },
-      "measured_seconds": 2.000520875,
-      "throughput_rps": 7603.519758322942,
+      "measured_seconds": 2.000391292,
+      "throughput_rps": 7300.57167235459,
       "latency": {
         "total": {
-          "median_ms": 0.489459,
-          "p95_ms": 0.790833,
-          "mean_ms": 0.5248843045822102
+          "median_ms": 0.5071455,
+          "p95_ms": 0.846042,
+          "mean_ms": 0.5466649776088743
         },
         "transfer": {
-          "median_ms": 0.336791,
-          "p95_ms": 0.598209,
-          "mean_ms": 0.37089110591019653
+          "median_ms": 0.3471875,
+          "p95_ms": 0.633041,
+          "mean_ms": 0.3798297202136401
         },
         "other_handling": {
-          "median_ms": 0.0135,
-          "p95_ms": 0.016417,
-          "mean_ms": 0.013664307146144238
+          "median_ms": 0.014166,
+          "p95_ms": 0.017708,
+          "mean_ms": 0.014601325595727197
         },
         "verification": {
-          "median_ms": 0.125375,
-          "p95_ms": 0.273417,
-          "mean_ms": 0.14032889152586944
+          "median_ms": 0.1338545,
+          "p95_ms": 0.300625,
+          "mean_ms": 0.15223393179950698
         }
       },
       "bytes": {
         "header_line": 3478,
         "app_received_headers": 3528,
-        "response_body": 522
+        "response_body": 524
       }
     },
     {
@@ -611,34 +611,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 7480,
-      "verified": 7480,
+      "requests": 7752,
+      "verified": 7752,
       "failed": 0,
       "statuses": {
-        "200": 7480
+        "200": 7752
       },
-      "measured_seconds": 2.00084275,
-      "throughput_rps": 3738.4247212830696,
+      "measured_seconds": 2.000287042,
+      "throughput_rps": 3875.443792431466,
       "latency": {
         "total": {
-          "median_ms": 1.044687,
-          "p95_ms": 1.584834,
-          "mean_ms": 1.0684629612299466
+          "median_ms": 1.0027085,
+          "p95_ms": 1.502166,
+          "mean_ms": 1.0309506839525284
         },
         "transfer": {
-          "median_ms": 0.895708,
-          "p95_ms": 1.436917,
-          "mean_ms": 0.9201982260695187
+          "median_ms": 0.862916,
+          "p95_ms": 1.364166,
+          "mean_ms": 0.8923269414344684
         },
         "other_handling": {
-          "median_ms": 0.015917,
-          "p95_ms": 0.018625,
-          "mean_ms": 0.01595696590909091
+          "median_ms": 0.016209,
+          "p95_ms": 0.018583,
+          "mean_ms": 0.01612857598039216
         },
         "verification": {
-          "median_ms": 0.132416,
-          "p95_ms": 0.141833,
-          "mean_ms": 0.1323077692513369
+          "median_ms": 0.123667,
+          "p95_ms": 0.130459,
+          "mean_ms": 0.12249516653766769
         }
       },
       "bytes": {
@@ -661,34 +661,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 3911,
-      "verified": 3911,
+      "requests": 3875,
+      "verified": 3875,
       "failed": 0,
       "statuses": {
-        "200": 3911
+        "200": 3875
       },
-      "measured_seconds": 2.001642375,
-      "throughput_rps": 1953.8954854510414,
+      "measured_seconds": 2.001588333,
+      "throughput_rps": 1935.9625234186456,
       "latency": {
         "total": {
-          "median_ms": 2.017542,
-          "p95_ms": 2.934208,
-          "mean_ms": 2.044769435182818
+          "median_ms": 2.042542,
+          "p95_ms": 2.969208,
+          "mean_ms": 2.0633414769032257
         },
         "transfer": {
-          "median_ms": 1.682416,
-          "p95_ms": 2.592708,
-          "mean_ms": 1.7090463684479673
+          "median_ms": 1.703125,
+          "p95_ms": 2.628958,
+          "mean_ms": 1.7239131086451613
         },
         "other_handling": {
-          "median_ms": 0.019792,
-          "p95_ms": 0.023375,
-          "mean_ms": 0.01993371311684991
+          "median_ms": 0.020083,
+          "p95_ms": 0.023125,
+          "mean_ms": 0.020108849032258066
         },
         "verification": {
-          "median_ms": 0.31425,
-          "p95_ms": 0.333125,
-          "mean_ms": 0.31578935361800053
+          "median_ms": 0.316375,
+          "p95_ms": 0.336833,
+          "mean_ms": 0.3193195192258065
         }
       },
       "bytes": {
@@ -711,34 +711,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 4988,
-      "verified": 4988,
+      "requests": 4741,
+      "verified": 4741,
       "failed": 0,
       "statuses": {
-        "200": 4988
+        "200": 4741
       },
       "measured_seconds": 2.0002,
-      "throughput_rps": 2493.7506249375065,
+      "throughput_rps": 2370.2629737026296,
       "latency": {
         "total": {
           "median_ms": 0.4,
           "p95_ms": 0.5,
-          "mean_ms": 0.40068163592622297
+          "mean_ms": 0.42155663362159884
         },
         "transfer": {
-          "median_ms": 0.348792,
-          "p95_ms": 0.4505,
-          "mean_ms": 0.3487132800721732
+          "median_ms": 0.350458,
+          "p95_ms": 0.452333,
+          "mean_ms": 0.3707664323982282
         },
         "other_handling": {
-          "median_ms": 0.0145,
-          "p95_ms": 0.017916,
-          "mean_ms": 0.014965521050521251
+          "median_ms": 0.014667,
+          "p95_ms": 0.017541,
+          "mean_ms": 0.014814668635309006
         },
         "verification": {
-          "median_ms": 0.035625,
-          "p95_ms": 0.0445,
-          "mean_ms": 0.037002834803528464
+          "median_ms": 0.035333,
+          "p95_ms": 0.04125,
+          "mean_ms": 0.03597553258806159
         }
       },
       "bytes": {
@@ -761,34 +761,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 5018,
-      "verified": 5018,
+      "requests": 4981,
+      "verified": 4981,
       "failed": 0,
       "statuses": {
-        "200": 5018
+        "200": 4981
       },
-      "measured_seconds": 2.0,
-      "throughput_rps": 2509.0,
+      "measured_seconds": 2.0002,
+      "throughput_rps": 2490.25097490251,
       "latency": {
         "total": {
           "median_ms": 0.4,
           "p95_ms": 0.5,
-          "mean_ms": 0.39816660023913913
+          "mean_ms": 0.4013651877133106
         },
         "transfer": {
-          "median_ms": 0.331875,
-          "p95_ms": 0.432958,
-          "mean_ms": 0.32919223455559987
+          "median_ms": 0.330875,
+          "p95_ms": 0.433291,
+          "mean_ms": 0.3319269399718932
         },
         "other_handling": {
-          "median_ms": 0.014083,
-          "p95_ms": 0.017084,
-          "mean_ms": 0.014431438023116779
+          "median_ms": 0.013917,
+          "p95_ms": 0.017625,
+          "mean_ms": 0.014566453924914676
         },
         "verification": {
-          "median_ms": 0.053083,
-          "p95_ms": 0.063,
-          "mean_ms": 0.05454292766042248
+          "median_ms": 0.053292,
+          "p95_ms": 0.061458,
+          "mean_ms": 0.05487179381650271
         }
       },
       "bytes": {
@@ -811,34 +811,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 3864,
-      "verified": 3864,
+      "requests": 5049,
+      "verified": 5049,
       "failed": 0,
       "statuses": {
-        "200": 3864
+        "200": 5049
       },
-      "measured_seconds": 2.0,
-      "throughput_rps": 1932.0,
+      "measured_seconds": 2.0002,
+      "throughput_rps": 2524.2475752424757,
       "latency": {
         "total": {
-          "median_ms": 0.5,
-          "p95_ms": 0.8,
-          "mean_ms": 0.5170807453416149
+          "median_ms": 0.4,
+          "p95_ms": 0.5,
+          "mean_ms": 0.395820954644484
         },
         "transfer": {
-          "median_ms": 0.4215,
-          "p95_ms": 0.662042,
-          "mean_ms": 0.4371435742753623
+          "median_ms": 0.332208,
+          "p95_ms": 0.433,
+          "mean_ms": 0.32759533392751045
         },
         "other_handling": {
-          "median_ms": 0.01625,
-          "p95_ms": 0.027875,
-          "mean_ms": 0.017787795289855073
+          "median_ms": 0.013958,
+          "p95_ms": 0.016417,
+          "mean_ms": 0.01419704099821747
         },
         "verification": {
-          "median_ms": 0.058917,
-          "p95_ms": 0.080584,
-          "mean_ms": 0.062149375776397515
+          "median_ms": 0.05325,
+          "p95_ms": 0.058833,
+          "mean_ms": 0.054028579718756194
         }
       },
       "bytes": {
@@ -861,34 +861,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 4068,
-      "verified": 4068,
+      "requests": 4236,
+      "verified": 4236,
       "failed": 0,
       "statuses": {
-        "200": 4068
+        "200": 4236
       },
       "measured_seconds": 2.0003,
-      "throughput_rps": 2033.694945758136,
+      "throughput_rps": 2117.6823476478526,
       "latency": {
         "total": {
           "median_ms": 0.5,
-          "p95_ms": 0.7,
-          "mean_ms": 0.49137168141592924
+          "p95_ms": 0.5,
+          "mean_ms": 0.47188385269121813
         },
         "transfer": {
-          "median_ms": 0.4154585,
-          "p95_ms": 0.596708,
-          "mean_ms": 0.411821302114061
+          "median_ms": 0.422875,
+          "p95_ms": 0.434667,
+          "mean_ms": 0.39915058144475923
         },
         "other_handling": {
-          "median_ms": 0.017,
-          "p95_ms": 0.025541,
-          "mean_ms": 0.018082460668633234
+          "median_ms": 0.016542,
+          "p95_ms": 0.018999,
+          "mean_ms": 0.01638760835694051
         },
         "verification": {
-          "median_ms": 0.060083,
-          "p95_ms": 0.071834,
-          "mean_ms": 0.06146791863323501
+          "median_ms": 0.055583,
+          "p95_ms": 0.060292,
+          "mean_ms": 0.05634566288951841
         }
       },
       "bytes": {
@@ -911,34 +911,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 3187,
-      "verified": 3187,
+      "requests": 3266,
+      "verified": 3266,
       "failed": 0,
       "statuses": {
-        "200": 3187
+        "200": 3266
       },
-      "measured_seconds": 2.0004,
-      "throughput_rps": 1593.1813637272546,
+      "measured_seconds": 2.0,
+      "throughput_rps": 1633.0,
       "latency": {
         "total": {
           "median_ms": 0.6,
-          "p95_ms": 0.8,
-          "mean_ms": 0.627141512394101
+          "p95_ms": 0.7,
+          "mean_ms": 0.6122473974280466
         },
         "transfer": {
-          "median_ms": 0.462458,
-          "p95_ms": 0.645583,
-          "mean_ms": 0.48393711233134606
+          "median_ms": 0.459209,
+          "p95_ms": 0.560958,
+          "mean_ms": 0.4707367957746479
         },
         "other_handling": {
-          "median_ms": 0.020375,
-          "p95_ms": 0.025999,
-          "mean_ms": 0.020802656416692815
+          "median_ms": 0.018208,
+          "p95_ms": 0.020291,
+          "mean_ms": 0.01786189742804654
         },
         "verification": {
-          "median_ms": 0.119875,
-          "p95_ms": 0.137167,
-          "mean_ms": 0.12240174364606213
+          "median_ms": 0.122833,
+          "p95_ms": 0.129667,
+          "mean_ms": 0.12364870422535211
         }
       },
       "bytes": {
@@ -961,34 +961,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 2071,
-      "verified": 2071,
+      "requests": 2241,
+      "verified": 2241,
       "failed": 0,
       "statuses": {
-        "200": 2071
+        "200": 2241
       },
-      "measured_seconds": 2.0009,
-      "throughput_rps": 1035.0342345944325,
+      "measured_seconds": 2.0002,
+      "throughput_rps": 1120.3879612038795,
       "latency": {
         "total": {
           "median_ms": 0.9,
-          "p95_ms": 1.2,
-          "mean_ms": 0.965620473201352
+          "p95_ms": 1.0,
+          "mean_ms": 0.892235609103079
         },
         "transfer": {
-          "median_ms": 0.56275,
-          "p95_ms": 0.800333,
-          "mean_ms": 0.6088364171897634
+          "median_ms": 0.558125,
+          "p95_ms": 0.660459,
+          "mean_ms": 0.5504904029451139
         },
         "other_handling": {
-          "median_ms": 0.024708,
-          "p95_ms": 0.032333,
-          "mean_ms": 0.025227820376629646
+          "median_ms": 0.024583,
+          "p95_ms": 0.02625,
+          "mean_ms": 0.02438192592592593
         },
         "verification": {
-          "median_ms": 0.325167,
-          "p95_ms": 0.359458,
-          "mean_ms": 0.33155623563495895
+          "median_ms": 0.316584,
+          "p95_ms": 0.325584,
+          "mean_ms": 0.3173632802320393
         }
       },
       "bytes": {
@@ -1011,40 +1011,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 8756,
-      "verified": 8756,
+      "requests": 8786,
+      "verified": 8786,
       "failed": 0,
       "statuses": {
-        "200": 8756
+        "200": 8786
       },
-      "measured_seconds": 2.0008,
-      "throughput_rps": 4376.2495001999205,
+      "measured_seconds": 2.0122,
+      "throughput_rps": 4366.365172448067,
       "latency": {
         "total": {
           "median_ms": 0.8,
-          "p95_ms": 1.3,
-          "mean_ms": 0.913533576975788
+          "p95_ms": 1.2,
+          "mean_ms": 0.9156726610516731
         },
         "transfer": {
-          "median_ms": 0.646875,
-          "p95_ms": 1.044125,
-          "mean_ms": 0.7556299625399726
+          "median_ms": 0.6607705,
+          "p95_ms": 1.040042,
+          "mean_ms": 0.7565702303664922
         },
         "other_handling": {
-          "median_ms": 0.015791,
-          "p95_ms": 0.033126,
-          "mean_ms": 0.018018244175422565
+          "median_ms": 0.015667,
+          "p95_ms": 0.034625,
+          "mean_ms": 0.018382111541088094
         },
         "verification": {
-          "median_ms": 0.1201665,
-          "p95_ms": 0.321917,
-          "mean_ms": 0.13988537026039286
+          "median_ms": 0.120396,
+          "p95_ms": 0.330166,
+          "mean_ms": 0.1407203191440929
         }
       },
       "bytes": {
         "header_line": 587,
         "app_received_headers": 1130,
-        "response_body": 519
+        "response_body": 518
       }
     },
     {
@@ -1061,40 +1061,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 8417,
-      "verified": 8417,
+      "requests": 8978,
+      "verified": 8978,
       "failed": 0,
       "statuses": {
-        "200": 8417
+        "200": 8978
       },
-      "measured_seconds": 2.0005,
-      "throughput_rps": 4207.448137965508,
+      "measured_seconds": 2.0318,
+      "throughput_rps": 4418.742002165567,
       "latency": {
         "total": {
-          "median_ms": 0.9,
-          "p95_ms": 1.4,
-          "mean_ms": 0.9497564452892955
+          "median_ms": 0.8,
+          "p95_ms": 1.2,
+          "mean_ms": 0.9049454221430162
         },
         "transfer": {
-          "median_ms": 0.672584,
-          "p95_ms": 1.11025,
-          "mean_ms": 0.7612872826422716
+          "median_ms": 0.634667,
+          "p95_ms": 0.961625,
+          "mean_ms": 0.7209538163288037
         },
         "other_handling": {
-          "median_ms": 0.016042,
-          "p95_ms": 0.038041,
-          "mean_ms": 0.019288429963169776
+          "median_ms": 0.015417,
+          "p95_ms": 0.034334,
+          "mean_ms": 0.018125984629093338
         },
         "verification": {
-          "median_ms": 0.146125,
-          "p95_ms": 0.342583,
-          "mean_ms": 0.16918073268385408
+          "median_ms": 0.1443545,
+          "p95_ms": 0.32875,
+          "mean_ms": 0.1658656211851192
         }
       },
       "bytes": {
         "header_line": 331,
         "app_received_headers": 874,
-        "response_body": 517
+        "response_body": 518
       }
     },
     {
@@ -1111,34 +1111,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 8761,
-      "verified": 8761,
+      "requests": 8840,
+      "verified": 8840,
       "failed": 0,
       "statuses": {
-        "200": 8761
+        "200": 8840
       },
-      "measured_seconds": 2.0006,
-      "throughput_rps": 4379.186244126762,
+      "measured_seconds": 2.0004,
+      "throughput_rps": 4419.116176764647,
       "latency": {
         "total": {
           "median_ms": 0.8,
           "p95_ms": 1.2,
-          "mean_ms": 0.9129094852185823
+          "mean_ms": 0.9046153846153846
         },
         "transfer": {
-          "median_ms": 0.645541,
-          "p95_ms": 1.003083,
-          "mean_ms": 0.7392402194954913
+          "median_ms": 0.6355835,
+          "p95_ms": 0.968542,
+          "mean_ms": 0.7274077504524886
         },
         "other_handling": {
-          "median_ms": 0.01575,
-          "p95_ms": 0.034667,
-          "mean_ms": 0.018232927747973977
+          "median_ms": 0.015458,
+          "p95_ms": 0.033791,
+          "mean_ms": 0.018111959615384615
         },
         "verification": {
-          "median_ms": 0.135417,
-          "p95_ms": 0.3105,
-          "mean_ms": 0.155436337975117
+          "median_ms": 0.138917,
+          "p95_ms": 0.318042,
+          "mean_ms": 0.1590956745475113
         }
       },
       "bytes": {
@@ -1161,40 +1161,40 @@
         "delivered": true,
         "error": null
       },
-      "requests": 8616,
-      "verified": 8616,
+      "requests": 8797,
+      "verified": 8797,
       "failed": 0,
       "statuses": {
-        "200": 8616
+        "200": 8797
       },
-      "measured_seconds": 2.0007,
-      "throughput_rps": 4306.492727545359,
+      "measured_seconds": 2.0156,
+      "throughput_rps": 4364.45723357809,
       "latency": {
         "total": {
           "median_ms": 0.8,
-          "p95_ms": 1.3,
-          "mean_ms": 0.9284818941504179
+          "p95_ms": 1.2,
+          "mean_ms": 0.9161304990337615
         },
         "transfer": {
-          "median_ms": 0.673875,
-          "p95_ms": 1.078042,
-          "mean_ms": 0.7556807963091922
+          "median_ms": 0.656917,
+          "p95_ms": 0.988041,
+          "mean_ms": 0.7425029906786405
         },
         "other_handling": {
-          "median_ms": 0.017208,
-          "p95_ms": 0.03775,
-          "mean_ms": 0.020124683727948
+          "median_ms": 0.016667,
+          "p95_ms": 0.035458,
+          "mean_ms": 0.01947455757644652
         },
         "verification": {
-          "median_ms": 0.1333335,
-          "p95_ms": 0.306584,
-          "mean_ms": 0.15267641411327762
+          "median_ms": 0.134833,
+          "p95_ms": 0.308334,
+          "mean_ms": 0.15415295077867452
         }
       },
       "bytes": {
         "header_line": 3478,
         "app_received_headers": 4021,
-        "response_body": 525
+        "response_body": 524
       }
     },
     {
@@ -1211,34 +1211,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 5631,
-      "verified": 5631,
+      "requests": 5385,
+      "verified": 5385,
       "failed": 0,
       "statuses": {
-        "200": 5631
+        "200": 5385
       },
-      "measured_seconds": 2.0012,
-      "throughput_rps": 2813.811712972217,
+      "measured_seconds": 2.0008,
+      "throughput_rps": 2691.423430627749,
       "latency": {
         "total": {
-          "median_ms": 1.3,
-          "p95_ms": 2.0,
-          "mean_ms": 1.4205647309536493
+          "median_ms": 1.4,
+          "p95_ms": 2.1,
+          "mean_ms": 1.4849025069637882
         },
         "transfer": {
-          "median_ms": 1.148167,
-          "p95_ms": 1.848417,
-          "mean_ms": 1.2611614231930384
+          "median_ms": 1.20975,
+          "p95_ms": 1.921917,
+          "mean_ms": 1.323639607056639
         },
         "other_handling": {
-          "median_ms": 0.018625,
-          "p95_ms": 0.027792,
-          "mean_ms": 0.01976106943704493
+          "median_ms": 0.018792,
+          "p95_ms": 0.040583,
+          "mean_ms": 0.021546277251624883
         },
         "verification": {
-          "median_ms": 0.133917,
-          "p95_ms": 0.170375,
-          "mean_ms": 0.13964223832356598
+          "median_ms": 0.13,
+          "p95_ms": 0.184875,
+          "mean_ms": 0.13971662265552462
         }
       },
       "bytes": {
@@ -1261,34 +1261,34 @@
         "delivered": true,
         "error": null
       },
-      "requests": 3324,
-      "verified": 3324,
+      "requests": 3118,
+      "verified": 3118,
       "failed": 0,
       "statuses": {
-        "200": 3324
+        "200": 3118
       },
-      "measured_seconds": 2.002,
-      "throughput_rps": 1660.3396603396604,
+      "measured_seconds": 2.0019,
+      "throughput_rps": 1557.520355662121,
       "latency": {
         "total": {
-          "median_ms": 2.4,
-          "p95_ms": 3.6,
-          "mean_ms": 2.4057460890493383
+          "median_ms": 2.5,
+          "p95_ms": 3.9,
+          "mean_ms": 2.5648492623476584
         },
         "transfer": {
-          "median_ms": 2.0159585,
-          "p95_ms": 3.228458,
-          "mean_ms": 2.0429013586040914
+          "median_ms": 2.0892295,
+          "p95_ms": 3.448917,
+          "mean_ms": 2.1828808543938423
         },
         "other_handling": {
-          "median_ms": 0.022583,
-          "p95_ms": 0.029834,
-          "mean_ms": 0.023577719314079423
+          "median_ms": 0.0225005,
+          "p95_ms": 0.046375,
+          "mean_ms": 0.025680321039127645
         },
         "verification": {
-          "median_ms": 0.33575,
-          "p95_ms": 0.377084,
-          "mean_ms": 0.3392670111311673
+          "median_ms": 0.3397915,
+          "p95_ms": 0.435958,
+          "mean_ms": 0.35628808691468894
         }
       },
       "bytes": {
@@ -1306,14 +1306,14 @@
       "reference": "ES256",
       "token_bytes": 563,
       "reference_token_bytes": 307,
-      "throughput_rps": 5880.66957987798,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 5537.349566824318,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
-        "total": -0.013799172218472489,
-        "transfer": 0.004269552276985583,
-        "other_handling": 0.0002715482543753211,
-        "verification": -0.018340272749833374,
-        "token_size": 0.004541100531360885
+        "total": -0.01371831092224085,
+        "transfer": 0.0037275948692794825,
+        "other_handling": 1.0933501656002625e-05,
+        "verification": -0.017456839293176353,
+        "token_size": 0.0037385283709355024
       },
       "size_control": null
     },
@@ -1324,8 +1324,8 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 5440.293834624843,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 5147.22333674565,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
         "total": 0.0,
         "transfer": 0.0,
@@ -1342,14 +1342,14 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 5350.436241526528,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 5165.585244829522,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
-        "total": 0.0030476304362764273,
-        "transfer": 0.002925084265757799,
-        "other_handling": 6.844621719683669e-05,
-        "verification": 5.409995332177758e-05,
-        "token_size": 0.0029935304829546497
+        "total": -0.0006809786419291475,
+        "transfer": -0.00035003147706913484,
+        "other_handling": -7.474881316682329e-05,
+        "verification": -0.00025619835169318067,
+        "token_size": -0.0004247802902359668
       },
       "size_control": null
     },
@@ -1360,14 +1360,14 @@
       "reference": "ES256",
       "token_bytes": 3454,
       "reference_token_bytes": 307,
-      "throughput_rps": 4627.309026329174,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 4624.953364282751,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
-        "total": 0.03226299827811613,
-        "transfer": 0.028722681927800947,
-        "other_handling": 0.0016909034969584784,
-        "verification": 0.0018494128533567133,
-        "token_size": 0.030413585424759415
+        "total": 0.02196638615103108,
+        "transfer": 0.02008877218707586,
+        "other_handling": 0.0007734571448748413,
+        "verification": 0.001104156819080375,
+        "token_size": 0.020862229331950706
       },
       "size_control": null
     },
@@ -1378,14 +1378,14 @@
       "reference": "ES256",
       "token_bytes": 10712,
       "reference_token_bytes": 307,
-      "throughput_rps": 2465.0539792956215,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 2524.083159024661,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
-        "total": 0.22151246099127242,
-        "transfer": 0.1492644008324342,
-        "other_handling": 0.00321330607137248,
-        "verification": 0.06903475408746576,
-        "token_size": 0.15247770690380666
+        "total": 0.2016730662419027,
+        "transfer": 0.1335442330982116,
+        "other_handling": 0.001565172668162836,
+        "verification": 0.06656366047552825,
+        "token_size": 0.13510940576637445
       },
       "size_control": null
     },
@@ -1396,14 +1396,14 @@
       "reference": "ES256",
       "token_bytes": 23021,
       "reference_token_bytes": 307,
-      "throughput_rps": 1444.804831428956,
-      "reference_throughput_rps": 5440.293834624843,
+      "throughput_rps": 1461.1819189610162,
+      "reference_throughput_rps": 5147.22333674565,
       "difference_ms": {
-        "total": 0.5078627453038518,
-        "transfer": 0.2463775549720172,
-        "other_handling": 0.007603606316906172,
-        "verification": 0.2538815840149284,
-        "token_size": 0.2539811612889234
+        "total": 0.48975918305010735,
+        "transfer": 0.2244636830430458,
+        "other_handling": 0.0049980666187031,
+        "verification": 0.2602974333883585,
+        "token_size": 0.22946174966174887
       },
       "size_control": null
     },
@@ -1414,14 +1414,14 @@
       "reference": "ES256",
       "token_bytes": 563,
       "reference_token_bytes": 307,
-      "throughput_rps": 7250.296633434683,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 7144.856972926328,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
-        "total": 0.018892816881316277,
-        "transfer": 0.018413159179126615,
-        "other_handling": 0.00038469351635547766,
-        "verification": 9.49641858341288e-05,
-        "token_size": 0.018797852695482148
+        "total": 0.004271949205877812,
+        "transfer": 0.00601395253411563,
+        "other_handling": 0.00013615780516268612,
+        "verification": -0.001878161133400419,
+        "token_size": 0.006150110339278231
       },
       "size_control": null
     },
@@ -1432,8 +1432,8 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 7507.257220265344,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 7199.8702805625135,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
         "total": 0.0,
         "transfer": 0.0,
@@ -1450,14 +1450,14 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 7738.37098068394,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 7552.042614368323,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
-        "total": -0.01593806461385716,
-        "transfer": -0.012083699737856946,
-        "other_handling": -8.228230405751477e-05,
-        "verification": -0.00377208257194267,
-        "token_size": -0.012165982041914492
+        "total": -0.025870505103526287,
+        "transfer": -0.019057234950909385,
+        "other_handling": -0.00029680821931193056,
+        "verification": -0.006516461933305018,
+        "token_size": -0.01935404317022127
       },
       "size_control": null
     },
@@ -1468,14 +1468,14 @@
       "reference": "ES256",
       "token_bytes": 3454,
       "reference_token_bytes": 307,
-      "throughput_rps": 7603.519758322942,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 7300.57167235459,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
-        "total": -0.006801808348939065,
-        "transfer": -0.004036346879788821,
-        "other_handling": 0.0009203971048604449,
-        "verification": -0.003685858574010714,
-        "token_size": -0.0031159497749283505
+        "total": -0.007705635457847859,
+        "transfer": -0.00886777183662718,
+        "other_handling": 0.00123678188955487,
+        "verification": -7.464551077560055e-05,
+        "token_size": -0.007630989947072259
       },
       "size_control": null
     },
@@ -1486,14 +1486,14 @@
       "reference": "ES256",
       "token_bytes": 10712,
       "reference_token_bytes": 307,
-      "throughput_rps": 3738.4247212830696,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 3875.443792431466,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
-        "total": 0.5367768482987972,
-        "transfer": 0.5452707732795334,
-        "other_handling": 0.003213055867807117,
-        "verification": -0.01170698084854327,
-        "token_size": 0.5484838291473405
+        "total": 0.47658007088580623,
+        "transfer": 0.5036294493842012,
+        "other_handling": 0.002764032274219832,
+        "verification": -0.029813410772614887,
+        "token_size": 0.5063934816584211
       },
       "size_control": null
     },
@@ -1504,14 +1504,14 @@
       "reference": "ES256",
       "token_bytes": 23021,
       "reference_token_bytes": 307,
-      "throughput_rps": 1953.8954854510414,
-      "reference_throughput_rps": 7507.257220265344,
+      "throughput_rps": 1935.9625234186456,
+      "reference_throughput_rps": 7199.8702805625135,
       "difference_ms": {
-        "total": 1.5130833222516684,
-        "transfer": 1.334118915657982,
-        "other_handling": 0.007189803075566117,
-        "verification": 0.17177460351812038,
-        "token_size": 1.341308718733548
+        "total": 1.5089708638365034,
+        "transfer": 1.335215616594894,
+        "other_handling": 0.006744305326085739,
+        "verification": 0.1670109419155239,
+        "token_size": 1.3419599219209795
       },
       "size_control": null
     },
@@ -1522,14 +1522,14 @@
       "reference": "ES256",
       "token_bytes": 563,
       "reference_token_bytes": 307,
-      "throughput_rps": 2493.7506249375065,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 2370.2629737026296,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
-        "total": 0.002515035687083833,
-        "transfer": 0.019521045516573354,
-        "other_handling": 0.0005340830274044722,
-        "verification": -0.017540092856894014,
-        "token_size": 0.020055128543977847
+        "total": 0.020191445908288252,
+        "transfer": 0.038839492426335,
+        "other_handling": 0.00024821471039433024,
+        "verification": -0.018896261228441118,
+        "token_size": 0.03908770713672937
       },
       "size_control": null
     },
@@ -1540,8 +1540,8 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 2509.0,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 2490.25097490251,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
         "total": 0.0,
         "transfer": 0.0,
@@ -1558,14 +1558,14 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 1932.0,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 2524.2475752424757,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
-        "total": 0.11891414510247572,
-        "transfer": 0.10795133971976245,
-        "other_handling": 0.0033563572667382937,
-        "verification": 0.007606448115975037,
-        "token_size": 0.11130769698650068
+        "total": -0.005544233068826565,
+        "transfer": -0.004331606044382763,
+        "other_handling": -0.00036941292669720634,
+        "verification": -0.0008432140977465141,
+        "token_size": -0.004701018971080051
       },
       "size_control": null
     },
@@ -1576,14 +1576,14 @@
       "reference": "ES256",
       "token_bytes": 3454,
       "reference_token_bytes": 307,
-      "throughput_rps": 2033.694945758136,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 2117.6823476478526,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
-        "total": 0.0932050811767901,
-        "transfer": 0.08262906755846111,
-        "other_handling": 0.003651022645516455,
-        "verification": 0.006924990972812531,
-        "token_size": 0.08628009020397757
+        "total": 0.07051866497790754,
+        "transfer": 0.06722364147286602,
+        "other_handling": 0.0018211544320258337,
+        "verification": 0.0014738690730157003,
+        "token_size": 0.06904479590489185
       },
       "size_control": null
     },
@@ -1594,14 +1594,14 @@
       "reference": "ES256",
       "token_bytes": 10712,
       "reference_token_bytes": 307,
-      "throughput_rps": 1593.1813637272546,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 1633.0,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
-        "total": 0.22897491215496185,
-        "transfer": 0.1547448777757462,
-        "other_handling": 0.006371218393576036,
-        "verification": 0.06785881598563964,
-        "token_size": 0.1611160961693222
+        "total": 0.21088220971473598,
+        "transfer": 0.13880985580275468,
+        "other_handling": 0.0032954435031318646,
+        "verification": 0.0687769104088494,
+        "token_size": 0.14210529930588658
       },
       "size_control": null
     },
@@ -1612,14 +1612,14 @@
       "reference": "ES256",
       "token_bytes": 23021,
       "reference_token_bytes": 307,
-      "throughput_rps": 1035.0342345944325,
-      "reference_throughput_rps": 2509.0,
+      "throughput_rps": 1120.3879612038795,
+      "reference_throughput_rps": 2490.25097490251,
       "difference_ms": {
-        "total": 0.567453872962213,
-        "transfer": 0.2796441826341636,
-        "other_handling": 0.010796382353512867,
-        "verification": 0.2770133079745365,
-        "token_size": 0.29044056498767645
+        "total": 0.4908704213897684,
+        "transfer": 0.21856346297322066,
+        "other_handling": 0.009815472001011252,
+        "verification": 0.2624914864155366,
+        "token_size": 0.22837893497423178
       },
       "size_control": null
     },
@@ -1630,14 +1630,14 @@
       "reference": "ES256",
       "token_bytes": 563,
       "reference_token_bytes": 307,
-      "throughput_rps": 4376.2495001999205,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 4366.365172448067,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
-        "total": -0.03622286831350752,
-        "transfer": -0.005657320102299024,
-        "other_handling": -0.0012701857877472113,
-        "verification": -0.02929536242346123,
-        "token_size": -0.006927505890046287
+        "total": 0.0107272389086569,
+        "transfer": 0.03561641403768845,
+        "other_handling": 0.0002561269119947564,
+        "verification": -0.0251453020410263,
+        "token_size": 0.0358725409496832
       },
       "size_control": null
     },
@@ -1648,8 +1648,8 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 4207.448137965508,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 4418.742002165567,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
         "total": 0.0,
         "transfer": 0.0,
@@ -1666,14 +1666,14 @@
       "reference": "ES256",
       "token_bytes": 307,
       "reference_token_bytes": 307,
-      "throughput_rps": 4379.186244126762,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 4419.116176764647,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
-        "total": -0.0368469600707132,
-        "transfer": -0.022047063146780288,
-        "other_handling": -0.0010555022151957985,
-        "verification": -0.01374439470873709,
-        "token_size": -0.023102565361976107
+        "total": -0.0003300375276316103,
+        "transfer": 0.00645393412368489,
+        "other_handling": -1.40250137087225e-05,
+        "verification": -0.006769946637607882,
+        "token_size": 0.006439909109976272
       },
       "size_control": null
     },
@@ -1684,14 +1684,14 @@
       "reference": "ES256",
       "token_bytes": 3454,
       "reference_token_bytes": 307,
-      "throughput_rps": 4306.492727545359,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 4364.45723357809,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
-        "total": -0.02127455113887755,
-        "transfer": -0.0056064863330794745,
-        "other_handling": 0.0008362537647782255,
-        "verification": -0.016504318570576465,
-        "token_size": -0.004770232568301086
+        "total": 0.011185076890745327,
+        "transfer": 0.02154917434983672,
+        "other_handling": 0.0013485729473531813,
+        "verification": -0.011712670406444664,
+        "token_size": 0.02289774729718999
       },
       "size_control": null
     },
@@ -1702,14 +1702,14 @@
       "reference": "ES256",
       "token_bytes": 10712,
       "reference_token_bytes": 307,
-      "throughput_rps": 2813.811712972217,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 2691.423430627749,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
-        "total": 0.47080828566435384,
-        "transfer": 0.49987414055076673,
-        "other_handling": 0.0004726394738751548,
-        "verification": -0.029538494360288103,
-        "token_size": 0.500346780024642
+        "total": 0.579957084820772,
+        "transfer": 0.6026857907278352,
+        "other_handling": 0.0034202926225315455,
+        "verification": -0.02614899852959457,
+        "token_size": 0.6061060833503666
       },
       "size_control": null
     },
@@ -1720,14 +1720,14 @@
       "reference": "ES256",
       "token_bytes": 23021,
       "reference_token_bytes": 307,
-      "throughput_rps": 1660.3396603396604,
-      "reference_throughput_rps": 4207.448137965508,
+      "throughput_rps": 1557.520355662121,
+      "reference_throughput_rps": 4418.742002165567,
       "difference_ms": {
-        "total": 1.4559896437600428,
-        "transfer": 1.2816140759618198,
-        "other_handling": 0.004289289350909647,
-        "verification": 0.17008627844731322,
-        "token_size": 1.2859033653127296
+        "total": 1.6599038402046422,
+        "transfer": 1.4619270380650384,
+        "other_handling": 0.007554336410034307,
+        "verification": 0.19042246572956975,
+        "token_size": 1.4694813744750725
       },
       "size_control": null
     }
@@ -1903,7 +1903,7 @@
       }
     ]
   },
-  "recorded_utc": "2026-11-18T00:11:46.609813+00:00",
+  "recorded_utc": "2026-11-18T05:37:57.077389+00:00",
   "evidence": {
     "raw": "raw.csv.gz",
     "logs": {

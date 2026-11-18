@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "started_utc": "2026-11-18T00:08:56.684047+00:00",
-  "finished_utc": "2026-11-18T00:11:46.734966+00:00",
-  "recorded_utc": "2026-11-18T00:11:46.734979+00:00",
+  "started_utc": "2026-11-18T05:35:07.485773+00:00",
+  "finished_utc": "2026-11-18T05:37:57.208042+00:00",
+  "recorded_utc": "2026-11-18T05:37:57.208055+00:00",
   "settings": {
     "algorithms": [
       "RS256",
@@ -37,7 +37,7 @@
     "pqcrypto": "1.0.0",
     "openssl": "OpenSSL 4.0.3 29 Sep 2026",
     "timer": "perf_counter_ns",
-    "git_commit": "828cf0548c1aa7293c4bf338aa24fdf096a1a110",
+    "git_commit": "df91e2ef910d2bb6c9aee567a3ac1a2929300118",
     "git_dirty_scripts_or_fixtures": false,
     "page_size_bytes": 16384,
     "waitress_threads": 4
@@ -450,8 +450,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "fe3b2dd7e1d9409de85fcd6d1bec2476",
-        "verify_nonce": "c91586216214561e918da6f320dc3cdf",
+        "issue_nonce": "f44847019524eee6ef7c264654091058",
+        "verify_nonce": "d59cd9bf8068a8d63aff3d0b0891fda5",
         "evidence": "verified: the browser sent the 1,204-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -463,8 +463,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "76de00762c14c196ceca308a3a112b96",
-        "verify_nonce": "dffee9a2e08a908c73db6992bc8b9511",
+        "issue_nonce": "b334a4ac0434ac0302e6ce6abfd86e43",
+        "verify_nonce": "c49b75500b18d14b501316db916a0917",
         "evidence": "verified: the browser sent the 563-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -476,8 +476,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "5df44ab93bad834b8c85e6c2e4b1e36a",
-        "verify_nonce": "5a473d478342cfc1cc541a37439f960e",
+        "issue_nonce": "be67a9ca022016afcee570e6f3f91f1d",
+        "verify_nonce": "6515971ba146ccedd9df008b1a02179c",
         "evidence": "verified: the browser sent the 1,204-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -489,8 +489,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "44d2f1cfee9e317266fd550c642127df",
-        "verify_nonce": "2592f08c00e7402e158ed93dd3b9cace",
+        "issue_nonce": "dde6c744072d0f4a088318c713a982e6",
+        "verify_nonce": "d48591e94a37f83616f9aa33a7aca217",
         "evidence": "verified: the browser sent the 563-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -502,8 +502,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "c467c3590c8df3e47557caa0fe8d862e",
-        "verify_nonce": "653ecf101f3485edb37b217bb5964a90",
+        "issue_nonce": "2b684bb0918767f0403ab066d39f13d7",
+        "verify_nonce": "05e88b36ebe62f45677de368e8562e78",
         "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -515,8 +515,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "98c81603d08a2a6770d657c2795de970",
-        "verify_nonce": "cc4738d8a4119a3f0135405cae4dc4d6",
+        "issue_nonce": "17c3d2a5e07d61286c037171b3a72f0e",
+        "verify_nonce": "9ded538a95b9efc91a2e2bfe93f07c8d",
         "evidence": "verified: the browser sent the 307-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -528,8 +528,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "257515db7ecf78b89a57eb84437366dc",
-        "verify_nonce": "22d7c87cc6331386ebf65895bcce8e7a",
+        "issue_nonce": "7ca32699681327b7b5b5d75b69f984c7",
+        "verify_nonce": "288c65c11443692288611372cf007182",
         "evidence": "verified: the browser sent the 948-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -541,8 +541,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "4c5148da3526b6f597bd984441514c69",
-        "verify_nonce": "ca8b855ef6602cdc69cc3267ec4dfb3f",
+        "issue_nonce": "d41282b297b23df61549afbbe506b31e",
+        "verify_nonce": "2cc30a59fb9c5022ed6c44cf679ae508",
         "evidence": "verified: the browser sent the 307-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -554,8 +554,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "3b08e461cab98afc6feb2087030f9a65",
-        "verify_nonce": "ce6c09f8487bdb0c2328995fb5e2af5c",
+        "issue_nonce": "19d46229a4364798cf0bcf9a7bc841ea",
+        "verify_nonce": "fde7f8cb87ba285c6514c1a60d5e1923",
         "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -567,8 +567,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "b9a6b5663b734a259a7499eaa8972571",
-        "verify_nonce": "6776cb9e63e85d3722ec01557a944fce",
+        "issue_nonce": "03980e72c3617c5fdd2e80c173dbcc21",
+        "verify_nonce": "9d0fbb60f327322123467d36a42db16f",
         "evidence": "verified: the browser sent the 307-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -580,8 +580,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "c446f02ad94754a33420b495cac0a86a",
-        "verify_nonce": "1de5e16aa1952f5e5e7dd3727762084c",
+        "issue_nonce": "b27d967edabba64a2c6ed1eb3052b690",
+        "verify_nonce": "b8f6803a50a9ecfbabedf70e64273f75",
         "evidence": "verified: the browser sent the 948-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -593,8 +593,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "e0dfe48901b5e138f75e60bf28f48aae",
-        "verify_nonce": "4ccf3d8f357da65fefb6ad2819c47c4c",
+        "issue_nonce": "d80ea4319869d2f7410246a5c6d71501",
+        "verify_nonce": "8524bb121ccf79d3d2973c0408d22daf",
         "evidence": "verified: the browser sent the 307-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -606,8 +606,8 @@
         "rejected_by": "browser",
         "verified_directly": true,
         "cookie_stored": false,
-        "issue_nonce": "1c2e7dde3445c3657a33084127343760",
-        "verify_nonce": "f89d66beb00dc8a989eff6fc938ba36e",
+        "issue_nonce": "1d00a2f4efd5b2f99ee1815234f59354",
+        "verify_nonce": "eb3dc4647e429e1f6cdb7e3778fc64bd",
         "evidence": "browser: the issue response carried a 4,156-byte Set-Cookie (browser.log) whose name + value is 4,098 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
       },
       {
@@ -619,8 +619,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": true,
-        "issue_nonce": "e461d8460e99fb1d5ccf1c538637c90e",
-        "verify_nonce": "80e78973c607f130ca0be500b18a9e77",
+        "issue_nonce": "0719e664227f81af6151fe4e0bf7714f",
+        "verify_nonce": "0b2ec6fa965426bd423ecf32ac09c3e9",
         "evidence": "verified: the browser sent the 3,454-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -632,8 +632,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "262b8662c8d41cde463e3a4f4020f294",
-        "verify_nonce": "f0c50147af0098cdb97b6119b71b05b7",
+        "issue_nonce": "e9eb633973819e90512e9b63f14ac37a",
+        "verify_nonce": "bbc3223092d80f463beb99c221dbacb5",
         "evidence": "verified: the browser sent the 4,095-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -645,8 +645,8 @@
         "rejected_by": null,
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "bd9f48a86b0c287c95e56ad8e622253f",
-        "verify_nonce": "3979e194b464f8938e1f01d783ee2e52",
+        "issue_nonce": "3e67f52e3a3e3d3b72f13a3fc5fbb836",
+        "verify_nonce": "e100a75f37262605bbefc4904a53a82c",
         "evidence": "verified: the browser sent the 3,454-byte token as an Authorization: Bearer header through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
       },
       {
@@ -658,8 +658,8 @@
         "rejected_by": "browser",
         "verified_directly": true,
         "cookie_stored": false,
-        "issue_nonce": "cabe178c3f9828b562cbfcc969c1d845",
-        "verify_nonce": "db54c8bb8107c53106e1bc76beb55d1c",
+        "issue_nonce": "64947509da74a425e19a1bb0760221f2",
+        "verify_nonce": "08f27645154ffba71a6caf9df14e550c",
         "evidence": "browser: the issue response carried a 11,414-byte Set-Cookie (browser.log) whose name + value is 11,356 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
       },
       {
@@ -671,8 +671,8 @@
         "rejected_by": "browser",
         "verified_directly": true,
         "cookie_stored": false,
-        "issue_nonce": "d13d96bb3cb894956820953875b642bc",
-        "verify_nonce": "97c295bc8c7392552c190687273adc04",
+        "issue_nonce": "bf7976ed3a8ff413c62d69db0582a3fd",
+        "verify_nonce": "498a2ac076efe6a5bce821adb713c2ca",
         "evidence": "browser: the issue response carried a 10,773-byte Set-Cookie (browser.log) whose name + value is 10,715 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
       },
       {
@@ -684,9 +684,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "eb4bd874168e07b7f6c70cdb391882d8",
-        "verify_nonce": "29a7036be72b5b4dd0683e75fb3126d9",
-        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:00 -0500] \"GET /api/token/verify?nonce=29a7036be72b5b4dd0683e75fb3126d9 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:00 [info] 68083#13956023: *75 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=29a7036be7...\"; its nonce is not in app.log, so nginx did not forward it"
+        "issue_nonce": "f74837820398f13740f1de0377e2787c",
+        "verify_nonce": "7ff9c152c4f222c19ed382f2e17abd01",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:11 -0500] \"GET /api/token/verify?nonce=7ff9c152c4f222c19ed382f2e17abd01 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/18 00:35:11 [info] 89040#14295321: *75 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=7ff9c152c4...\"; its nonce is not in app.log, so nginx did not forward it"
       },
       {
         "algorithm": "SLH-DSA-SHA2-128s",
@@ -697,9 +697,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "dd6fb8ad7797f2a2de5d1c62ee69d50e",
-        "verify_nonce": "715b1c40535e7afd5920103712586050",
-        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:00 -0500] \"GET /api/token/verify?nonce=715b1c40535e7afd5920103712586050 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:00 [info] 68083#13956023: *78 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=715b1c4053...\"; its nonce is not in app.log, so nginx did not forward it"
+        "issue_nonce": "1d5933bb31e3958b186e701a0a86e42e",
+        "verify_nonce": "710cef5aac7cecac7743846a8960ceb0",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:11 -0500] \"GET /api/token/verify?nonce=710cef5aac7cecac7743846a8960ceb0 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/18 00:35:11 [info] 89040#14295321: *78 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=710cef5aac...\"; its nonce is not in app.log, so nginx did not forward it"
       },
       {
         "algorithm": "SLH-DSA-SHA2-128f",
@@ -710,9 +710,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": false,
-        "issue_nonce": "20c241dc9701a0589e25ff32ba01b531",
-        "verify_nonce": "f4d3e1f825af09457509b31ace530bc7",
-        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01b531 HTTP/1.1\" 502 559 request_length=700 upstream_status=502\"; proxy-error.log: \"2026/11/17 19:09:01 [error] 68083#13956023: *81 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01...\"; app.log shows the application answered 200: \"2026-11-17 19:09:01,139 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=20c241dc9701a0589e25ff32ba01b531 HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128f t...\""
+        "issue_nonce": "1fb5f421a577c004c79e69297875409e",
+        "verify_nonce": "4986f49607fd1351ebb136f2235b10a2",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:12 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=1fb5f421a577c004c79e69297875409e HTTP/1.1\" 502 559 request_length=700 upstream_status=502\"; proxy-error.log: \"2026/11/18 00:35:12 [error] 89040#14295321: *81 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=1fb5f421a577c004c79e69297875...\"; app.log shows the application answered 200: \"2026-11-18 00:35:12,078 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=1fb5f421a577c004c79e69297875409e HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128f t...\""
       },
       {
         "algorithm": "SLH-DSA-SHA2-128f",
@@ -723,9 +723,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": false,
-        "issue_nonce": "3a77bc3cf23f25c04b01b4c9bdf15707",
-        "verify_nonce": "041ac55a8f296c9a407ce0f2f251153a",
-        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c9bdf15707 HTTP/1.1\" 502 559 request_length=705 upstream_status=502\"; proxy-error.log: \"2026/11/17 19:09:01 [error] 68083#13956023: *85 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c...\"; app.log shows the application answered 200: \"2026-11-17 19:09:01,257 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=3a77bc3cf23f25c04b01b4c9bdf15707 HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-1...\""
+        "issue_nonce": "569e9d595856fe9772a8fb78b51c9dba",
+        "verify_nonce": "2ba83bf40ddccf80c486a43ab789738f",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:12 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=569e9d595856fe9772a8fb78b51c9dba HTTP/1.1\" 502 559 request_length=705 upstream_status=502\"; proxy-error.log: \"2026/11/18 00:35:12 [error] 89040#14295321: *85 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=569e9d595856fe9772a8fb7...\"; app.log shows the application answered 200: \"2026-11-18 00:35:12,205 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=essential&attrs=full&nonce=569e9d595856fe9772a8fb78b51c9dba HTTP/1.1\" 200 headers=14 header_bytes=543 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-1...\""
       },
       {
         "algorithm": "SLH-DSA-SHA2-128f",
@@ -736,9 +736,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "2bddf236726ef79788169d1a511356a5",
-        "verify_nonce": "692df98462a27794cf3b5e269d51be3a",
-        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/verify?nonce=692df98462a27794cf3b5e269d51be3a HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:01 [info] 68083#13956023: *89 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=692df98462...\"; its nonce is not in app.log, so nginx did not forward it"
+        "issue_nonce": "179e55f0d56b523eaec6f9fdb2f09467",
+        "verify_nonce": "798aae5192e3c3cb1ce40926f814ccea",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:12 -0500] \"GET /api/token/verify?nonce=798aae5192e3c3cb1ce40926f814ccea HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/18 00:35:12 [info] 89040#14295321: *89 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=798aae5192...\"; its nonce is not in app.log, so nginx did not forward it"
       },
       {
         "algorithm": "SLH-DSA-SHA2-128f",
@@ -749,9 +749,9 @@
         "rejected_by": "proxy",
         "verified_directly": true,
         "cookie_stored": null,
-        "issue_nonce": "7c60fc098b0f71ed31e3c07a95c1e5d5",
-        "verify_nonce": "61d22e9dea182fdba4384533307c2269",
-        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [17/Nov/2026:19:09:01 -0500] \"GET /api/token/verify?nonce=61d22e9dea182fdba4384533307c2269 HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/17 19:09:01 [info] 68083#13956023: *92 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=61d22e9dea...\"; its nonce is not in app.log, so nginx did not forward it"
+        "issue_nonce": "8d7da1e95c6bbebbdb85333b9aad8e04",
+        "verify_nonce": "feb67bcd5ae47d8bc0bfada06e8de2fa",
+        "evidence": "proxy: the browser got status 400 for the verify request; proxy-access.log: \"127.0.0.1 [18/Nov/2026:00:35:12 -0500] \"GET /api/token/verify?nonce=feb67bcd5ae47d8bc0bfada06e8de2fa HTTP/1.1\" 400 233 request_length=190 upstream_status=-\"; proxy-error.log: \"2026/11/18 00:35:12 [info] 89040#14295321: *92 client sent too long header line: \"Authorization: Bearer [token removed].[token removed].[token removed]...\" while reading client request headers, client: 127.0.0.1, server: , request: \"GET /api/token/verify?nonce=feb67bcd5a...\"; its nonce is not in app.log, so nginx did not forward it"
       }
     ],
     "moved": [
@@ -859,44 +859,44 @@
           "essential": 563
         },
         "verified": {
-          "oidc": 9834,
-          "essential": 11762
+          "oidc": 9714,
+          "essential": 11075
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4916.744943856037,
-          "essential": 5880.66957987798
+          "oidc": 4856.836890418291,
+          "essential": 5537.349566824318
         },
         "median_ms": {
-          "oidc": 0.201,
-          "essential": 0.168083
+          "oidc": 0.203166,
+          "essential": 0.178458
         },
         "p95_ms": {
-          "oidc": 0.220208,
-          "essential": 0.184167
+          "oidc": 0.222,
+          "essential": 0.194416
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.20243978391295506,
-            "transfer": 0.1388472533048607,
-            "other_handling": 0.01474828177750661,
-            "verification": 0.04884424883058776
+            "total": 0.20491683580399425,
+            "transfer": 0.14146422760963556,
+            "other_handling": 0.014849900144121886,
+            "verification": 0.048602708050236774
           },
           "essential": {
-            "total": 0.16919055721816018,
-            "transfer": 0.122637000765176,
-            "other_handling": 0.01130357031117157,
-            "verification": 0.035249986141812614
+            "total": 0.17965721146726862,
+            "transfer": 0.13212765489841985,
+            "other_handling": 0.012147926410835215,
+            "verification": 0.035381630158013544
           }
         },
         "difference_ms": {
-          "total": -0.03324922669479488,
-          "transfer": -0.016210252539684694,
-          "other_handling": -0.0034447114663350396,
-          "verification": -0.013594262688775144
+          "total": -0.025259624336725628,
+          "transfer": -0.009336572711215713,
+          "other_handling": -0.002701973733286671,
+          "verification": -0.01322107789222323
         }
       },
       {
@@ -908,44 +908,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 9158,
-          "essential": 10881
+          "oidc": 9146,
+          "essential": 10295
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4578.733002631784,
-          "essential": 5440.293834624843
+          "oidc": 4572.917022134176,
+          "essential": 5147.22333674565
         },
         "median_ms": {
-          "oidc": 0.216292,
-          "essential": 0.182542
+          "oidc": 0.215375,
+          "essential": 0.192666
         },
         "p95_ms": {
-          "oidc": 0.233875,
-          "essential": 0.194916
+          "oidc": 0.235875,
+          "essential": 0.205834
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.2174772255951081,
-            "transfer": 0.1363517417558419,
-            "other_handling": 0.014598808473465822,
-            "verification": 0.06652667536580038
+            "total": 0.21775064520008747,
+            "transfer": 0.13588332702820904,
+            "other_handling": 0.014849869451126175,
+            "verification": 0.06701744872075224
           },
           "essential": {
-            "total": 0.18298972943663266,
-            "transfer": 0.11836744848819042,
-            "other_handling": 0.011032022056796249,
-            "verification": 0.05359025889164599
+            "total": 0.19337552238950947,
+            "transfer": 0.12840006002914037,
+            "other_handling": 0.012136992909179212,
+            "verification": 0.0528384694511899
           }
         },
         "difference_ms": {
-          "total": -0.034487496158475434,
-          "transfer": -0.01798429326765147,
-          "other_handling": -0.0035667864166695727,
-          "verification": -0.012936416474154395
+          "total": -0.024375122810577993,
+          "transfer": -0.007483266999068677,
+          "other_handling": -0.0027128765419469625,
+          "verification": -0.014178979269562346
         }
       },
       {
@@ -957,44 +957,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 9088,
-          "essential": 10701
+          "oidc": 9299,
+          "essential": 10332
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4543.623447206813,
-          "essential": 5350.436241526528
+          "oidc": 4649.270346966576,
+          "essential": 5165.585244829522
         },
         "median_ms": {
-          "oidc": 0.2170205,
-          "essential": 0.184792
+          "oidc": 0.211667,
+          "essential": 0.1915
         },
         "p95_ms": {
-          "oidc": 0.237667,
-          "essential": 0.200667
+          "oidc": 0.229042,
+          "essential": 0.204375
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.21916916857394367,
-            "transfer": 0.1377216277508803,
-            "other_handling": 0.014702551496478873,
-            "verification": 0.0667449893265845
+            "total": 0.21419533519733305,
+            "transfer": 0.13334148123454134,
+            "other_handling": 0.014792561888375093,
+            "verification": 0.0660612920744166
           },
           "essential": {
-            "total": 0.1860373598729091,
-            "transfer": 0.12129253275394822,
-            "other_handling": 0.011100468273993086,
-            "verification": 0.053644358844967766
+            "total": 0.19269454374758033,
+            "transfer": 0.12805002855207123,
+            "other_handling": 0.012062244096012389,
+            "verification": 0.052582271099496716
           }
         },
         "difference_ms": {
-          "total": -0.033131808701034576,
-          "transfer": -0.01642909499693207,
-          "other_handling": -0.0036020832224857875,
-          "verification": -0.013100630481616735
+          "total": -0.021500791449752726,
+          "transfer": -0.00529145268247011,
+          "other_handling": -0.0027303177923627044,
+          "verification": -0.01347902097491989
         }
       },
       {
@@ -1006,44 +1006,44 @@
           "essential": 3454
         },
         "verified": {
-          "oidc": 8620,
-          "essential": 9255
+          "oidc": 8669,
+          "essential": 9250
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4309.86899722196,
-          "essential": 4627.309026329174
+          "oidc": 4334.298002208756,
+          "essential": 4624.953364282751
         },
         "median_ms": {
-          "oidc": 0.229542,
-          "essential": 0.21425
+          "oidc": 0.228791,
+          "essential": 0.2147915
         },
         "p95_ms": {
-          "oidc": 0.245208,
-          "essential": 0.232666
+          "oidc": 0.24625,
+          "essential": 0.228417
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.23108003700696056,
-            "transfer": 0.15934048573085846,
-            "other_handling": 0.015566503364269142,
-            "verification": 0.056173047911832946
+            "total": 0.22981616357134618,
+            "transfer": 0.1539600267620256,
+            "other_handling": 0.016181630983965856,
+            "verification": 0.05967450582535471
           },
           "essential": {
-            "total": 0.2152527277147488,
-            "transfer": 0.14709013041599137,
-            "other_handling": 0.012722925553754727,
-            "verification": 0.0554396717450027
+            "total": 0.21534190854054056,
+            "transfer": 0.14848883221621623,
+            "other_handling": 0.012910450054054053,
+            "verification": 0.05394262627027027
           }
         },
         "difference_ms": {
-          "total": -0.015827309292211766,
-          "transfer": -0.012250355314867095,
-          "other_handling": -0.002843577810514414,
-          "verification": -0.0007333761668302449
+          "total": -0.014474255030805627,
+          "transfer": -0.0054711945458093825,
+          "other_handling": -0.0032711809299118023,
+          "verification": -0.005731879555084439
         }
       },
       {
@@ -1055,44 +1055,44 @@
           "essential": 10712
         },
         "verified": {
-          "oidc": 4911,
-          "essential": 4931
+          "oidc": 4965,
+          "essential": 5049
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2455.118637829071,
-          "essential": 2465.0539792956215
+          "oidc": 2482.0267594038646,
+          "essential": 2524.083159024661
         },
         "median_ms": {
-          "oidc": 0.4045,
-          "essential": 0.4025
+          "oidc": 0.399209,
+          "essential": 0.394083
         },
         "p95_ms": {
-          "oidc": 0.426459,
-          "essential": 0.420875
+          "oidc": 0.427666,
+          "essential": 0.409459
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.40617629505192426,
-            "transfer": 0.27085963551211567,
-            "other_handling": 0.016849528405620037,
-            "verification": 0.11846713113418855
+            "total": 0.4017307607250756,
+            "transfer": 0.2693064455186304,
+            "other_handling": 0.017169841087613293,
+            "verification": 0.11525447411883183
           },
           "essential": {
-            "total": 0.4045021904279051,
-            "transfer": 0.2676318493206246,
-            "other_handling": 0.014245328128168729,
-            "verification": 0.12262501297911174
+            "total": 0.3950485886314122,
+            "transfer": 0.26194429312735196,
+            "other_handling": 0.013702165577342048,
+            "verification": 0.11940212992671816
           }
         },
         "difference_ms": {
-          "total": -0.0016741046240191793,
-          "transfer": -0.0032277861914910555,
-          "other_handling": -0.0026042002774513077,
-          "verification": 0.004157881844923189
+          "total": -0.006682172093663397,
+          "transfer": -0.007362152391278465,
+          "other_handling": -0.0034676755102712453,
+          "verification": 0.004147655807886327
         }
       },
       {
@@ -1104,44 +1104,44 @@
           "essential": 23021
         },
         "verified": {
-          "oidc": 2915,
-          "essential": 2890
+          "oidc": 2842,
+          "essential": 2923
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 1457.0473442012428,
-          "essential": 1444.804831428956
+          "oidc": 1420.941208557496,
+          "essential": 1461.1819189610162
         },
         "median_ms": {
-          "oidc": 0.683417,
-          "essential": 0.686417
+          "oidc": 0.697292,
+          "essential": 0.681792
         },
         "p95_ms": {
-          "oidc": 0.710375,
-          "essential": 0.726042
+          "oidc": 0.7335,
+          "essential": 0.699417
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.6851997320754717,
-            "transfer": 0.3591552360205832,
-            "other_handling": 0.020777171869639795,
-            "verification": 0.3052673241852487
+            "total": 0.7025673427163969,
+            "transfer": 0.362295748416608,
+            "other_handling": 0.02091215482054891,
+            "verification": 0.31935943947924
           },
           "essential": {
-            "total": 0.6908524747404844,
-            "transfer": 0.3647450034602076,
-            "other_handling": 0.01863562837370242,
-            "verification": 0.30747184290657437
+            "total": 0.6831347054396169,
+            "transfer": 0.35286374307218615,
+            "other_handling": 0.017135059527882312,
+            "verification": 0.3131359028395484
           }
         },
         "difference_ms": {
-          "total": 0.0056527426650127,
-          "transfer": 0.005589767439624416,
-          "other_handling": -0.0021415434959373737,
-          "verification": 0.0022045187213256545
+          "total": -0.019432637276780018,
+          "transfer": -0.009432005344421845,
+          "other_handling": -0.003777095292666597,
+          "verification": -0.006223536639691607
         }
       },
       {
@@ -1153,44 +1153,44 @@
           "essential": 563
         },
         "verified": {
-          "oidc": 12263,
-          "essential": 14504
+          "oidc": 12271,
+          "essential": 14292
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 6129.826045649063,
-          "essential": 7250.296633434683
+          "oidc": 6134.283878221143,
+          "essential": 7144.856972926328
         },
         "median_ms": {
-          "oidc": 0.626375,
-          "essential": 0.529084
+          "oidc": 0.626791,
+          "essential": 0.5355
         },
         "p95_ms": {
-          "oidc": 0.962833,
-          "essential": 0.828125
+          "oidc": 0.970958,
+          "essential": 0.837084
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.651362805267879,
-            "transfer": 0.4576974131126152,
-            "other_handling": 0.016369487564217564,
-            "verification": 0.17729590459104624
+            "total": 0.6508925106348301,
+            "transfer": 0.4559984136582186,
+            "other_handling": 0.01633354869203814,
+            "verification": 0.1785605482845734
           },
           "essential": {
-            "total": 0.5505789298124656,
-            "transfer": 0.39334061196911196,
-            "other_handling": 0.01312860355763927,
-            "verification": 0.14410971428571429
+            "total": 0.5586425622726,
+            "transfer": 0.3947114445843829,
+            "other_handling": 0.013500701511335013,
+            "verification": 0.15043041617688216
           }
         },
         "difference_ms": {
-          "total": -0.10078387545541345,
-          "transfer": -0.06435680114350323,
-          "other_handling": -0.003240884006578293,
-          "verification": -0.03318619030533196
+          "total": -0.0922499483622301,
+          "transfer": -0.061286969073835684,
+          "other_handling": -0.0028328471807031255,
+          "verification": -0.028130132107691247
         }
       },
       {
@@ -1202,44 +1202,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 12782,
-          "essential": 15018
+          "oidc": 12684,
+          "essential": 14403
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 6389.576986893615,
-          "essential": 7507.257220265344
+          "oidc": 6340.03868367305,
+          "essential": 7199.8702805625135
         },
         "median_ms": {
-          "oidc": 0.603875,
-          "essential": 0.511521
+          "oidc": 0.60825,
+          "essential": 0.524708
         },
         "p95_ms": {
-          "oidc": 0.912,
-          "essential": 0.797625
+          "oidc": 0.917792,
+          "essential": 0.84025
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.6248546225160382,
-            "transfer": 0.4141352425285558,
-            "other_handling": 0.015975424894382726,
-            "verification": 0.1947439550930997
+            "total": 0.6296911017029329,
+            "transfer": 0.41752406480605486,
+            "other_handling": 0.016103524676758123,
+            "verification": 0.19606351222011983
           },
           "essential": {
-            "total": 0.5316861129311493,
-            "transfer": 0.37492745278998535,
-            "other_handling": 0.012743910041283793,
-            "verification": 0.14401475009988016
+            "total": 0.5543706130667222,
+            "transfer": 0.38869749205026727,
+            "other_handling": 0.013364543706172327,
+            "verification": 0.15230857731028258
           }
         },
         "difference_ms": {
-          "total": -0.09316850958488887,
-          "transfer": -0.039207789738570475,
-          "other_handling": -0.003231514853098933,
-          "verification": -0.050729204993219534
+          "total": -0.07532048863621066,
+          "transfer": -0.028826572755787594,
+          "other_handling": -0.002738980970585796,
+          "verification": -0.043754934909837256
         }
       },
       {
@@ -1251,44 +1251,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 12915,
-          "essential": 15481
+          "oidc": 12778,
+          "essential": 15107
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 6455.638219759974,
-          "essential": 7738.37098068394
+          "oidc": 6388.048580014614,
+          "essential": 7552.042614368323
         },
         "median_ms": {
-          "oidc": 0.596333,
-          "essential": 0.493042
+          "oidc": 0.604354,
+          "essential": 0.50675
         },
         "p95_ms": {
-          "oidc": 0.925041,
-          "essential": 0.772125
+          "oidc": 0.9175,
+          "essential": 0.78075
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.6184730027874565,
-            "transfer": 0.4215585487417731,
-            "other_handling": 0.015788148277197055,
-            "verification": 0.18112630576848626
+            "total": 0.6249534287838473,
+            "transfer": 0.4268499543747066,
+            "other_handling": 0.016158749960870245,
+            "verification": 0.18194472444827045
           },
           "essential": {
-            "total": 0.5157480483172922,
-            "transfer": 0.3628437530521284,
-            "other_handling": 0.012661627737226278,
-            "verification": 0.1402426675279375
+            "total": 0.5285001079631959,
+            "transfer": 0.3696402570993579,
+            "other_handling": 0.013067735486860396,
+            "verification": 0.14579211537697756
           }
         },
         "difference_ms": {
-          "total": -0.10272495447016439,
-          "transfer": -0.058714795689644717,
-          "other_handling": -0.003126520539970777,
-          "verification": -0.040883638240548775
+          "total": -0.09645332082065139,
+          "transfer": -0.05720969727534869,
+          "other_handling": -0.0030910144740098483,
+          "verification": -0.03615260907129289
         }
       },
       {
@@ -1300,44 +1300,44 @@
           "essential": 3454
         },
         "verified": {
-          "oidc": 14707,
-          "essential": 15211
+          "oidc": 14047,
+          "essential": 14604
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 7352.2646651386995,
-          "essential": 7603.519758322942
+          "oidc": 7021.666467343715,
+          "essential": 7300.57167235459
         },
         "median_ms": {
-          "oidc": 0.5215,
-          "essential": 0.489459
+          "oidc": 0.545541,
+          "essential": 0.5071455
         },
         "p95_ms": {
-          "oidc": 0.795166,
-          "essential": 0.790833
+          "oidc": 0.834292,
+          "essential": 0.846042
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.5429145903991297,
-            "transfer": 0.3754982510369212,
-            "other_handling": 0.016420275515060853,
-            "verification": 0.15099606384714762
+            "total": 0.5684822804157471,
+            "transfer": 0.3927713654161031,
+            "other_handling": 0.017385282124297,
+            "verification": 0.15832563287534704
           },
           "essential": {
-            "total": 0.5248843045822102,
-            "transfer": 0.37089110591019653,
-            "other_handling": 0.013664307146144238,
-            "verification": 0.14032889152586944
+            "total": 0.5466649776088743,
+            "transfer": 0.3798297202136401,
+            "other_handling": 0.014601325595727197,
+            "verification": 0.15223393179950698
           }
         },
         "difference_ms": {
-          "total": -0.018030285816919456,
-          "transfer": -0.0046071451267246655,
-          "other_handling": -0.0027559683689166153,
-          "verification": -0.010667172321278173
+          "total": -0.021817302806872774,
+          "transfer": -0.012941645202462992,
+          "other_handling": -0.002783956528569805,
+          "verification": -0.006091701075840061
         }
       },
       {
@@ -1349,44 +1349,44 @@
           "essential": 10712
         },
         "verified": {
-          "oidc": 7260,
-          "essential": 7480
+          "oidc": 7033,
+          "essential": 7752
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 3628.7860948467655,
-          "essential": 3738.4247212830696
+          "oidc": 3514.6520978518606,
+          "essential": 3875.443792431466
         },
         "median_ms": {
-          "oidc": 1.0741045,
-          "essential": 1.044687
+          "oidc": 1.113541,
+          "essential": 1.0027085
         },
         "p95_ms": {
-          "oidc": 1.611125,
-          "essential": 1.584834
+          "oidc": 1.636125,
+          "essential": 1.502166
         },
         "mean_ms": {
           "oidc": {
-            "total": 1.1008962898071626,
-            "transfer": 0.9507011020661157,
-            "other_handling": 0.01927879077134986,
-            "verification": 0.13091639696969698
+            "total": 1.1363866674249963,
+            "transfer": 0.9793403294468932,
+            "other_handling": 0.019069677804635293,
+            "verification": 0.13797666017346794
           },
           "essential": {
-            "total": 1.0684629612299466,
-            "transfer": 0.9201982260695187,
-            "other_handling": 0.01595696590909091,
-            "verification": 0.1323077692513369
+            "total": 1.0309506839525284,
+            "transfer": 0.8923269414344684,
+            "other_handling": 0.01612857598039216,
+            "verification": 0.12249516653766769
           }
         },
         "difference_ms": {
-          "total": -0.032433328577216036,
-          "transfer": -0.030502875996596956,
-          "other_handling": -0.0033218248622589493,
-          "verification": 0.0013913722816399077
+          "total": -0.10543598347246785,
+          "transfer": -0.08701338801242475,
+          "other_handling": -0.0029411018242431336,
+          "verification": -0.015481493635800245
         }
       },
       {
@@ -1398,44 +1398,44 @@
           "essential": 23021
         },
         "verified": {
-          "oidc": 3761,
-          "essential": 3911
+          "oidc": 3794,
+          "essential": 3875
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 1878.6709184790852,
-          "essential": 1953.8954854510414
+          "oidc": 1895.6905517513778,
+          "essential": 1935.9625234186456
         },
         "median_ms": {
-          "oidc": 2.1035,
-          "essential": 2.017542
+          "oidc": 2.0838955,
+          "essential": 2.042542
         },
         "p95_ms": {
-          "oidc": 3.089209,
-          "essential": 2.934208
+          "oidc": 3.02975,
+          "essential": 2.969208
         },
         "mean_ms": {
           "oidc": {
-            "total": 2.126334371709652,
-            "transfer": 1.7752791568731718,
-            "other_handling": 0.02318332464770008,
-            "verification": 0.32787189018877955
+            "total": 2.107001885081708,
+            "transfer": 1.7622135622034791,
+            "other_handling": 0.02335986373220875,
+            "verification": 0.32142845914602003
           },
           "essential": {
-            "total": 2.044769435182818,
-            "transfer": 1.7090463684479673,
-            "other_handling": 0.01993371311684991,
-            "verification": 0.31578935361800053
+            "total": 2.0633414769032257,
+            "transfer": 1.7239131086451613,
+            "other_handling": 0.020108849032258066,
+            "verification": 0.3193195192258065
           }
         },
         "difference_ms": {
-          "total": -0.08156493652683405,
-          "transfer": -0.06623278842520453,
-          "other_handling": -0.003249611530850169,
-          "verification": -0.012082536570779012
+          "total": -0.04366040817848216,
+          "transfer": -0.03830045355831779,
+          "other_handling": -0.003251014699950684,
+          "verification": -0.0021089399202135484
         }
       },
       {
@@ -1447,16 +1447,16 @@
           "essential": 563
         },
         "verified": {
-          "oidc": 4667,
-          "essential": 4988
+          "oidc": 4324,
+          "essential": 4741
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2333.1500274958753,
-          "essential": 2493.7506249375065
+          "oidc": 2161.7838216178384,
+          "essential": 2370.2629737026296
         },
         "median_ms": {
           "oidc": 0.4,
@@ -1468,23 +1468,23 @@
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.4282836940218556,
-            "transfer": 0.35787348746518105,
-            "other_handling": 0.018165874866080994,
-            "verification": 0.052244331690593525
+            "total": 0.46230342275670677,
+            "transfer": 0.39416214801110083,
+            "other_handling": 0.01813129995374653,
+            "verification": 0.050009974791859396
           },
           "essential": {
-            "total": 0.40068163592622297,
-            "transfer": 0.3487132800721732,
-            "other_handling": 0.014965521050521251,
-            "verification": 0.037002834803528464
+            "total": 0.42155663362159884,
+            "transfer": 0.3707664323982282,
+            "other_handling": 0.014814668635309006,
+            "verification": 0.03597553258806159
           }
         },
         "difference_ms": {
-          "total": -0.027602058095632653,
-          "transfer": -0.009160207393007824,
-          "other_handling": -0.0032003538155597425,
-          "verification": -0.01524149688706506
+          "total": -0.04074678913510793,
+          "transfer": -0.023395715612872625,
+          "other_handling": -0.0033166313184375233,
+          "verification": -0.014034442203797806
         }
       },
       {
@@ -1496,19 +1496,19 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 4335,
-          "essential": 5018
+          "oidc": 4091,
+          "essential": 4981
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2167.0665866826635,
-          "essential": 2509.0
+          "oidc": 2045.3977301134942,
+          "essential": 2490.25097490251
         },
         "median_ms": {
-          "oidc": 0.4,
+          "oidc": 0.5,
           "essential": 0.4
         },
         "p95_ms": {
@@ -1517,23 +1517,23 @@
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.461199538638985,
-            "transfer": 0.37512906551326414,
-            "other_handling": 0.01776721014994233,
-            "verification": 0.06830326297577854
+            "total": 0.48868247372280615,
+            "transfer": 0.40047853385480325,
+            "other_handling": 0.018295232705939867,
+            "verification": 0.06990870716206306
           },
           "essential": {
-            "total": 0.39816660023913913,
-            "transfer": 0.32919223455559987,
-            "other_handling": 0.014431438023116779,
-            "verification": 0.05454292766042248
+            "total": 0.4013651877133106,
+            "transfer": 0.3319269399718932,
+            "other_handling": 0.014566453924914676,
+            "verification": 0.05487179381650271
           }
         },
         "difference_ms": {
-          "total": -0.06303293839984586,
-          "transfer": -0.045936830957664265,
-          "other_handling": -0.0033357721268255525,
-          "verification": -0.013760335315356066
+          "total": -0.08731728600949556,
+          "transfer": -0.06855159388291004,
+          "other_handling": -0.003728778781025191,
+          "verification": -0.01503691334556035
         }
       },
       {
@@ -1545,44 +1545,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 4402,
-          "essential": 3864
+          "oidc": 4417,
+          "essential": 5049
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2200.8899555022244,
-          "essential": 1932.0
+          "oidc": 2208.3895805209736,
+          "essential": 2524.2475752424757
         },
         "median_ms": {
           "oidc": 0.4,
-          "essential": 0.5
+          "essential": 0.4
         },
         "p95_ms": {
           "oidc": 0.5,
-          "essential": 0.8
+          "essential": 0.5
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.45415720127214904,
-            "transfer": 0.3681892526124489,
-            "other_handling": 0.01768687346660609,
-            "verification": 0.06828107519309405
+            "total": 0.452569617387367,
+            "transfer": 0.36890221145573915,
+            "other_handling": 0.01725318383518225,
+            "verification": 0.06641422209644555
           },
           "essential": {
-            "total": 0.5170807453416149,
-            "transfer": 0.4371435742753623,
-            "other_handling": 0.017787795289855073,
-            "verification": 0.062149375776397515
+            "total": 0.395820954644484,
+            "transfer": 0.32759533392751045,
+            "other_handling": 0.01419704099821747,
+            "verification": 0.054028579718756194
           }
         },
         "difference_ms": {
-          "total": 0.06292354406946582,
-          "transfer": 0.06895432166291343,
-          "other_handling": 0.00010092182324898322,
-          "verification": -0.006131699416696536
+          "total": -0.05674866274288298,
+          "transfer": -0.0413068775282287,
+          "other_handling": -0.0030561428369647817,
+          "verification": -0.012385642377689361
         }
       },
       {
@@ -1594,16 +1594,16 @@
           "essential": 3454
         },
         "verified": {
-          "oidc": 4032,
-          "essential": 4068
+          "oidc": 4096,
+          "essential": 4236
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2015.8992050397478,
-          "essential": 2033.694945758136
+          "oidc": 2047.8976051197437,
+          "essential": 2117.6823476478526
         },
         "median_ms": {
           "oidc": 0.5,
@@ -1611,27 +1611,27 @@
         },
         "p95_ms": {
           "oidc": 0.6,
-          "essential": 0.7
+          "essential": 0.5
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.49565972222222227,
-            "transfer": 0.41836960168650794,
-            "other_handling": 0.018809883680555556,
-            "verification": 0.058480236855158726
+            "total": 0.488037109375,
+            "transfer": 0.4134079248046875,
+            "other_handling": 0.01796751904296875,
+            "verification": 0.05666166552734375
           },
           "essential": {
-            "total": 0.49137168141592924,
-            "transfer": 0.411821302114061,
-            "other_handling": 0.018082460668633234,
-            "verification": 0.06146791863323501
+            "total": 0.47188385269121813,
+            "transfer": 0.39915058144475923,
+            "other_handling": 0.01638760835694051,
+            "verification": 0.05634566288951841
           }
         },
         "difference_ms": {
-          "total": -0.004288040806293025,
-          "transfer": -0.006548299572446958,
-          "other_handling": -0.0007274230119223221,
-          "verification": 0.002987681778076283
+          "total": -0.01615325668378187,
+          "transfer": -0.014257343359928287,
+          "other_handling": -0.0015799106860282415,
+          "verification": -0.0003160026378253439
         }
       },
       {
@@ -1643,16 +1643,16 @@
           "essential": 10712
         },
         "verified": {
-          "oidc": 3216,
-          "essential": 3187
+          "oidc": 3215,
+          "essential": 3266
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 1607.5981004748812,
-          "essential": 1593.1813637272546
+          "oidc": 1607.3392660733928,
+          "essential": 1633.0
         },
         "median_ms": {
           "oidc": 0.6,
@@ -1660,27 +1660,27 @@
         },
         "p95_ms": {
           "oidc": 0.7,
-          "essential": 0.8
+          "essential": 0.7
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.6214863184079602,
-            "transfer": 0.48077345708955227,
-            "other_handling": 0.021078470460199006,
-            "verification": 0.11963439085820896
+            "total": 0.6218662519440125,
+            "transfer": 0.4788750827371695,
+            "other_handling": 0.0202704699844479,
+            "verification": 0.12272069922239502
           },
           "essential": {
-            "total": 0.627141512394101,
-            "transfer": 0.48393711233134606,
-            "other_handling": 0.020802656416692815,
-            "verification": 0.12240174364606213
+            "total": 0.6122473974280466,
+            "transfer": 0.4707367957746479,
+            "other_handling": 0.01786189742804654,
+            "verification": 0.12364870422535211
           }
         },
         "difference_ms": {
-          "total": 0.005655193986140783,
-          "transfer": 0.0031636552417937946,
-          "other_handling": -0.00027581404350619093,
-          "verification": 0.0027673527878531723
+          "total": -0.009618854515965891,
+          "transfer": -0.008138286962521613,
+          "other_handling": -0.00240857255640136,
+          "verification": 0.0009280050029570885
         }
       },
       {
@@ -1692,16 +1692,16 @@
           "essential": 23021
         },
         "verified": {
-          "oidc": 2179,
-          "essential": 2071
+          "oidc": 2209,
+          "essential": 2241
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 1089.2821435712858,
-          "essential": 1035.0342345944325
+          "oidc": 1104.2239440139965,
+          "essential": 1120.3879612038795
         },
         "median_ms": {
           "oidc": 0.9,
@@ -1709,27 +1709,27 @@
         },
         "p95_ms": {
           "oidc": 1.0,
-          "essential": 1.2
+          "essential": 1.0
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.9174850849013308,
-            "transfer": 0.5790540449747591,
-            "other_handling": 0.024569149609912806,
-            "verification": 0.313861890316659
+            "total": 0.9051607062019013,
+            "transfer": 0.5760276926210955,
+            "other_handling": 0.023675827071072884,
+            "verification": 0.3054571865097329
           },
           "essential": {
-            "total": 0.965620473201352,
-            "transfer": 0.6088364171897634,
-            "other_handling": 0.025227820376629646,
-            "verification": 0.33155623563495895
+            "total": 0.892235609103079,
+            "transfer": 0.5504904029451139,
+            "other_handling": 0.02438192592592593,
+            "verification": 0.3173632802320393
           }
         },
         "difference_ms": {
-          "total": 0.048135388300021176,
-          "transfer": 0.02978237221500435,
-          "other_handling": 0.0006586707667168394,
-          "verification": 0.017694345318299942
+          "total": -0.01292509709882228,
+          "transfer": -0.025537289675981678,
+          "other_handling": 0.0007060988548530447,
+          "verification": 0.011906093722306388
         }
       },
       {
@@ -1741,44 +1741,44 @@
           "essential": 563
         },
         "verified": {
-          "oidc": 8140,
-          "essential": 8756
+          "oidc": 8316,
+          "essential": 8786
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4068.5759984005595,
-          "essential": 4376.2495001999205
+          "oidc": 4110.320284697509,
+          "essential": 4366.365172448067
         },
         "median_ms": {
           "oidc": 0.9,
           "essential": 0.8
         },
         "p95_ms": {
-          "oidc": 1.4,
-          "essential": 1.3
+          "oidc": 1.3,
+          "essential": 1.2
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.9827272727272727,
-            "transfer": 0.7881758142506142,
-            "other_handling": 0.02134058194103194,
-            "verification": 0.17321087653562653
+            "total": 0.9727873977873979,
+            "transfer": 0.7813091447811448,
+            "other_handling": 0.020544610028860027,
+            "verification": 0.17093364297739297
           },
           "essential": {
-            "total": 0.913533576975788,
-            "transfer": 0.7556299625399726,
-            "other_handling": 0.018018244175422565,
-            "verification": 0.13988537026039286
+            "total": 0.9156726610516731,
+            "transfer": 0.7565702303664922,
+            "other_handling": 0.018382111541088094,
+            "verification": 0.1407203191440929
           }
         },
         "difference_ms": {
-          "total": -0.06919369575148471,
-          "transfer": -0.032545851710641616,
-          "other_handling": -0.003322337765609376,
-          "verification": -0.033325506275233674
+          "total": -0.05711473673572476,
+          "transfer": -0.02473891441465259,
+          "other_handling": -0.0021624984877719328,
+          "verification": -0.030213323833300082
         }
       },
       {
@@ -1790,44 +1790,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 8185,
-          "essential": 8417
+          "oidc": 8190,
+          "essential": 8978
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4091.068126155845,
-          "essential": 4207.448137965508
+          "oidc": 4093.567251461988,
+          "essential": 4418.742002165567
         },
         "median_ms": {
           "oidc": 0.9,
-          "essential": 0.9
+          "essential": 0.8
         },
         "p95_ms": {
           "oidc": 1.3,
-          "essential": 1.4
+          "essential": 1.2
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.9771899816737936,
-            "transfer": 0.7580735927916922,
-            "other_handling": 0.021109176175931582,
-            "verification": 0.1980072127061698
+            "total": 0.9767765567765567,
+            "transfer": 0.7573704600732601,
+            "other_handling": 0.02102078376068376,
+            "verification": 0.19838531294261294
           },
           "essential": {
-            "total": 0.9497564452892955,
-            "transfer": 0.7612872826422716,
-            "other_handling": 0.019288429963169776,
-            "verification": 0.16918073268385408
+            "total": 0.9049454221430162,
+            "transfer": 0.7209538163288037,
+            "other_handling": 0.018125984629093338,
+            "verification": 0.1658656211851192
           }
         },
         "difference_ms": {
-          "total": -0.02743353638449808,
-          "transfer": 0.0032136898505794598,
-          "other_handling": -0.0018207462127618063,
-          "verification": -0.02882648002231572
+          "total": -0.07183113463354052,
+          "transfer": -0.03641664374445641,
+          "other_handling": -0.0028947991315904226,
+          "verification": -0.03251969175749375
         }
       },
       {
@@ -1839,44 +1839,44 @@
           "essential": 307
         },
         "verified": {
-          "oidc": 7773,
-          "essential": 8761
+          "oidc": 8375,
+          "essential": 8840
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 3885.7228554289145,
-          "essential": 4379.186244126762
+          "oidc": 4186.034887789274,
+          "essential": 4419.116176764647
         },
         "median_ms": {
           "oidc": 0.9,
           "essential": 0.8
         },
         "p95_ms": {
-          "oidc": 1.4,
+          "oidc": 1.3,
           "essential": 1.2
         },
         "mean_ms": {
           "oidc": {
-            "total": 1.0288048372571723,
-            "transfer": 0.7994266145632317,
-            "other_handling": 0.02235187366525151,
-            "verification": 0.20702634902868905
+            "total": 0.9549970149253731,
+            "transfer": 0.7444128499104478,
+            "other_handling": 0.020504489671641788,
+            "verification": 0.19007967534328357
           },
           "essential": {
-            "total": 0.9129094852185823,
-            "transfer": 0.7392402194954913,
-            "other_handling": 0.018232927747973977,
-            "verification": 0.155436337975117
+            "total": 0.9046153846153846,
+            "transfer": 0.7274077504524886,
+            "other_handling": 0.018111959615384615,
+            "verification": 0.1590956745475113
           }
         },
         "difference_ms": {
-          "total": -0.11589535203859003,
-          "transfer": -0.06018639506774037,
-          "other_handling": -0.004118945917277534,
-          "verification": -0.051590011053572055
+          "total": -0.050381630309988545,
+          "transfer": -0.01700509945795914,
+          "other_handling": -0.002392530056257173,
+          "verification": -0.030984000795772265
         }
       },
       {
@@ -1888,44 +1888,44 @@
           "essential": 3454
         },
         "verified": {
-          "oidc": 8122,
-          "essential": 8616
+          "oidc": 8727,
+          "essential": 8797
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 4059.782065380386,
-          "essential": 4306.492727545359
+          "oidc": 4362.191342597221,
+          "essential": 4364.45723357809
         },
         "median_ms": {
-          "oidc": 0.9,
+          "oidc": 0.8,
           "essential": 0.8
         },
         "p95_ms": {
-          "oidc": 1.3,
-          "essential": 1.3
+          "oidc": 1.2,
+          "essential": 1.2
         },
         "mean_ms": {
           "oidc": {
-            "total": 0.9846958877123861,
-            "transfer": 0.790242080891406,
-            "other_handling": 0.023982601329721742,
-            "verification": 0.1704712054912583
+            "total": 0.9165463504067836,
+            "transfer": 0.738413417898476,
+            "other_handling": 0.021848719605821014,
+            "verification": 0.15628421290248654
           },
           "essential": {
-            "total": 0.9284818941504179,
-            "transfer": 0.7556807963091922,
-            "other_handling": 0.020124683727948,
-            "verification": 0.15267641411327762
+            "total": 0.9161304990337615,
+            "transfer": 0.7425029906786405,
+            "other_handling": 0.01947455757644652,
+            "verification": 0.15415295077867452
           }
         },
         "difference_ms": {
-          "total": -0.05621399356196821,
-          "transfer": -0.03456128458221386,
-          "other_handling": -0.003857917601773741,
-          "verification": -0.01779479137798068
+          "total": -0.0004158513730220248,
+          "transfer": 0.004089572780164419,
+          "other_handling": -0.002374162029374495,
+          "verification": -0.002131262123812011
         }
       },
       {
@@ -1937,44 +1937,44 @@
           "essential": 10712
         },
         "verified": {
-          "oidc": 5385,
-          "essential": 5631
+          "oidc": 5600,
+          "essential": 5385
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 2691.288919986006,
-          "essential": 2813.811712972217
+          "oidc": 2799.160251924423,
+          "essential": 2691.423430627749
         },
         "median_ms": {
-          "oidc": 1.4,
-          "essential": 1.3
+          "oidc": 1.3,
+          "essential": 1.4
         },
         "p95_ms": {
-          "oidc": 2.1,
-          "essential": 2.0
+          "oidc": 2.0,
+          "essential": 2.1
         },
         "mean_ms": {
           "oidc": {
-            "total": 1.4851810584958216,
-            "transfer": 1.312702348003714,
-            "other_handling": 0.023501388115134633,
-            "verification": 0.1489773223769731
+            "total": 1.4280357142857143,
+            "transfer": 1.26526904375,
+            "other_handling": 0.02256511964285714,
+            "verification": 0.14020155089285713
           },
           "essential": {
-            "total": 1.4205647309536493,
-            "transfer": 1.2611614231930384,
-            "other_handling": 0.01976106943704493,
-            "verification": 0.13964223832356598
+            "total": 1.4849025069637882,
+            "transfer": 1.323639607056639,
+            "other_handling": 0.021546277251624883,
+            "verification": 0.13971662265552462
           }
         },
         "difference_ms": {
-          "total": -0.06461632754217228,
-          "transfer": -0.05154092481067574,
-          "other_handling": -0.003740318678089702,
-          "verification": -0.009335084053407106
+          "total": 0.05686679267807393,
+          "transfer": 0.05837056330663892,
+          "other_handling": -0.0010188423912322574,
+          "verification": -0.00048492823733251034
         }
       },
       {
@@ -1986,44 +1986,44 @@
           "essential": 23021
         },
         "verified": {
-          "oidc": 3280,
-          "essential": 3324
+          "oidc": 3308,
+          "essential": 3118
         },
         "failed": {
           "oidc": 0,
           "essential": 0
         },
         "throughput_rps": {
-          "oidc": 1638.9346924499075,
-          "essential": 1660.3396603396604
+          "oidc": 1652.677857713829,
+          "essential": 1557.520355662121
         },
         "median_ms": {
           "oidc": 2.4,
-          "essential": 2.4
+          "essential": 2.5
         },
         "p95_ms": {
-          "oidc": 3.6,
-          "essential": 3.6
+          "oidc": 3.5,
+          "essential": 3.9
         },
         "mean_ms": {
           "oidc": {
-            "total": 2.4384451219512195,
-            "transfer": 2.0620210100609757,
-            "other_handling": 0.026447515243902438,
-            "verification": 0.34997659664634145
+            "total": 2.4176239419588876,
+            "transfer": 2.048939060459492,
+            "other_handling": 0.02649590145102781,
+            "verification": 0.34218898004836756
           },
           "essential": {
-            "total": 2.4057460890493383,
-            "transfer": 2.0429013586040914,
-            "other_handling": 0.023577719314079423,
-            "verification": 0.3392670111311673
+            "total": 2.5648492623476584,
+            "transfer": 2.1828808543938423,
+            "other_handling": 0.025680321039127645,
+            "verification": 0.35628808691468894
           }
         },
         "difference_ms": {
-          "total": -0.03269903290188125,
-          "transfer": -0.019119651456884323,
-          "other_handling": -0.002869795929823015,
-          "verification": -0.010709585515174147
+          "total": 0.1472253203887708,
+          "transfer": 0.13394179393435035,
+          "other_handling": -0.0008155804119001665,
+          "verification": 0.014099106866321376
         }
       }
     ],
