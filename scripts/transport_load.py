@@ -14,7 +14,8 @@ the configuration's own token. A "size_control" cell sends the reference configu
 (ES256 by default) padded with the `pad` claim of scripts/token_sizing.py to the configuration's
 token size, so it has the configuration's size but the reference's verification cost. Each cell
 gets its token once, through nginx, before its warm-up and outside the timed window, and then
-sends it on every request, as an Authorization: Bearer header (the default) or a `jwt` cookie.
+sends it on every request, as an Authorization: Bearer header (the default), a `jwt` cookie, or
+the `jwt.<index>.<count>` chunk cookies of S3-02's cookie splitting (transport "split").
 
 Every timed request asks the application for its server timings with timing=1, which splits each
 request's client-measured total into three components: verification (the adapter's verify_token
@@ -59,7 +60,7 @@ from scripts.benchmark import environment
 from scripts.rsa_jwt import summarize
 from scripts.token_sizing import (CLAIM_SET_NAMES, claim_set, pad_for_target, padded_claims,
                                   token_bytes)
-from scripts.transport_app import COOKIE_NAME
+from scripts.transport_app import COOKIE_NAME, chunk_cookie_line_bytes, split_token
 from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout,
                                      check_upstream_keepalive, http_get, load_manifest,
                                      manifest_layers, nginx_size)
@@ -176,7 +177,7 @@ BROWSER_LOOP = """async ({target, prefix, headers, concurrency, warmupMs, durati
 class Carrier:
     """How the timed requests carry a token: an Authorization: Bearer header or a jwt cookie.
 
-    S3-02 can add carriers, such as split cookies or reference tokens, without changing the loop.
+    S3-02 adds carriers, such as split cookies (SplitCarrier), without changing the loop.
     """
 
     name: str
@@ -197,9 +198,31 @@ class Carrier:
         return len(f"{self.header_name}: {self.header_prefix}\r\n") + token_size
 
 
+@dataclass(frozen=True)
+class SplitCarrier(Carrier):
+    """S3-02's cookie splitting: the token in jwt.<index>.<count> chunk cookies (split_token).
+
+    The direct client sends every chunk of the default split in one Cookie header; the browser
+    sends the chunk cookies it stored from the issue response's Set-Cookie headers.
+    """
+
+    def direct_headers(self, token: str) -> dict:
+        """A Cookie header with every chunk of the token's default split, in index order."""
+        return {"Cookie": "; ".join(f"{name}={value}" for name, value in split_token(token))}
+
+    def browser_headers(self, token: str | None) -> dict:
+        """No headers: the browser sends the chunk cookies from its own jar."""
+        return {}
+
+    def header_line_bytes(self, token_size: int) -> int:
+        """Bytes of the Cookie line that carries the default split of a token, CRLF included."""
+        return chunk_cookie_line_bytes(token_size)
+
+
 CARRIERS = {
     "bearer": Carrier("bearer", "Authorization", "Bearer ", issue_delivery="body"),
     "cookie": Carrier("cookie", "Cookie", f"{COOKIE_NAME}=", issue_delivery="cookie"),
+    "split": SplitCarrier("split", "Cookie", "", issue_delivery="split"),
 }
 
 
@@ -566,7 +589,8 @@ class BrowserClient:
     def issue(self, context, page, plan: CellPlan) -> Issue:
         """Load the test page through nginx and fetch() the token from it; this is not timed.
 
-        For the cookie carrier, the browser stores the token from the Set-Cookie response itself.
+        For the cookie and split carriers, the browser stores the token, or its chunks, from the
+        Set-Cookie response itself.
         """
         timeout = self.settings["timeout"]
         page_url, _ = nonce_url(self.stack.proxy_url, "/")
@@ -591,6 +615,8 @@ class BrowserClient:
             if COOKIE_NAME not in cookie_names:
                 return Issue(reply.status, False, f"the browser stored no {COOKIE_NAME} cookie")
             return Issue(reply.status, True)
+        if self.carrier.issue_delivery == "split":
+            return split_issue(reply, cookie_names)
         token = (reply.body or {}).get("token")
         if not isinstance(token, str):
             return Issue(reply.status, False, "the issue response carried no token")
@@ -612,6 +638,24 @@ class BrowserClient:
                           request["error"])
                    for request in measured]
         return sorted(samples, key=lambda sample: (sample.start_ns, sample.worker))
+
+
+def split_issue(reply, stored_names: list[str]) -> Issue:
+    """Judge a browser cell's split issue: delivered only when the jar holds every chunk cookie.
+
+    reply is the 200 issue response; its body's cookie_names lists the chunk cookies the
+    application set. An empty or unreadable list counts as nothing delivered.
+    """
+    expected = (reply.body or {}).get("cookie_names")
+    if not (isinstance(expected, list) and expected
+            and all(isinstance(name, str) for name in expected)):
+        return Issue(reply.status, False, "the browser stored 0 of 0 expected chunk cookies: "
+                                          "the issue response listed no cookie_names")
+    stored = len(set(expected) & set(stored_names))
+    if stored != len(set(expected)):
+        return Issue(reply.status, False, f"the browser stored {stored:,} of the "
+                                          f"{len(set(expected)):,} expected chunk cookies")
+    return Issue(reply.status, True)
 
 
 @contextmanager

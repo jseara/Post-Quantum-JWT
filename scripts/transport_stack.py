@@ -9,7 +9,10 @@ each layer's rejection boundary (see scripts/transport_sweep.py). load measures 
 throughput of authenticated requests through the stack for every configuration and saves the
 raw timings (see scripts/transport_load.py). claims measures the smaller-claim-set mitigation
 (S3-02): token sizes, Sprint 2 boundaries, size limits at the defaults, and load latency with
-oidc and essential claims (see scripts/transport_claims.py). serve starts the stack and keeps it
+oidc and essential claims (see scripts/transport_claims.py). cookies measures the
+cookie-splitting mitigation (S3-02): the chunk plan, size limits at the default and raised nginx
+buffers, the handling of missing or reordered chunks, and load latency with one jwt cookie and
+with split cookies (see scripts/transport_cookies.py). serve starts the stack and keeps it
 running until SIGINT or SIGTERM. versions compares the installed component versions with
 transport/stack.json.
 """
@@ -563,9 +566,17 @@ def keepalive_connections(text: str) -> int:
 
 
 def header_buffer_size(text: str) -> str:
-    """Parse the claims command's --header-buffers: an nginx size such as 32k."""
+    """Parse the claims and cookies commands' --header-buffers: an nginx size such as 32k."""
     try:
         return nginx_size("header_buffers", text)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError(str(error)) from None
+
+
+def proxy_buffers_size(text: str) -> str:
+    """Parse the cookies command's --proxy-buffers: an nginx size such as 32k."""
+    try:
+        return nginx_size("proxy_buffers", text)
     except ValueError as error:
         raise argparse.ArgumentTypeError(str(error)) from None
 
@@ -677,6 +688,63 @@ def run_claims_command(parser: argparse.ArgumentParser, args: argparse.Namespace
     sys.stdout.write(f"Saved the results to {args.output_dir}\n")
 
 
+# Each run_cookies setting, mapped to the attribute of the cookies command's option that sets it.
+COOKIES_SETTING_OPTIONS = {
+    "algorithms": "alg", "claims": "claims", "clients": "client", "concurrency": "concurrency",
+    "duration": "duration", "warmup": "warmup", "timeout": "timeout",
+    "header_buffers": "header_buffers", "proxy_buffers": "proxy_buffers",
+    "upstream_keepalive": "upstream_keepalive",
+}
+
+
+def cookies_command_settings(parser: argparse.ArgumentParser, args: argparse.Namespace) -> dict:
+    """Return the cookies command's run_cookies settings; exit 2 on a usage error, before any start.
+
+    As for claims, each setting comes from its option when it was given, else from the
+    --settings file (an earlier cookies.json), else from run_cookies's default. --output-dir and
+    --run-dir are never taken from the file.
+    """
+    from scripts.transport_cookies import checked_settings, default_settings, read_saved_settings
+
+    reject_repeated_values(parser, args)
+    reject_used_output_dir(parser, args.output_dir)
+
+    settings = default_settings()
+    if args.settings is not None:
+        try:
+            settings.update(read_saved_settings(args.settings))
+        except ValueError as error:
+            parser.error(f"--settings: {error}")
+    given = {name: getattr(args, option) for name, option in COOKIES_SETTING_OPTIONS.items()}
+    settings.update({name: value for name, value in given.items() if value is not None})
+    try:
+        return checked_settings(**settings)
+    except ValueError as error:  # Options are checked as they are parsed, so a saved value.
+        parser.error(f"--settings: {error}")
+
+
+def run_cookies_command(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Run every phase of the cookies command, print its summary, and say where it was saved.
+
+    Usage errors exit 2 before any process starts. Runtime failures and SIGINT or SIGTERM print
+    'Error: ...' and exit 1, after every started process has been stopped. Rejected pairs are
+    results, not failures, so they still exit 0.
+    """
+    settings = cookies_command_settings(parser, args)
+    from scripts.transport_cookies import run_cookies, summary_lines
+
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, interrupt)
+    try:
+        result = run_cookies(args.output_dir, run_dir=args.run_dir, **settings)
+    except KeyboardInterrupt:
+        parser.exit(1, "Error: interrupted\n")
+    except (OSError, RuntimeError, ValueError) as error:
+        parser.exit(1, f"Error: {error}\n")
+    sys.stdout.write("".join(f"{line}\n" for line in summary_lines(result)))
+    sys.stdout.write(f"Saved the results to {args.output_dir}\n")
+
+
 def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
     """Summarize each pair on stderr, and exit 1 if a pair did not match the documented limits."""
     from scripts.transport_tokens import mismatch_message, summary_lines
@@ -721,9 +789,9 @@ def add_load_command(commands) -> None:
     load = commands.add_parser("load", parents=[stack_options(timeout_default=None)],
                                help="measure end-to-end latency and throughput of authenticated "
                                     "requests through the stack")
-    load.add_argument("--transport", choices=("bearer", "cookie"),
-                      help="carry the token in an Authorization: Bearer header (default) or a "
-                           "jwt cookie")
+    load.add_argument("--transport", choices=("bearer", "cookie", "split"),
+                      help="carry the token in an Authorization: Bearer header (default), a jwt "
+                           "cookie, or split jwt.<index>.<count> chunk cookies")
     load.add_argument("--client", action="extend", nargs="+", choices=("direct", "browser"),
                       help="send from http.client threads (direct), from Chromium's test page "
                            "(browser), or both (default: direct browser)")
@@ -799,6 +867,58 @@ def add_claims_command(commands) -> None:
                              "latency-essential) here (default: a new temporary directory each)")
 
 
+def add_cookies_command(commands) -> None:
+    """Add the cookies command; its options default to None so --settings can fill them in.
+
+    Like claims, it starts its own stacks, so it takes none of the shared stack options except
+    --timeout, --header-buffers, --proxy-buffers, and --run-dir.
+    """
+    cookies = commands.add_parser("cookies",
+                                  help="measure the cookie-splitting mitigation (S3-02): chunk "
+                                       "plan, size limits, chunk handling, and latency")
+    cookies.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
+                         help="save cookies.json, limits-default/, limits-raised/, "
+                              "latency-cookie/, and latency-split/ here; it must not exist yet "
+                              "or be empty")
+    cookies.add_argument("--settings", type=Path, metavar="PATH",
+                         help="reuse the settings of an earlier run's cookies.json; options "
+                              "given here override the saved values")
+    cookies.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                         help="configuration to measure; repeat or list several (default: all "
+                              "six; ES256, the latency reference, is always measured)")
+    # Literal names, so importing this module never loads scripts.token_sizing.
+    cookies.add_argument("--claims", choices=("minimal", "oidc", "essential"),
+                         help="claims fixture of every token (default: oidc)")
+    cookies.add_argument("--client", action="extend", nargs="+", choices=("direct", "browser"),
+                         help="latency clients: http.client threads (direct), Chromium's test "
+                              "page (browser), or both (default: direct browser)")
+    cookies.add_argument("--concurrency", action="extend", nargs="+", type=concurrency_level,
+                         metavar="N", help="latency closed-loop workers, 1-64; repeat or list "
+                                           "several (default: 1 4)")
+    cookies.add_argument("--duration", type=duration_seconds, metavar="SECONDS",
+                         help="measured seconds per latency cell (default: 5)")
+    cookies.add_argument("--warmup", type=warmup_seconds, metavar="SECONDS",
+                         help="unrecorded seconds before each latency cell (default: 1)")
+    cookies.add_argument("--timeout", type=positive_seconds, metavar="SECONDS",
+                         help="seconds allowed for startup and for each browser step "
+                              "(default: 60)")
+    cookies.add_argument("--header-buffers", type=header_buffer_size, metavar="SIZE",
+                         help="raised-limits and latency stacks: set nginx's "
+                              "large_client_header_buffers to 4 SIZE (default: 32k); the "
+                              "default-limits stack always keeps nginx's 4 8k")
+    cookies.add_argument("--proxy-buffers", type=proxy_buffers_size, metavar="SIZE",
+                         help="raised-limits and latency stacks: set nginx's proxy_buffer_size "
+                              "to SIZE and proxy_buffers to 8 SIZE (default: 32k); the "
+                              "default-limits stack always keeps one memory page")
+    cookies.add_argument("--upstream-keepalive", type=keepalive_connections, metavar="N",
+                         help="latency stacks only, not a default: let nginx keep up to N idle "
+                              "connections to waitress (default: a new connection per request)")
+    cookies.add_argument("--run-dir", type=Path, metavar="DIR",
+                         help="put the four stacks' run directories (limits-default, "
+                              "limits-raised, latency-cookie, latency-split) here (default: a new "
+                              "temporary directory each)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -836,6 +956,7 @@ def main() -> None:
                        help="save sweep.json, the logs, and nginx.conf here")
     add_load_command(commands)
     add_claims_command(commands)
+    add_cookies_command(commands)
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -854,6 +975,9 @@ def main() -> None:
         return
     if args.command == "claims":  # It starts its own stacks, one per phase.
         run_claims_command(parser, args)
+        return
+    if args.command == "cookies":  # So does cookies.
+        run_cookies_command(parser, args)
         return
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:
