@@ -149,10 +149,12 @@ Sprint 3 answers transport questions 4 and 5 in [RESULTS.md](RESULTS.md#question
 
 ### S3-03 — Publish the end-to-end and mitigation results
 
-- [ ] Add tables comparing end-to-end latency and throughput, and each mitigation's effect, with links to the raw data and settings.
-- [ ] Summarize recommendations for RQ4: which configuration and mitigation fit which deployment, and what each trades off.
+- [x] Add tables comparing end-to-end latency and throughput, and each mitigation's effect, with links to the raw data and settings.
+- [x] Summarize recommendations for RQ4: which configuration and mitigation fit which deployment, and what each trades off.
 
 **Done when:** The results are reproducible from a clean checkout, and every recommendation can be traced to a measurement.
+
+**Status:** Published in [RECOMMENDATIONS.md](RECOMMENDATIONS.md) without a new run. `scripts/transport_report.py` generates its eight comparison tables (the sources, Sprint 1's sign and verify times, S3-01's end-to-end latency and throughput, the size limits at the documented defaults and against Sprint 2's boundaries, each mitigation's latency and throughput, and the calculated network cost) from the committed `summary.json`, `run.json`, `sweep.json`, `load.json`, `claims.json`, `cookies.json`, and `refs.json` files, with links to the raw data and each run's settings, using only the standard library; `"$TRANSPORT_ENV/bin/python" scripts/transport_report.py --check` confirms from a clean checkout that the document matches them, and `--write` regenerates its tables. The recommendations for RQ4 give each mitigation's trade-offs and which configuration and mitigation fit which deployment, and each cites the JSON file and field it rests on and its platform and conditions: smaller claim sets move only ML-DSA-44's cookie, cookie splitting moves SLH-DSA only with nginx's buffers raised, and reference tokens move every rejected pair at the cost of a lookup on every request and of stateless and offline verification. Every Sprint 3 measurement is from macOS over loopback, the network cost is calculated, and the WSL2 figures are Sprint 1's or derived from Sprint 2's sweeps; the Sprint 3 commands have not been run on WSL2, and HTTPS and HTTP/2 are S3-04's work.
 
 ### S3-04 — Repeat the transport sweeps over HTTPS and HTTP/2
 
