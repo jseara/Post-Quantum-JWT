@@ -2263,12 +2263,14 @@ class PlacementTests(unittest.TestCase):
             self.skipTest("BASE_COMMIT is not available in this checkout")
         return value
 
-    def test_scripts_gains_only_the_refs_module(self):
+    def test_refs_module_added_and_nothing_removed(self):
+        # Later Sprint 3 items add their own modules, so scripts/ must hold the earlier files
+        # plus transport_refs.py, not exactly those.
         listing = self.require(git("ls-tree", "--name-only", f"{BASE_COMMIT}:scripts")).split()
         entries = [path for path in (REPO / "scripts").iterdir()
                    if not path.name.startswith(".") and path.name != "__pycache__"]
-        self.assertEqual({path.name for path in entries if path.is_file()},
-                         {*listing, "transport_refs.py"})
+        self.assertLessEqual({*listing, "transport_refs.py"},
+                             {path.name for path in entries if path.is_file()})
         self.assertEqual([path.name for path in entries if path.is_dir()], [],
                          "no package or subdirectory under scripts/")
 
