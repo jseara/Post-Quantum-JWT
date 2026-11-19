@@ -12,6 +12,8 @@ The Sprint 2 transport stack (Playwright with Chromium, nginx, and waitress) is 
 
 Sprint 3's comparison and recommendations (S3-03) are in [RECOMMENDATIONS.md](RECOMMENDATIONS.md): tables comparing Sprint 1's signing times, S3-01's end-to-end latency and throughput, the size limits, and each mitigation's latency, throughput, and calculated network cost, with links to the raw data and settings, and recommendations for RQ4 on which configuration and mitigation fit which deployment and what each trades off. Its tables are generated from the committed results by [scripts/transport_report.py](scripts/transport_report.py), which needs only the standard library; `scripts/transport_report.py --check` confirms that the document matches the results, and `--write` regenerates the tables.
 
+S3-04 repeats Sprint 2's cookie and Bearer sweeps over HTTPS and HTTP/2 with a per-run self-signed certificate and experiment key, and compares every boundary with the plain-HTTP runs in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#https-and-http2-s3-04): TLS moved nothing, while over HTTP/2 nginx's header limit counts HPACK-encoded bytes, so Chromium's Bearer tokens get further at the defaults.
+
 ## Make shortcuts
 
 The [Makefile](Makefile) wraps the common commands; run `make` for the list. With the environment active (`conda activate crypto`), or with `TRANSPORT_ENV` set as in [TRANSPORT.md](TRANSPORT.md#setup):
@@ -25,6 +27,7 @@ make load     # end-to-end latency and throughput of all six configurations; res
 make claims   # smaller claim sets (oidc vs essential): token sizes, size limits, latency; results in results/claims/<time>/
 make cookies   # cookie splitting (jwt cookie vs split chunks): size limits, chunk handling, latency; results in results/cookies/<time>/
 make refs      # reference tokens (Bearer JWT vs reference): size limits, reference handling, lookup latency; results in results/refs/<time>/
+make protocols # cookie and Bearer sweeps over HTTPS and HTTP/2, compared with Sprint 2's plain HTTP; results in results/transport/<time>/
 make test     # full test suite
 ```
 
