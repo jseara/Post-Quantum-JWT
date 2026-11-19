@@ -16,6 +16,12 @@ value (Chromium's limit), the Set-Cookie header and the whole upstream response 
 (nginx's proxy_buffer_size), the Cookie or Authorization header line (nginx's
 large_client_header_buffers), and the request header block as the client sent it and as the
 application received it (waitress's max_request_header_size counts the whole block).
+
+On a TLS stack (start_tls_stack, S3-04) Chromium accepts the stack's self-signed certificate,
+http.client verifies it and speaks HTTP/1.1, and the result also records the protocol, the
+certificate's details (never its key), and the HTTP version nginx logged for every request.
+Request header bytes stay decoded HTTP/1.1-style counts without HTTP/2 pseudo-header fields,
+not HPACK wire bytes.
 """
 
 from collections.abc import Sequence
@@ -30,11 +36,13 @@ from urllib.parse import urlsplit
 from scripts.token_sizing import claim_set, pad_for_target, token_bytes
 from scripts.transport_app import COOKIE_ATTRIBUTE_SETS, COOKIE_NAME
 from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout, http_get,
-                                     load_manifest, manifest_layers)
+                                     is_tls_stack, load_manifest, logged_version,
+                                     manifest_layers)
 from scripts.transport_tokens import (ISSUE_PATH, LOG_FILES, VERIFY_PATH, BrowserRequest,
-                                      failed_request_layer, issue_directly, json_object, judge,
-                                      lines_mentioning, nonce_url, read_lines, run_pair,
-                                      selected_algorithms, verify_directly, wait_for_proxy_log)
+                                      error_lines_since, error_log_offset, failed_request_layer,
+                                      issue_directly, json_object, judge, lines_mentioning,
+                                      nonce_url, read_lines, run_pair, selected_algorithms,
+                                      verify_directly, wait_for_proxy_log)
 
 
 DEFAULT_STEP = 512
@@ -67,7 +75,9 @@ def browser_request_bytes(browser_log: Path, url: str) -> int | None:
     """Size of the request header block Chromium reported for `url`, from browser.log.
 
     Request line plus each `name: value` line with CRLF and the final CRLF. Chromium reports
-    names in lowercase and its own order, which does not change the byte count.
+    names in lowercase and its own order, which does not change the byte count. Over HTTP/2 it
+    also reports pseudo-header fields (:method, :authority, ...), which are left out, so the
+    count stays decoded HTTP/1.1-style bytes rather than HPACK wire bytes.
     """
     for line in reversed(read_lines(browser_log)):
         try:
@@ -77,9 +87,17 @@ def browser_request_bytes(browser_log: Path, url: str) -> int | None:
         if record.get("event") == "request" and record.get("url") == url:
             parts = urlsplit(url)
             request_line = f"GET {parts.path}?{parts.query} HTTP/1.1\r\n"
-            lines = "".join(f"{name}: {value}\r\n" for name, value in record["headers"].items())
+            lines = "".join(f"{name}: {value}\r\n" for name, value in record["headers"].items()
+                            if not name.startswith(":"))
             return len((request_line + lines + "\r\n").encode("latin-1"))
     return None
+
+
+def probe_protocols(logs: dict[str, list[str]], **nonces: str) -> dict:
+    """The HTTP version nginx logged for each named request's nonce, or None if it logged none."""
+    return {name: next((logged_version(line) for line in logs["proxy_access"] if nonce in line),
+                       None)
+            for name, nonce in nonces.items()}
 
 
 def read_logs(stack, nonces: list[str]) -> dict[str, list[str]]:
@@ -108,7 +126,7 @@ def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: fl
                         + run.token_bytes)
     received = (run.verify.body or {}).get("received") or {}
     sent_cookie = received.get("cookie_bytes") is not None
-    return {
+    entry = {
         "client": "browser",
         "pad": int(run.issue_query["pad"]),
         "token_bytes": run.token_bytes,
@@ -137,6 +155,10 @@ def probe(browser, stack, layers: dict, algorithm: str, query: dict, timeout: fl
         "issue_nonce": result["issue"]["nonce"],
         "verify_nonce": result["verify"]["nonce"],
     }
+    if is_tls_stack(stack):
+        entry["protocol"] = probe_protocols(logs, issue=run.issue.nonce,
+                                            verify=run.verify.nonce)
+    return entry
 
 
 def bearer_bytes(token_bytes: int) -> dict:
@@ -151,9 +173,10 @@ def bearer_probe(browser, stack, layers: dict, algorithm: str, query: dict,
     run = run_pair(browser, stack, algorithm, "bearer", timeout, log_dir / LOG_FILES["browser"],
                    query)
     answered = [request.nonce for request in (run.issue, run.verify) if request.status is not None]
-    result = judge(run, read_logs(stack, answered), layers)
+    logs = read_logs(stack, answered)
+    result = judge(run, logs, layers)
     received = (run.verify.body or {}).get("received") or {}
-    return {
+    entry = {
         "client": "browser",
         "pad": int(run.issue_query["pad"]),
         "token_bytes": run.token_bytes,
@@ -173,21 +196,32 @@ def bearer_probe(browser, stack, layers: dict, algorithm: str, query: dict,
         "issue_nonce": result["issue"]["nonce"],
         "verify_nonce": result["verify"]["nonce"],
     }
+    if is_tls_stack(stack):
+        entry["protocol"] = probe_protocols(logs, issue=run.issue.nonce,
+                                            verify=run.verify.nonce)
+    return entry
 
 
 def direct_probe(stack, algorithm: str, query: dict, timeout: float) -> dict:
-    """Send a padded token in a Bearer header to nginx with http.client, without a browser."""
+    """Send a padded token in a Bearer header to nginx with http.client, without a browser.
+
+    To a TLS stack it verifies the stack's certificate and offers only HTTP/1.1 by ALPN.
+    """
     query = {key: str(value) for key, value in query.items()}
     token = issue_directly(stack.app_url, algorithm, timeout, query)
     url, nonce = nonce_url(stack.proxy_url, VERIFY_PATH)
     header = {"Authorization": f"Bearer {token}"}
+    offset = error_log_offset(stack)
     try:
-        status, headers, body = http_get(url, headers=header, timeout=timeout)
+        status, headers, body = http_get(url, headers=header, timeout=timeout,
+                                         certificate=getattr(stack, "certificate", None))
         request = BrowserRequest(url=url, nonce=nonce, status=status, headers=headers,
                                  body=json_object(body))
     except (OSError, http.client.HTTPException) as error:
         request = BrowserRequest(url=url, nonce=nonce, error=f"{type(error).__name__}: {error}")
-    lines = lines_mentioning(nonce, read_logs(stack, [nonce] if request.status else []))
+    request.proxy_errors = error_lines_since(stack, offset)
+    logs = read_logs(stack, [nonce] if request.status else [])
+    lines = lines_mentioning(nonce, logs)
     body = request.body or {}
     if (request.status == 200 and PROXY_MARKER.lower() in request.headers
             and body.get("verified") is True and body.get("algorithm") == algorithm
@@ -205,7 +239,7 @@ def direct_probe(stack, algorithm: str, query: dict, timeout: float) -> dict:
     sent = (f"GET /{target} HTTP/1.1\r\nHost: {url.split('/')[2]}\r\n"
             f"Accept-Encoding: identity\r\nAuthorization: Bearer \r\n\r\n")
     received = body.get("received") or {}
-    return {
+    entry = {
         "client": "direct",
         "pad": int(query["pad"]),
         "token_bytes": len(token),
@@ -222,6 +256,9 @@ def direct_probe(stack, algorithm: str, query: dict, timeout: float) -> dict:
         "evidence": evidence,
         "verify_nonce": nonce,
     }
+    if is_tls_stack(stack):
+        entry["protocol"] = probe_protocols(logs, verify=nonce)
+    return entry
 
 
 def outcome_class(entry: dict) -> tuple:
@@ -328,7 +365,7 @@ def run_sweep(stack, transport: str = "cookie", algorithms: Sequence[str] | None
     except PlaywrightError as error:
         raise RuntimeError(f"browser: {error}") from error
 
-    return {
+    result = {
         "transport": transport,
         "settings": {"algorithms": names, "clients": clients, "claims": claims,
                      "attrs": attrs if transport == "cookie" else None,
@@ -344,6 +381,33 @@ def run_sweep(stack, transport: str = "cookie", algorithms: Sequence[str] | None
         "browser_version": version,
         "results": results,
     }
+    if is_tls_stack(stack):
+        from scripts.transport_tls import certificate_details  # Only TLS loads it.
+
+        result["settings"]["protocol"] = stack.protocol
+        result["tls"] = {"protocol": stack.protocol,
+                         "certificate": certificate_details(stack.certificate),
+                         "experiment_key": True, "private_key_saved": False}
+        result["negotiated"] = negotiated_counts(results, clients)
+    return result
+
+
+def negotiated_counts(results: list[dict], clients: Sequence[str]) -> dict:
+    """Per client, how many of its requests nginx logged with each HTTP version.
+
+    Counts each browser probe's issue and verify request and each direct probe's verify
+    request; a request nginx did not log counts as 'unlogged'.
+    """
+    counts = {client: {} for client in clients}
+    for entry in results:
+        tally = counts.setdefault(entry["client"], {})
+        for probe_entry in entry["probes"]:
+            for version in probe_entry["protocol"].values():
+                key = version or "unlogged"
+                tally[key] = tally.get(key, 0) + 1
+    # Versions in order, 'unlogged' last, so the same run always prints the same way.
+    return {client: dict(sorted(tally.items(), key=lambda item: (item[0] == "unlogged", item[0])))
+            for client, tally in counts.items()}
 
 
 def summary_lines(result: dict) -> list[str]:

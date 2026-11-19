@@ -9,6 +9,11 @@ every layer's log to name the layer that rejected a pair that did not verify, an
 is sent straight to the application to show that it verifies there. Each pair's expected outcome
 comes from the documented default limits in transport/stack.json; it is reported next to the
 observed outcome and never used to skip a request. Use run_token_check from scripts.transport_stack.
+
+With a TLS stack (start_tls_stack, S3-04), every browser context accepts the stack's self-signed
+certificate, and each request also records the proxy-error.log lines nginx appended while it
+was in flight, so a request that nginx rejected over HTTP/2 without an access-log line is still
+attributed to the proxy. Plain stacks are judged exactly as before.
 """
 
 from collections.abc import Sequence
@@ -23,8 +28,9 @@ from urllib.parse import urlencode
 
 from scripts.algorithms import ADAPTER_LIST, ADAPTERS
 from scripts.transport_app import COOKIE_NAME
-from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout, http_get,
-                                     load_manifest, manifest_layers)
+from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, browser_context_options,
+                                     check_timeout, http_get, is_tls_stack, load_manifest,
+                                     manifest_layers)
 
 
 TRANSPORTS = ("cookie", "bearer")
@@ -39,6 +45,9 @@ EVIDENCE_LIMIT = 1000
 QUOTE_LIMIT = 280  # Three quoted log lines and their text stay within EVIDENCE_LIMIT.
 TOKEN_LIKE = re.compile(r"[A-Za-z0-9_-]{40,}")  # Base64url runs: the token parts of a line.
 APP_STATUS = re.compile(r'" (\d{3}) headers=')
+# proxy-error.log text of a request nginx rejected; over HTTP/2 nginx may reject a request
+# without writing an access-log line for it (TLS stacks only, see unlogged_proxy_rejection).
+PROXY_REJECTION = re.compile(r"client sent|too large|too long|too big|exceeded", re.IGNORECASE)
 FETCH_TOKEN = """async ({url, timeout, headers}) => {
   try {
     const response = await fetch(url, {cache: "no-store", headers,
@@ -64,6 +73,8 @@ class BrowserRequest:
     set_cookie: str | None = None  # From Response.all_headers(); fetch() hides Set-Cookie.
     body: dict | None = None
     error: str | None = None
+    # TLS stacks only: the proxy-error.log lines nginx appended while the request was in flight.
+    proxy_errors: list[str] | None = None
 
 
 @dataclass
@@ -235,6 +246,29 @@ def send_verify(page, run: PairRun, proxy_url: str, timeout: float) -> BrowserRe
     return send_fetch(page, url, nonce, timeout, token_header("bearer", token))
 
 
+def error_log_offset(stack) -> int | None:
+    """Size of a TLS stack's proxy-error.log before a request is sent; None for a plain stack,
+    whose requests are judged as they always were."""
+    if not is_tls_stack(stack):
+        return None
+    try:
+        return (Path(stack.run_dir) / "logs" / LOG_FILES["proxy_error"]).stat().st_size
+    except OSError:
+        return 0
+
+
+def error_lines_since(stack, offset: int | None) -> list[str] | None:
+    """The proxy-error.log lines appended since offset (see error_log_offset)."""
+    if offset is None:
+        return None
+    try:
+        with (Path(stack.run_dir) / "logs" / LOG_FILES["proxy_error"]).open("rb") as log:
+            log.seek(offset)
+            return log.read().decode("utf-8", errors="replace").splitlines()
+    except OSError:
+        return []
+
+
 def send_through_browser(context, stack, run: PairRun, timeout: float, log: BrowserLog) -> None:
     """Load the test page, then issue and verify a token from it; record what was observed."""
     page = context.new_page()
@@ -247,12 +281,16 @@ def send_through_browser(context, stack, run: PairRun, timeout: float, log: Brow
     delivery = "cookie" if run.transport == "cookie" else "body"
     issue_url, issue_nonce = nonce_url(stack.proxy_url, ISSUE_PATH, alg=run.algorithm,
                                        delivery=delivery, **run.issue_query)
+    offset = error_log_offset(stack)
     run.issue = send_fetch(page, issue_url, issue_nonce, timeout)
+    run.issue.proxy_errors = error_lines_since(stack, offset)
     run.issue.set_cookie = traffic.flush().get(issue_url, {}).get("set-cookie")
     jar = read_cookie_jar(context, log, "after_issue")
     run.cookie_stored = any(cookie["name"] == COOKIE_NAME for cookie in jar)
 
+    offset = error_log_offset(stack)
     run.verify = send_verify(page, run, stack.proxy_url, timeout)
+    run.verify.proxy_errors = error_lines_since(stack, offset)
     traffic.flush()
     read_cookie_jar(context, log, "after_verify")
 
@@ -265,7 +303,8 @@ def run_pair(browser, stack, algorithm: str, transport: str, timeout: float,
     run = PairRun(algorithm=algorithm, transport=transport, token_bytes=len(token),
                   issue_query=issue_query)
     log = BrowserLog(log_path, algorithm, transport)
-    context = browser.new_context()  # A new context per pair, so no cookie carries over.
+    # A new context per pair, so no cookie carries over; a TLS stack's accepts its certificate.
+    context = browser.new_context(**browser_context_options(stack))
     try:
         send_through_browser(context, stack, run, timeout, log)
     finally:
@@ -373,12 +412,28 @@ def verification_problems(run: PairRun, issue_lines: dict, verify_lines: dict) -
     return problems
 
 
+def unlogged_proxy_rejection(request: BrowserRequest) -> str | None:
+    """The proxy-error.log line that explains a failed request nginx did not log, or None.
+
+    Only TLS stacks record proxy_errors: over HTTP/2 nginx can reject a request, for example
+    with a connection-level error, without writing an access-log line for it.
+    """
+    if request.proxy_errors is None or (request.status is not None and request.status < 400):
+        return None
+    return next((line for line in request.proxy_errors if PROXY_REJECTION.search(line)), None)
+
+
 def failed_request_layer(step: str, request: BrowserRequest, lines: dict) -> tuple[str | None, str]:
     """Name the first layer that did not pass a failed request, or its response, on."""
     reply = describe_reply(request)
     if not request.sent:
         return None, f"the {step} request was {request.error}"
     if not lines["proxy_access"]:
+        rejection = unlogged_proxy_rejection(request)
+        if rejection is not None:
+            return "proxy", (f"proxy: the {step} request got {reply}, and nginx wrote no "
+                             f"access-log line for it (its nonce is not in proxy-access.log); "
+                             f"proxy-error.log while it was in flight: {quote(rejection)}")
         return "browser", (f"browser: the {step} request never reached nginx (its nonce is not in "
                            f"proxy-access.log); the page got {reply}")
     access = quote(lines["proxy_access"][0])

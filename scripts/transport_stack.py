@@ -17,9 +17,12 @@ tokens (S3-02): the request sizes, the size limits of a short opaque reference a
 how the application handles unknown, expired, revoked, and doubled references and a stopped
 reference store, and load latency with Bearer JWTs and Bearer references backed by the
 application's memory or by a separate store process (see scripts/transport_refs.py); with
-ref_store="remote", start_stack also starts that store process on 127.0.0.1. serve starts the
-stack and keeps it running until SIGINT or SIGTERM. versions compares the installed component
-versions with transport/stack.json.
+ref_store="remote", start_stack also starts that store process on 127.0.0.1. protocols repeats
+the cookie and Bearer sweeps of `make sweep` over HTTPS and HTTP/2 (S3-04) and compares every
+boundary with Sprint 2's plain-HTTP runs (see scripts/transport_protocols.py); its stacks come
+from start_tls_stack, which serves nginx over TLS with a per-run self-signed certificate and
+experiment key (see scripts/transport_tls.py). serve starts the stack and keeps it running until
+SIGINT or SIGTERM. versions compares the installed component versions with transport/stack.json.
 """
 
 import argparse
@@ -72,6 +75,37 @@ class Stack:
     upstream_keepalive: int | None = None  # See upstream_keepalive_config; None is the default.
     ref_store: str = "memory"  # Where the application keeps references; see start_stack.
     store_url: str | None = None  # The store process's URL with ref_store="remote".
+
+
+# start_tls_stack's protocols: HTTP/1.1 over TLS, or HTTP/2 over TLS negotiated by ALPN.
+TLS_PROTOCOLS = ("https", "h2")
+# The HTTP version nginx logs for Chromium's requests to a stack of each protocol.
+EXPECTED_VERSIONS = {"https": "HTTP/1.1", "h2": "HTTP/2.0"}
+
+
+@dataclass(frozen=True)
+class TlsStack(Stack):
+    """A stack whose nginx serves TLS; proxy_url is https, and waitress stays plain HTTP."""
+
+    protocol: str = "https"  # One of TLS_PROTOCOLS.
+    certificate: Path | None = None  # <run_dir>/tls/certificate.pem, self-signed.
+
+
+def is_tls_stack(stack) -> bool:
+    """Whether stack serves TLS. Duck-typed, so a stack from `python scripts/transport_stack.py`
+    (module __main__) counts as well as one from scripts.transport_stack."""
+    protocol = getattr(stack, "protocol", None)
+    return isinstance(protocol, str) and protocol in TLS_PROTOCOLS
+
+
+def browser_context_options(stack) -> dict:
+    """Keyword arguments for every Chromium context or page opened against stack.
+
+    None for plain HTTP, so those calls stay exactly as they were. A TLS stack's certificate is
+    self-signed, so Chromium accepts it per context with Playwright's ignore_https_errors,
+    without any trust store or other browser flag.
+    """
+    return {"ignore_https_errors": True} if is_tls_stack(stack) else {}
 
 
 # start_stack's ref_store values: the application's own memory, or a separate store process.
@@ -150,11 +184,26 @@ def installed_versions() -> dict:
     return {role: queries[role]() if role in queries else None for role in roles}
 
 
-def http_get(url: str, headers: dict | None = None, timeout: float = 10.0) -> tuple[int, dict, bytes]:
-    """Send one GET with http.client (no proxy settings) and return status, headers, body."""
+def http_get(url: str, headers: dict | None = None, timeout: float = 10.0,
+             certificate: str | Path | None = None) -> tuple[int, dict, bytes]:
+    """Send one GET with http.client (no proxy settings) and return status, headers, body.
+
+    An https:// URL is verified against certificate alone when it is given (client_context in
+    scripts/transport_tls.py, ALPN http/1.1), and with Python's default verification otherwise;
+    verification is never turned off. certificate is ignored for http:// URLs.
+    """
     parts = urlsplit(url)
     target = parts.path + (f"?{parts.query}" if parts.query else "")
-    connection = http.client.HTTPConnection(parts.hostname, parts.port, timeout=timeout)
+    if parts.scheme == "https":
+        context = None  # http.client's default: the system CAs and host name checks.
+        if certificate is not None:
+            from scripts.transport_tls import client_context  # Only TLS loads cryptography.
+
+            context = client_context(certificate)
+        connection = http.client.HTTPSConnection(parts.hostname, parts.port, timeout=timeout,
+                                                 context=context)
+    else:
+        connection = http.client.HTTPConnection(parts.hostname, parts.port, timeout=timeout)
     try:
         connection.request("GET", target or "/", headers=headers or {})
         response = connection.getresponse()
@@ -249,9 +298,10 @@ def launch(command: list[str], run_dir: Path, log_path: Path) -> subprocess.Pope
 
 def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: float,
                timeout: float, log_path: Path, proxied: bool, path: str = "/api/echo",
-               answering: str = "application") -> None:
+               answering: str = "application", certificate: Path | None = None) -> None:
     """Wait until GET <base_url><path> returns JSON whose layer is `answering`: by default the
-    application's echo, and for the reference store its readiness answer at /."""
+    application's echo, and for the reference store its readiness answer at /. An https
+    base_url is verified against certificate."""
     while True:
         status = process.poll()
         if status is not None:
@@ -259,7 +309,8 @@ def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: f
                                f"see {log_path}{log_tail(log_path)}")
         try:
             attempt = min(1.0, max(0.05, deadline - time.monotonic()))
-            code, headers, body = http_get(f"{base_url}{path}", timeout=attempt)
+            code, headers, body = http_get(f"{base_url}{path}", timeout=attempt,
+                                           certificate=certificate)
             if (code == 200 and json.loads(body).get("layer") == answering
                     and (not proxied or PROXY_MARKER.lower() in headers)):
                 return
@@ -314,6 +365,28 @@ def insert_directives(config: str, anchor: str, option: str, value: str,
     indent = line[:len(line) - len(line.lstrip())]
     added = [f"# Not a default: {option} {value}.", *directives]
     return config.replace(line, "\n".join([line, *(indent + a for a in added)]), 1)
+
+
+def tls_directives(protocol: str, certificate: Path, key: Path) -> list[str]:
+    """nginx directives that serve the listener over TLS, and HTTP/2 by ALPN for "h2".
+
+    Nothing else is set: nginx's default protocols, ciphers, and session settings apply.
+    """
+    directives = [f'ssl_certificate "{nginx_string(certificate)}";',
+                  f'ssl_certificate_key "{nginx_string(key)}";']
+    return directives + (["http2 on;"] if protocol == "h2" else [])
+
+
+def tls_config(config: str, proxy_port: int, protocol: str, certificate: Path, key: Path) -> str:
+    """Make the rendered listener `listen ... ssl` and add the TLS directives right after it.
+
+    Applied after --header-buffers, so removing the added lines and ' ssl' gives back the plain
+    rendering exactly.
+    """
+    listen = f"listen {HOST}:{proxy_port}"
+    config = config.replace(f"{listen};", f"{listen} ssl;", 1)
+    return insert_directives(config, f"{listen} ssl;", "--protocol", protocol,
+                             tls_directives(protocol, certificate, key))
 
 
 UPSTREAM_NAME = "transport_app"
@@ -388,6 +461,45 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
     after the application. The store is not behind nginx, so nginx.conf is the same for both.
     Raises ValueError for an invalid argument before anything starts.
     """
+    with launch_stack(proxy_port, app_port, run_dir, timeout, proxy_buffers, header_buffers,
+                      upstream_keepalive, ref_store) as stack:
+        yield stack
+
+
+@contextmanager
+def start_tls_stack(protocol: str = "https", proxy_port: int | None = None,
+                    app_port: int | None = None, run_dir: str | Path | None = None,
+                    timeout: float = 60.0, proxy_buffers: str | None = None,
+                    header_buffers: str | None = None):
+    """Start the stack with nginx serving TLS; yield a TlsStack and stop everything on exit.
+
+    protocol "https" serves HTTP/1.1 over TLS, and "h2" adds `http2 on;`, so a client that
+    offers h2 by ALPN, such as Chromium, gets HTTP/2. Before nginx starts, a new self-signed
+    certificate and experiment key for 127.0.0.1 and localhost are written to <run_dir>/tls
+    (generate_certificate in scripts/transport_tls.py), and the rendered nginx.conf gets
+    `listen 127.0.0.1:<proxy_port> ssl;` and the TLS directives, marked 'Not a default'.
+    waitress stays plain HTTP behind nginx. The stack is ready when yielded: GET
+    <proxy_url>/api/echo, verified against the certificate, returns the echo. On exit, for any
+    reason, every started process is stopped and experiment-key.pem is deleted; the
+    certificate stays. The other arguments mean what they mean for start_stack. Raises
+    ValueError for an invalid protocol or argument before anything starts or is written.
+    """
+    if not isinstance(protocol, str) or protocol not in TLS_PROTOCOLS:
+        raise ValueError(f"protocol must be one of {', '.join(TLS_PROTOCOLS)}, got {protocol!r}")
+    with launch_stack(proxy_port, app_port, run_dir, timeout, proxy_buffers, header_buffers,
+                      None, "memory", protocol) as stack:
+        yield stack
+
+
+@contextmanager
+def launch_stack(proxy_port: int | None, app_port: int | None, run_dir: str | Path | None,
+                 timeout: float, proxy_buffers: str | None, header_buffers: str | None,
+                 upstream_keepalive: int | None, ref_store: str, protocol: str | None = None):
+    """start_stack's and start_tls_stack's shared implementation.
+
+    protocol None starts the plain stack and yields a Stack; "https" or "h2" (start_tls_stack
+    has checked it) also serves nginx over TLS and yields a TlsStack.
+    """
     for name, port in (("proxy_port", proxy_port), ("app_port", app_port)):
         if port is not None and not valid_port(port):
             raise ValueError(f"{name} must be an int in 1-65535, got {port!r}")
@@ -414,10 +526,16 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
         proxy_port = free_port({app_port})
     if app_port is None:
         app_port = free_port({proxy_port})
-    proxy_url, app_url = f"http://{HOST}:{proxy_port}", f"http://{HOST}:{app_port}"
+    proxy_scheme = "http" if protocol is None else "https"
+    proxy_url, app_url = f"{proxy_scheme}://{HOST}:{proxy_port}", f"http://{HOST}:{app_port}"
     store_port = free_port({proxy_port, app_port}) if ref_store == "remote" else None
     store_url = None if store_port is None else f"http://{HOST}:{store_port}"
     deadline = time.monotonic() + timeout
+    certificate = key = None
+    if protocol is not None:
+        from scripts.transport_tls import KEY_FILE  # Only TLS stacks load cryptography.
+
+        key = run_dir / "tls" / KEY_FILE
 
     processes = []
     store = None
@@ -458,16 +576,26 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                                        header_buffers, header_directives)
         if upstream_keepalive is not None:
             config = upstream_keepalive_config(config, app_port, upstream_keepalive)
+        if protocol is not None:  # Last, so its lines come right after the listen line.
+            from scripts.transport_tls import generate_certificate
+
+            certificate, key = generate_certificate(run_dir / "tls")
+            config = tls_config(config, proxy_port, protocol, certificate, key)
         config_path = run_dir / "nginx" / "nginx.conf"
         config_path.write_text(config, encoding="utf-8")
         error_log = logs / "proxy-error.log"
         processes.append(launch([nginx, "-p", f"{run_dir / 'nginx'}/", "-c", str(config_path),
                                  "-e", str(error_log)], run_dir, error_log))
-        wait_ready(names["proxy"], processes[-1], proxy_url, deadline, timeout, error_log, True)
+        wait_ready(names["proxy"], processes[-1], proxy_url, deadline, timeout, error_log, True,
+                   certificate=certificate)
 
-        yield Stack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir,
-                    upstream_keepalive=upstream_keepalive, ref_store=ref_store,
-                    store_url=store_url)
+        if protocol is None:
+            yield Stack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir,
+                        upstream_keepalive=upstream_keepalive, ref_store=ref_store,
+                        store_url=store_url)
+        else:
+            yield TlsStack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir,
+                           protocol=protocol, certificate=certificate)
     finally:
         for process in reversed(processes):
             stop_process(process)
@@ -475,10 +603,46 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
             STORE_PROCESSES.pop(store_url, None)
             if store.returncode is None:  # stop_store may have stopped it already.
                 stop_process(store)
+        if key is not None:  # The experiment key never outlives its stack.
+            key.unlink(missing_ok=True)
+
+
+# The request line in nginx's access log ("$request"), whose last word is the HTTP version.
+LOGGED_REQUEST = re.compile(r'"[A-Z]+ [^"\s]* (HTTP/[0-9.]+)"')
+NEGOTIATED_WAIT_SECONDS = 5.0
+
+
+def logged_version(line: str) -> str | None:
+    """The HTTP version of the request line in one proxy-access.log line, such as 'HTTP/2.0'."""
+    match = LOGGED_REQUEST.search(line)
+    return match[1] if match else None
+
+
+def wait_for_logged_version(stack, nonce: str,
+                            seconds: float = NEGOTIATED_WAIT_SECONDS) -> str | None:
+    """Wait up to `seconds` for nginx to log the request carrying nonce; return its version."""
+    path = Path(stack.run_dir) / "logs" / "proxy-access.log"
+    deadline = time.monotonic() + seconds
+    while True:
+        try:
+            lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            lines = []
+        line = next((line for line in lines if nonce in line), None)
+        if line is not None:
+            return logged_version(line)
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(0.05)
 
 
 def run_check(stack, timeout: float = 60.0) -> dict:
-    """Load the test page in headless Chromium and fetch /api/echo from it through the proxy."""
+    """Load the test page in headless Chromium and fetch /api/echo from it through the proxy.
+
+    For a TlsStack, Chromium accepts the stack's certificate (browser_context_options), and the
+    result adds 'protocol' and 'negotiated_protocol', the HTTP version nginx logged for the
+    echo; it raises RuntimeError unless that is HTTP/1.1 for https and HTTP/2.0 for h2.
+    """
     check_timeout(timeout)
     try:
         from playwright.sync_api import Error as PlaywrightError, sync_playwright
@@ -499,7 +663,7 @@ def run_check(stack, timeout: float = 60.0) -> dict:
                                                  timeout=milliseconds)
             try:
                 reported_version = browser.version
-                page = browser.new_page()
+                page = browser.new_page(**browser_context_options(stack))
                 page.set_default_timeout(milliseconds)
                 page_response = page.goto(page_url, timeout=milliseconds)
                 page_status = page_response.status if page_response else None
@@ -529,7 +693,7 @@ def run_check(stack, timeout: float = 60.0) -> dict:
         raise RuntimeError(f"browser reports version {reported_version}, "
                            f"manifest documents {documented_browser}")
 
-    return {
+    result = {
         "ok": True,
         "proxy_url": stack.proxy_url,
         "app_url": stack.app_url,
@@ -540,6 +704,14 @@ def run_check(stack, timeout: float = 60.0) -> dict:
         "request": {"url": echo_url, "nonce": nonce},
         "response": {"status": echo["status"], "headers": echo["headers"], "body": body},
     }
+    if not is_tls_stack(stack):
+        return result
+    negotiated = wait_for_logged_version(stack, nonce)
+    expected = EXPECTED_VERSIONS[stack.protocol]
+    if negotiated != expected:
+        raise RuntimeError(f"proxy: nginx logged Chromium's {stack.protocol} echo request as "
+                           f"{negotiated or 'nothing'} in proxy-access.log, expected {expected}")
+    return {**result, "protocol": stack.protocol, "negotiated_protocol": negotiated}
 
 
 def run_token_check(stack, algorithms: Sequence[str] | None = None,
@@ -863,6 +1035,66 @@ def run_refs_command(parser: argparse.ArgumentParser, args: argparse.Namespace) 
     sys.stdout.write(f"Saved the results to {args.output_dir}\n")
 
 
+def byte_count(text: str) -> int:
+    """Parse the protocols command's --step and --max-bytes: a whole number of bytes, at least 1."""
+    try:
+        count = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid number of bytes: {text!r}") from None
+    if count < 1:
+        raise argparse.ArgumentTypeError(f"must be at least 1 byte, got {count}")
+    return count
+
+
+def protocols_command_settings(parser: argparse.ArgumentParser,
+                               args: argparse.Namespace) -> dict:
+    """Return the protocols command's run_protocols settings; exit 2 on a usage error, before
+    any process starts or the output directory is created.
+
+    Unlike claims, cookies, and refs, there is no --settings file: every option is explicit and
+    recorded in protocols.json.
+    """
+    from scripts.transport_protocols import DEFAULT_PROTOCOLS, checked_settings
+
+    for option, values in (("--protocol", args.protocol), ("--sweep", args.sweep),
+                           ("--alg", args.alg)):
+        if values and len(set(values)) != len(values):
+            parser.error(f"{option} must not repeat a value, got {' '.join(values)}")
+    reject_used_output_dir(parser, args.output_dir)
+    settings = {"protocols": args.protocol or list(DEFAULT_PROTOCOLS), "sweeps": args.sweep,
+                "algorithms": args.alg, "baseline": args.baseline, "step": args.step,
+                "max_bytes": args.max_bytes,
+                "timeout": 60.0 if args.timeout is None else args.timeout}
+    try:
+        checked_settings(**settings)  # Options are checked as they are parsed; this the baseline.
+    except ValueError as error:
+        parser.error(str(error))
+    return settings
+
+
+def run_protocols_command(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Run every (protocol, sweep) pair of the protocols command, print its summary, and say
+    where it was saved.
+
+    Usage errors exit 2 before any process starts. Runtime failures and SIGINT or SIGTERM print
+    'Error: ...' and exit 1, after every started process has been stopped and every experiment
+    key deleted. Rejected tokens are results, not failures, so they still exit 0.
+    """
+    settings = protocols_command_settings(parser, args)
+    from scripts.transport_protocols import run_protocols, summary_lines
+
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, interrupt)
+    try:
+        result = run_protocols(args.output_dir, run_dir=args.run_dir, **settings)
+    except KeyboardInterrupt:
+        parser.exit(1, "Error: interrupted\n")
+    except (OSError, RuntimeError, ValueError) as error:
+        parser.exit(1, f"Error: {error}\n")
+    sys.stdout.write("".join(f"{line}\n" for line in summary_lines(result)))
+    sys.stdout.write(f"Saved the results to {args.output_dir}\n")
+
+
 def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
     """Summarize each pair on stderr, and exit 1 if a pair did not match the documented limits."""
     from scripts.transport_tokens import mismatch_message, summary_lines
@@ -1084,6 +1316,55 @@ def add_refs_command(commands) -> None:
                            "temporary directory each)")
 
 
+# The protocols command's choices, literal so importing this module never loads
+# scripts.transport_protocols (PROTOCOLS and SWEEPS there).
+PROTOCOL_NAMES = ("http", "https", "h2")
+SWEEP_NAMES = ("cookie-default", "cookie-16k", "bearer-default", "bearer-512k")
+
+
+def add_protocols_command(commands) -> None:
+    """Add the protocols command (S3-04); its options default to None.
+
+    It starts its own stacks, one per protocol and sweep, so it takes none of the shared stack
+    options except --timeout and --run-dir, and no --settings file.
+    """
+    protocols = commands.add_parser("protocols",
+                                    help="repeat the cookie and Bearer sweeps over HTTPS and "
+                                         "HTTP/2 (S3-04) and compare them with Sprint 2")
+    protocols.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
+                           help="save protocols.json and one <protocol>-<sweep>/ directory per "
+                                "run here; it must not exist yet or be empty")
+    protocols.add_argument("--protocol", action="extend", nargs="+", choices=PROTOCOL_NAMES,
+                           metavar="NAME",
+                           help="http (plain HTTP/1.1), https (HTTP/1.1 over TLS), or h2 (HTTP/2 "
+                                "over TLS); repeat or list several (default: https h2)")
+    protocols.add_argument("--sweep", action="extend", nargs="+", choices=SWEEP_NAMES,
+                           metavar="NAME",
+                           help="sweeps of make sweep to repeat: cookie-default, cookie-16k, "
+                                "bearer-default, or bearer-512k; repeat or list several "
+                                "(default: all four)")
+    protocols.add_argument("--alg", action="extend", nargs="+", type=algorithm_name,
+                           metavar="NAME",
+                           help="configuration to sweep; repeat or list several (default: all "
+                                "six)")
+    protocols.add_argument("--baseline", type=Path, metavar="DIR",
+                           help="run to compare with, holding <sweep>/sweep.json for every "
+                                "selected sweep (default: Sprint 2's "
+                                "results/transport/20261113T074114Z-wsl2)")
+    protocols.add_argument("--step", type=byte_count, metavar="BYTES",
+                           help="coarse step in token bytes for every selected sweep (default: "
+                                "each sweep's own, 512 or 16,384)")
+    protocols.add_argument("--max-bytes", type=byte_count, metavar="BYTES",
+                           help="largest token to probe in every selected sweep (default: each "
+                                "sweep's own, 24,576 or 327,680)")
+    protocols.add_argument("--timeout", type=positive_seconds, metavar="SECONDS",
+                           help="seconds allowed for each stack's startup and for each browser "
+                                "step (default: 60)")
+    protocols.add_argument("--run-dir", type=Path, metavar="DIR",
+                           help="put each stack's run directory at DIR/<protocol>-<sweep> "
+                                "(default: a new temporary directory each)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1123,6 +1404,7 @@ def main() -> None:
     add_claims_command(commands)
     add_cookies_command(commands)
     add_refs_command(commands)
+    add_protocols_command(commands)
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -1147,6 +1429,9 @@ def main() -> None:
         return
     if args.command == "refs":  # And refs.
         run_refs_command(parser, args)
+        return
+    if args.command == "protocols":  # And protocols, one stack per protocol and sweep.
+        run_protocols_command(parser, args)
         return
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:

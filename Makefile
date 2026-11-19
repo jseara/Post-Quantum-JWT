@@ -12,7 +12,7 @@ LOGS := $(RUN_DIR)/logs
 STACK := PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/transport_stack.py
 
 .DEFAULT_GOAL := help
-.PHONY: help serve logs check tokens sweep load claims cookies refs versions test benchmark setup
+.PHONY: help serve logs check tokens sweep load claims cookies refs protocols versions test benchmark setup
 
 help:
 	@echo "make serve      start nginx (http://localhost:$(PROXY_PORT)) and the app (port $(APP_PORT)); Ctrl+C stops both"
@@ -24,6 +24,7 @@ help:
 	@echo "make claims     smaller claim sets: token sizes, size limits, and latency, oidc vs essential (CLAIMS_DIR=$(CLAIMS_DIR))"
 	@echo "make cookies    cookie splitting: chunk plan, size limits, chunk handling, and latency, jwt cookie vs split (COOKIES_DIR=$(COOKIES_DIR))"
 	@echo "make refs       reference tokens: size limits, reference handling, and lookup latency, Bearer JWT vs reference (REFS_DIR=$(REFS_DIR))"
+	@echo "make protocols  cookie and Bearer sweeps over HTTPS and HTTP/2, compared with Sprint 2's plain HTTP (PROTOCOLS_DIR=$(PROTOCOLS_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -83,6 +84,13 @@ REFS_DIR ?= results/refs/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
 # 2 s cells.
 refs:
 	$(STACK) refs --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(REFS_DIR)"
+
+PROTOCOLS_DIR ?= results/transport/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
+# S3-04's HTTPS and HTTP/2 sweeps (see TRANSPORT_RESULTS.md): the four make sweep runs, each over
+# HTTPS (HTTP/1.1 over TLS) and HTTP/2 with a per-run self-signed certificate and experiment key,
+# compared with Sprint 2's plain-HTTP WSL2 runs.
+protocols:
+	$(STACK) protocols --output-dir "$(PROTOCOLS_DIR)"
 
 versions:
 	$(STACK) versions
