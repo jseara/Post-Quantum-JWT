@@ -1,0 +1,3084 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-11-19T05:11:45.117841+00:00",
+  "finished_utc": "2026-11-19T05:15:56.691409+00:00",
+  "recorded_utc": "2026-11-19T05:15:56.691447+00:00",
+  "settings": {
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA",
+      "ML-DSA-44",
+      "SLH-DSA-SHA2-128s",
+      "SLH-DSA-SHA2-128f"
+    ],
+    "claims": "oidc",
+    "clients": [
+      "direct",
+      "browser"
+    ],
+    "concurrency": [
+      1,
+      4
+    ],
+    "duration": 2.0,
+    "warmup": 1.0,
+    "timeout": 60.0,
+    "header_buffers": "32k",
+    "upstream_keepalive": 64
+  },
+  "environment": {
+    "python": "3.15.2",
+    "platform": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "processor": "arm",
+    "cpu_count": 18,
+    "cryptography": "50.0.2",
+    "pyjwt": "2.15.1",
+    "pqcrypto": "1.0.0",
+    "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+    "timer": "perf_counter_ns",
+    "git_commit": "a035e7cc227202a7fac0e309f514601a535773cb",
+    "git_dirty_scripts_or_fixtures": false,
+    "page_size_bytes": 16384,
+    "waitress_threads": 4
+  },
+  "layers": [
+    {
+      "role": "automation",
+      "component": "Playwright for Python",
+      "version": "1.64.1"
+    },
+    {
+      "role": "browser",
+      "component": "Chromium (Chrome for Testing)",
+      "version": "156.0.8078.4"
+    },
+    {
+      "role": "proxy",
+      "component": "nginx",
+      "version": "1.31.8"
+    },
+    {
+      "role": "app_server",
+      "component": "waitress",
+      "version": "3.0.2"
+    }
+  ],
+  "browser": {
+    "version": "156.0.8078.4",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+  },
+  "experiment_keys": true,
+  "format": {
+    "reference_prefix": "ref_",
+    "random_bytes": 32,
+    "reference_bytes": 47,
+    "cookie_name": "jwt_ref",
+    "cookie_attributes": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600",
+    "default_ttl_seconds": 3600,
+    "max_ttl_seconds": 86400,
+    "stores": [
+      "memory",
+      "remote"
+    ]
+  },
+  "plan": [
+    {
+      "algorithm": "RS256",
+      "token_bytes": 1204,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 1207,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 1279,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 1218,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 1228,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "ES256",
+      "token_bytes": 948,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 951,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 1023,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 962,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 972,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "EdDSA",
+      "token_bytes": 948,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 951,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 1023,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 962,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 972,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "ML-DSA-44",
+      "token_bytes": 4095,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 4098,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 4170,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 4109,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 4119,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": false,
+          "cookie_line": true,
+          "authorization_line": true
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "token_bytes": 11353,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 11356,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 11428,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 11367,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 11377,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": false,
+          "cookie_line": false,
+          "authorization_line": false
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "token_bytes": 23662,
+      "reference_bytes": 47,
+      "name_value_bytes": {
+        "jwt": 23665,
+        "ref": 54
+      },
+      "set_cookie_bytes": {
+        "jwt": 23737,
+        "ref": 126
+      },
+      "cookie_line_bytes": {
+        "jwt": 23676,
+        "ref": 65
+      },
+      "authorization_line_bytes": {
+        "jwt": 23686,
+        "ref": 71
+      },
+      "fits": {
+        "jwt": {
+          "per_cookie": false,
+          "cookie_line": false,
+          "authorization_line": false
+        },
+        "ref": {
+          "per_cookie": true,
+          "cookie_line": true,
+          "authorization_line": true
+        }
+      }
+    }
+  ],
+  "limits": {
+    "stack": "limits",
+    "header_buffers": null,
+    "proxy_buffers": null,
+    "ref_store": "memory",
+    "cookie_attributes": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600",
+    "results": [
+      {
+        "algorithm": "RS256",
+        "transport": "cookie",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "31155cbc8acb20672d71a7858c370d19",
+        "verify_nonce": "9e7031bdc6fd0241e40b81b8ae15be4b",
+        "evidence": "verified: the browser sent the 47-byte reference to a 1,204-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "bearer",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "43f32671ba56d28176465d680f8f1b1d",
+        "verify_nonce": "1d9373be07625c6c722eb14af76cf393",
+        "evidence": "verified: the browser sent the 47-byte reference to a 1,204-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "cookie",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "1274ad2478f621d119f2d5544ec1457a",
+        "verify_nonce": "7b745436f01a0e8e279a3c9726b8d35a",
+        "evidence": "verified: the browser sent the 47-byte reference to a 948-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "bearer",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "b67612db6dff55c1479f3e66ce78dd20",
+        "verify_nonce": "2cafc601ae64b1688d8aa0563efcc084",
+        "evidence": "verified: the browser sent the 47-byte reference to a 948-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "cookie",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "2c121c68fa7d04bda00c8f722eb7508a",
+        "verify_nonce": "c70d62ccf3f87ca79e6694c6d307cf67",
+        "evidence": "verified: the browser sent the 47-byte reference to a 948-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "bearer",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "f5ef617f59d2af736630aa685a2c23d4",
+        "verify_nonce": "aa1c501954a1c7b067c82f905b61a9a6",
+        "evidence": "verified: the browser sent the 47-byte reference to a 948-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "cookie",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "0992a251643561b83a3cb581bf1275c1",
+        "verify_nonce": "19ef9a2c5b5e45af6792b609ab85d14e",
+        "evidence": "verified: the browser sent the 47-byte reference to a 4,095-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "bearer",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "10760341ad30791567b3dd33059b3267",
+        "verify_nonce": "bc4110544053f9241dfa3a83d485fe8c",
+        "evidence": "verified: the browser sent the 47-byte reference to a 4,095-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "cookie",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "19cdc6faf472fdab03201d08b50fd171",
+        "verify_nonce": "550e5fa29042f2fc002e2c3a64627726",
+        "evidence": "verified: the browser sent the 47-byte reference to a 11,353-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "bearer",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "ad092bbf54d754a2149c4497c71a4a0c",
+        "verify_nonce": "c6edf07fc95b8f90792a9a8ea9546c85",
+        "evidence": "verified: the browser sent the 47-byte reference to a 11,353-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "cookie",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": true,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 65,
+          "app_received_headers": 608
+        },
+        "issue_nonce": "d3f22497e4c01e4c00007e45b497a1b6",
+        "verify_nonce": "0a9e93d6b04b88ebebd16ec066557021",
+        "evidence": "verified: the browser sent the 47-byte reference to a 23,662-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "bearer",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookie_stored": null,
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "header_line": 71,
+          "app_received_headers": 614
+        },
+        "issue_nonce": "cac000636ebe717669956f68bdc2365f",
+        "verify_nonce": "8dad057e87a3944b94fead533442a404",
+        "evidence": "verified: the browser sent the 47-byte reference to a 23,662-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      }
+    ],
+    "jwt": {
+      "source": "results/claims/20261118T053507Z-macos/claims.json",
+      "claims": "oidc",
+      "results": [
+        {
+          "algorithm": "RS256",
+          "transport": "cookie",
+          "token_bytes": 1204,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "RS256",
+          "transport": "bearer",
+          "token_bytes": 1204,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "bearer",
+          "token_bytes": 948,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "bearer",
+          "token_bytes": 948,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "cookie",
+          "token_bytes": 4095,
+          "outcome": "rejected",
+          "rejected_by": "browser"
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "bearer",
+          "token_bytes": 4095,
+          "outcome": "verified",
+          "rejected_by": null
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "cookie",
+          "token_bytes": 11353,
+          "outcome": "rejected",
+          "rejected_by": "browser"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "bearer",
+          "token_bytes": 11353,
+          "outcome": "rejected",
+          "rejected_by": "proxy"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "cookie",
+          "token_bytes": 23662,
+          "outcome": "rejected",
+          "rejected_by": "proxy"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "bearer",
+          "token_bytes": 23662,
+          "outcome": "rejected",
+          "rejected_by": "proxy"
+        }
+      ]
+    },
+    "moved": [
+      {
+        "algorithm": "RS256",
+        "transport": "cookie",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "RS256",
+        "transport": "bearer",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "cookie",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ES256",
+        "transport": "bearer",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "cookie",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "EdDSA",
+        "transport": "bearer",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "cookie",
+        "jwt": "rejected",
+        "ref": "verified",
+        "moved": true
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "transport": "bearer",
+        "jwt": "verified",
+        "ref": "verified",
+        "moved": false
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "cookie",
+        "jwt": "rejected",
+        "ref": "verified",
+        "moved": true
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "transport": "bearer",
+        "jwt": "rejected",
+        "ref": "verified",
+        "moved": true
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "cookie",
+        "jwt": "rejected",
+        "ref": "verified",
+        "moved": true
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "transport": "bearer",
+        "jwt": "rejected",
+        "ref": "verified",
+        "moved": true
+      }
+    ]
+  },
+  "probes": [
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "target_bytes": 65536,
+      "pad": 31396,
+      "token_bytes": 65536,
+      "transport": "cookie",
+      "reference_bytes": 47,
+      "outcome": "verified",
+      "rejected_by": null,
+      "cookie_stored": true,
+      "issue_status": 200,
+      "verify_status": 200,
+      "bytes": {
+        "header_line": 65,
+        "app_received_headers": 608
+      },
+      "issue_nonce": "9b8ce7e6660aaed879ab7b1eafbcb873",
+      "verify_nonce": "69c1c0c3026f3a222a755bd6ae3f1bc8",
+      "evidence": "verified: the browser sent the 47-byte reference to a 65,536-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "target_bytes": 65536,
+      "pad": 31396,
+      "token_bytes": 65536,
+      "transport": "bearer",
+      "reference_bytes": 47,
+      "outcome": "verified",
+      "rejected_by": null,
+      "cookie_stored": null,
+      "issue_status": 200,
+      "verify_status": 200,
+      "bytes": {
+        "header_line": 71,
+        "app_received_headers": 614
+      },
+      "issue_nonce": "505421ed9746bfd68e05d264e2ce9df5",
+      "verify_nonce": "7ac693c3e26235fdc6b9d56818d9782c",
+      "evidence": "verified: the browser sent the 47-byte reference to a 65,536-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "target_bytes": 300000,
+      "pad": 207244,
+      "token_bytes": 300000,
+      "transport": "cookie",
+      "reference_bytes": 47,
+      "outcome": "verified",
+      "rejected_by": null,
+      "cookie_stored": true,
+      "issue_status": 200,
+      "verify_status": 200,
+      "bytes": {
+        "header_line": 65,
+        "app_received_headers": 608
+      },
+      "issue_nonce": "cb7937cb2719f398580b1163b69142e5",
+      "verify_nonce": "e7d81455fbc6e874f4adccb94c5b79d7",
+      "evidence": "verified: the browser sent the 47-byte reference to a 300,000-byte token as a jwt_ref cookie through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "target_bytes": 300000,
+      "pad": 207244,
+      "token_bytes": 300000,
+      "transport": "bearer",
+      "reference_bytes": 47,
+      "outcome": "verified",
+      "rejected_by": null,
+      "cookie_stored": null,
+      "issue_status": 200,
+      "verify_status": 200,
+      "bytes": {
+        "header_line": 71,
+        "app_received_headers": 614
+      },
+      "issue_nonce": "5cb5c5c7728f1267f8dfb7c0abd4e885",
+      "verify_nonce": "57ddc12327fe81fd19a8735b16ee3076",
+      "evidence": "verified: the browser sent the 47-byte reference to a 300,000-byte token as an Authorization: Bearer header through nginx, and the application looked the token up and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+    }
+  ],
+  "handling": {
+    "algorithm": "ML-DSA-44",
+    "claims": "oidc",
+    "token_bytes": 4095,
+    "stack": "behavior",
+    "ref_store": "remote",
+    "expired_ttl_seconds": 1,
+    "cases": [
+      {
+        "name": "cookie",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "jwt_ref"
+        ],
+        "store": "running",
+        "status": 200,
+        "verified": true,
+        "source": "ref_cookie",
+        "ref_status": "found",
+        "lookup_called": true,
+        "verify_called": true,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": null,
+        "nonce": "9f184f858320406e4bc7d58dcf1d01c0"
+      },
+      {
+        "name": "bearer",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "running",
+        "status": 200,
+        "verified": true,
+        "source": "ref_bearer",
+        "ref_status": "found",
+        "lookup_called": true,
+        "verify_called": true,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": null,
+        "nonce": "fbbf442fb9f0130639673539dd4bb56d"
+      },
+      {
+        "name": "among_other_cookies",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "a",
+          "jwt_ref",
+          "theme"
+        ],
+        "store": "running",
+        "status": 200,
+        "verified": true,
+        "source": "ref_cookie",
+        "ref_status": "found",
+        "lookup_called": true,
+        "verify_called": true,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": null,
+        "nonce": "28e2ef77ad7802e039779eb290c62e70"
+      },
+      {
+        "name": "unknown",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "running",
+        "status": 401,
+        "verified": false,
+        "source": "ref_bearer",
+        "ref_status": "unknown",
+        "lookup_called": true,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "unknown reference: the store holds no token for it",
+        "nonce": "699a46c0c2ee2972f4dd159116de6384"
+      },
+      {
+        "name": "malformed_cookie",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "jwt_ref"
+        ],
+        "store": "running",
+        "status": 401,
+        "verified": false,
+        "source": "ref_cookie",
+        "ref_status": "malformed",
+        "lookup_called": false,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "malformed reference: a jwt_ref cookie must hold ref_ and 43 base64url characters",
+        "nonce": "e3144681394a298fc828dca5b47103b2"
+      },
+      {
+        "name": "expired",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "running",
+        "status": 401,
+        "verified": false,
+        "source": "ref_bearer",
+        "ref_status": "expired",
+        "lookup_called": true,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "expired reference: its time to live has passed",
+        "nonce": "7a3217716ef87fa3e2386db904b9b36b"
+      },
+      {
+        "name": "revoked",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "running",
+        "status": 401,
+        "verified": false,
+        "source": "ref_bearer",
+        "ref_status": "revoked",
+        "lookup_called": true,
+        "verify_called": false,
+        "revoke_status": 200,
+        "set_cookie": false,
+        "error": "revoked reference: it was revoked",
+        "nonce": "dc9adea0115f43b764362ebb55c6c1b7"
+      },
+      {
+        "name": "two_references",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "jwt_ref",
+          "jwt_ref"
+        ],
+        "store": "running",
+        "status": 400,
+        "verified": false,
+        "source": null,
+        "ref_status": null,
+        "lookup_called": false,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "more than one token: send one jwt_ref cookie or one Bearer reference alone, without another reference, a jwt cookie, chunk cookies, or a Bearer token",
+        "nonce": "0002b357aa8b149df0b2ef38c4d71897"
+      },
+      {
+        "name": "reference_and_jwt",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "jwt_ref",
+          "bearer"
+        ],
+        "store": "running",
+        "status": 400,
+        "verified": false,
+        "source": null,
+        "ref_status": null,
+        "lookup_called": false,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "more than one token: send one jwt_ref cookie or one Bearer reference alone, without another reference, a jwt cookie, chunk cookies, or a Bearer token",
+        "nonce": "e457da22a9f54c0faebb236712816c9e"
+      },
+      {
+        "name": "reference_as_jwt",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "jwt"
+        ],
+        "store": "running",
+        "status": 401,
+        "verified": false,
+        "source": "cookie",
+        "ref_status": null,
+        "lookup_called": false,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "the token header has no readable alg naming one of RS256, ES256, EdDSA, ML-DSA-44, SLH-DSA-SHA2-128s, SLH-DSA-SHA2-128f",
+        "nonce": "d1642b01d9ac47471ebbc790b248484e"
+      },
+      {
+        "name": "store_unavailable",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "stopped",
+        "status": 503,
+        "verified": false,
+        "source": "ref_bearer",
+        "ref_status": "unavailable",
+        "lookup_called": true,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "reference store unavailable",
+        "nonce": "ad2d039e2dd60549cd90eb6918fba896"
+      },
+      {
+        "name": "jwt_without_store",
+        "method": "GET",
+        "path": "/api/token/verify",
+        "sent": [
+          "bearer"
+        ],
+        "store": "stopped",
+        "status": 200,
+        "verified": true,
+        "source": "bearer",
+        "ref_status": null,
+        "lookup_called": false,
+        "verify_called": true,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": null,
+        "nonce": "4591fd19a4741d52c7732083c3151698"
+      },
+      {
+        "name": "issue_without_store",
+        "method": "GET",
+        "path": "/api/token/reference",
+        "sent": [],
+        "store": "stopped",
+        "status": 503,
+        "verified": false,
+        "source": null,
+        "ref_status": null,
+        "lookup_called": false,
+        "verify_called": false,
+        "revoke_status": null,
+        "set_cookie": false,
+        "error": "reference store unavailable",
+        "nonce": "3e036032ea4785f3e9caed93dc62b751"
+      }
+    ]
+  },
+  "latency": {
+    "transport": "bearer",
+    "reference": "ES256",
+    "size_controls": false,
+    "runs": {
+      "jwt": "latency-jwt/load.json",
+      "ref_memory": "latency-ref-memory/load.json",
+      "ref_remote": "latency-ref-remote/load.json"
+    },
+    "rows": [
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 9564,
+          "ref_memory": 10034,
+          "ref_remote": 5882
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4781.972503658104,
+          "ref_memory": 5016.80549594252,
+          "ref_remote": 2940.5508926027233
+        },
+        "median_ms": {
+          "jwt": 0.20525,
+          "ref_memory": 0.196875,
+          "ref_remote": 0.337708
+        },
+        "p95_ms": {
+          "jwt": 0.2295,
+          "ref_memory": 0.213,
+          "ref_remote": 0.356667
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.20811760936846507,
+            "transfer": 0.14248812128816393,
+            "other_handling": 0.016357750522793812,
+            "lookup": 0.0,
+            "verification": 0.049271737557507314
+          },
+          "ref_memory": {
+            "total": 0.19839276031492925,
+            "transfer": 0.13153557474586405,
+            "other_handling": 0.017607436216862667,
+            "lookup": 0.0006442349013354594,
+            "verification": 0.04860551445086705
+          },
+          "ref_remote": {
+            "total": 0.3389083894933696,
+            "transfer": 0.14350829275756544,
+            "other_handling": 0.018591043012580754,
+            "lookup": 0.12702982029921797,
+            "verification": 0.04977923342400544
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.009724849053535822,
+            "transfer": -0.010952546542299879,
+            "other_handling": 0.0012496856940688549,
+            "lookup": 0.0006442349013354594,
+            "verification": -0.0006662231066402666
+          },
+          "ref_remote": {
+            "total": 0.13079078012490453,
+            "transfer": 0.001020171469401504,
+            "other_handling": 0.0022332924897869415,
+            "lookup": 0.12702982029921797,
+            "verification": 0.0005074958664981269
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8931,
+          "ref_memory": 9331,
+          "ref_remote": 5682
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4465.179529599981,
+          "ref_memory": 4665.241858172262,
+          "ref_remote": 2840.8835834316346
+        },
+        "median_ms": {
+          "jwt": 0.220584,
+          "ref_memory": 0.212583,
+          "ref_remote": 0.350417
+        },
+        "p95_ms": {
+          "jwt": 0.241625,
+          "ref_memory": 0.225291,
+          "ref_remote": 0.365125
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.22297533579666332,
+            "transfer": 0.14023890986451684,
+            "other_handling": 0.016124307020490426,
+            "lookup": 0.0,
+            "verification": 0.06661211891165603
+          },
+          "ref_memory": {
+            "total": 0.21344932365234168,
+            "transfer": 0.1297153320115743,
+            "other_handling": 0.017606832815346692,
+            "lookup": 0.0006427599399849962,
+            "verification": 0.06548439888543564
+          },
+          "ref_remote": {
+            "total": 0.35090543382611755,
+            "transfer": 0.14067820116156285,
+            "other_handling": 0.0183248141499472,
+            "lookup": 0.1253428340373108,
+            "verification": 0.06655958447729672
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.009526012144321638,
+            "transfer": -0.010523577852942528,
+            "other_handling": 0.001482525794856266,
+            "lookup": 0.0006427599399849962,
+            "verification": -0.0011277200262203857
+          },
+          "ref_remote": {
+            "total": 0.12793009802945424,
+            "transfer": 0.0004392912970460072,
+            "other_handling": 0.0022005071294567725,
+            "lookup": 0.1253428340373108,
+            "verification": -5.253443435930538e-05
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8947,
+          "ref_memory": 9364,
+          "ref_remote": 5707
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4473.214273438284,
+          "ref_memory": 4681.504053164367,
+          "ref_remote": 2853.1242207151377
+        },
+        "median_ms": {
+          "jwt": 0.219792,
+          "ref_memory": 0.211708,
+          "ref_remote": 0.349084
+        },
+        "p95_ms": {
+          "jwt": 0.24375,
+          "ref_memory": 0.223792,
+          "ref_remote": 0.362834
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.2225579149435565,
+            "transfer": 0.14032662903766624,
+            "other_handling": 0.01624903498379345,
+            "lookup": 0.0,
+            "verification": 0.0659822509220968
+          },
+          "ref_memory": {
+            "total": 0.2126920811618966,
+            "transfer": 0.1293284230029902,
+            "other_handling": 0.017628869713797523,
+            "lookup": 0.0006382035454933789,
+            "verification": 0.06509658489961555
+          },
+          "ref_remote": {
+            "total": 0.3494397525845453,
+            "transfer": 0.14037394077448748,
+            "other_handling": 0.01832141317680042,
+            "lookup": 0.12508283213597338,
+            "verification": 0.06566156649728404
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.009865833781659894,
+            "transfer": -0.01099820603467605,
+            "other_handling": 0.0013798347300040745,
+            "lookup": 0.0006382035454933789,
+            "verification": -0.0008856660224812463
+          },
+          "ref_remote": {
+            "total": 0.1268818376409888,
+            "transfer": 4.731173682123724e-05,
+            "other_handling": 0.0020723781930069712,
+            "lookup": 0.12508283213597338,
+            "verification": -0.00032068442481275605
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8179,
+          "ref_memory": 9723,
+          "ref_remote": 5783
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4089.4850059032256,
+          "ref_memory": 4861.143719485084,
+          "ref_remote": 2891.0350261636368
+        },
+        "median_ms": {
+          "jwt": 0.236167,
+          "ref_memory": 0.203875,
+          "ref_remote": 0.344333
+        },
+        "p95_ms": {
+          "jwt": 0.272458,
+          "ref_memory": 0.216083,
+          "ref_remote": 0.357708
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.24349009903411176,
+            "transfer": 0.16709241154175328,
+            "other_handling": 0.01771108203936912,
+            "lookup": 0.0,
+            "verification": 0.058686605452989364
+          },
+          "ref_memory": {
+            "total": 0.20477765257636532,
+            "transfer": 0.12880684480098736,
+            "other_handling": 0.01861144101614728,
+            "lookup": 0.0006416084541808084,
+            "verification": 0.05671775830504988
+          },
+          "ref_remote": {
+            "total": 0.34473079214940344,
+            "transfer": 0.1406034734566834,
+            "other_handling": 0.019697799584990492,
+            "lookup": 0.12823213090091648,
+            "verification": 0.05619738820681307
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.038712446457746436,
+            "transfer": -0.038285566740765914,
+            "other_handling": 0.0009003589767781622,
+            "lookup": 0.0006416084541808084,
+            "verification": -0.001968847147939483
+          },
+          "ref_remote": {
+            "total": 0.10124069311529169,
+            "transfer": -0.026488938085069885,
+            "other_handling": 0.0019867175456213734,
+            "lookup": 0.12823213090091648,
+            "verification": -0.0024892172461762965
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 4775,
+          "ref_memory": 5954,
+          "ref_remote": 3989
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2387.456081551652,
+          "ref_memory": 2976.670766818171,
+          "ref_remote": 1994.4492661967913
+        },
+        "median_ms": {
+          "jwt": 0.414584,
+          "ref_memory": 0.334042,
+          "ref_remote": 0.501333
+        },
+        "p95_ms": {
+          "jwt": 0.440917,
+          "ref_memory": 0.344125,
+          "ref_remote": 0.510167
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.4176783516230367,
+            "transfer": 0.27690538554973826,
+            "other_handling": 0.01899107434554974,
+            "lookup": 0.0,
+            "verification": 0.12178189172774868
+          },
+          "ref_memory": {
+            "total": 0.3347923918374202,
+            "transfer": 0.19162568206247899,
+            "other_handling": 0.020869550554249244,
+            "lookup": 0.0006034398723547196,
+            "verification": 0.12169371934833725
+          },
+          "ref_remote": {
+            "total": 0.5001580117824016,
+            "transfer": 0.2016133990975182,
+            "other_handling": 0.01957074504888443,
+            "lookup": 0.16397416595638004,
+            "verification": 0.11499970167961895
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.08288595978561647,
+            "transfer": -0.08527970348725927,
+            "other_handling": 0.001878476208699506,
+            "lookup": 0.0006034398723547196,
+            "verification": -8.81723794114303e-05
+          },
+          "ref_remote": {
+            "total": 0.08247966015936492,
+            "transfer": -0.07529198645222007,
+            "other_handling": 0.0005796707033346934,
+            "lookup": 0.16397416595638004,
+            "verification": -0.00678219004812973
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 2867,
+          "ref_memory": 3776,
+          "ref_remote": 2863
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 1433.4014837494233,
+          "ref_memory": 1887.6464598630623,
+          "ref_remote": 1431.0075244844788
+        },
+        "median_ms": {
+          "jwt": 0.695208,
+          "ref_memory": 0.527792,
+          "ref_remote": 0.6975
+        },
+        "p95_ms": {
+          "jwt": 0.713458,
+          "ref_memory": 0.542459,
+          "ref_remote": 0.708708
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.6965472755493547,
+            "transfer": 0.3618808486222532,
+            "other_handling": 0.020906241367282873,
+            "lookup": 0.0,
+            "verification": 0.31376018555981866
+          },
+          "ref_memory": {
+            "total": 0.5285547801906779,
+            "transfer": 0.19132860487288134,
+            "other_handling": 0.02458373993644068,
+            "lookup": 0.0006037733050847457,
+            "verification": 0.3120386620762712
+          },
+          "ref_remote": {
+            "total": 0.6974467785539643,
+            "transfer": 0.19911588613342648,
+            "other_handling": 0.021953519035976247,
+            "lookup": 0.17765494027244147,
+            "verification": 0.29872243311212016
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.16799249535867677,
+            "transfer": -0.1705522437493719,
+            "other_handling": 0.0036774985691578055,
+            "lookup": 0.0006037733050847457,
+            "verification": -0.0017215234835474824
+          },
+          "ref_remote": {
+            "total": 0.0008995030046096142,
+            "transfer": -0.16276496248882674,
+            "other_handling": 0.0010472776686933742,
+            "lookup": 0.17765494027244147,
+            "verification": -0.015037752447698505
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 12370,
+          "ref_memory": 12423,
+          "ref_remote": 8340
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 6183.624403282494,
+          "ref_memory": 6210.1870639865865,
+          "ref_remote": 4168.320775302386
+        },
+        "median_ms": {
+          "jwt": 0.6225625,
+          "ref_memory": 0.619625,
+          "ref_remote": 0.9309375
+        },
+        "p95_ms": {
+          "jwt": 0.94525,
+          "ref_memory": 0.960333,
+          "ref_remote": 1.3655
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.6455812864187551,
+            "transfer": 0.44480448949070334,
+            "other_handling": 0.01769511253031528,
+            "lookup": 0.0,
+            "verification": 0.18308168439773645
+          },
+          "ref_memory": {
+            "total": 0.6429005931739515,
+            "transfer": 0.4441802321500443,
+            "other_handling": 0.01835676551557595,
+            "lookup": 0.0006310401674313773,
+            "verification": 0.17973255534089994
+          },
+          "ref_remote": {
+            "total": 0.9580932836930456,
+            "transfer": 0.4271367595923261,
+            "other_handling": 0.0184533345323741,
+            "lookup": 0.3538816370503597,
+            "verification": 0.1586215525179856
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.002680693244803578,
+            "transfer": -0.0006242573406590179,
+            "other_handling": 0.0006616529852606703,
+            "lookup": 0.0006310401674313773,
+            "verification": -0.003349129056836514
+          },
+          "ref_remote": {
+            "total": 0.31251199727429047,
+            "transfer": -0.017667729898377227,
+            "other_handling": 0.0007582220020588212,
+            "lookup": 0.3538816370503597,
+            "verification": -0.02446013187975085
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 12680,
+          "ref_memory": 12766,
+          "ref_remote": 8552
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 6339.329878947491,
+          "ref_memory": 6381.605351203337,
+          "ref_remote": 4273.85523626829
+        },
+        "median_ms": {
+          "jwt": 0.609792,
+          "ref_memory": 0.6025,
+          "ref_remote": 0.9124585
+        },
+        "p95_ms": {
+          "jwt": 0.914542,
+          "ref_memory": 0.910042,
+          "ref_remote": 1.310458
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.6298309746845426,
+            "transfer": 0.4165987096214511,
+            "other_handling": 0.01769944471608833,
+            "lookup": 0.0,
+            "verification": 0.19553282034700314
+          },
+          "ref_memory": {
+            "total": 0.6256260775497415,
+            "transfer": 0.4043643889237036,
+            "other_handling": 0.018471147814507285,
+            "lookup": 0.000658269309102303,
+            "verification": 0.20213227150242835
+          },
+          "ref_remote": {
+            "total": 0.9343329479653882,
+            "transfer": 0.3932900042095416,
+            "other_handling": 0.018429652595884003,
+            "lookup": 0.33300790177736206,
+            "verification": 0.18960538938260055
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.0042048971348011,
+            "transfer": -0.012234320697747547,
+            "other_handling": 0.0007717030984189556,
+            "lookup": 0.000658269309102303,
+            "verification": 0.006599451155425207
+          },
+          "ref_remote": {
+            "total": 0.3045019732808456,
+            "transfer": -0.023308705411909547,
+            "other_handling": 0.0007302078797956739,
+            "lookup": 0.33300790177736206,
+            "verification": -0.005927430964402597
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 12854,
+          "ref_memory": 12943,
+          "ref_remote": 8697
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 6425.755009966819,
+          "ref_memory": 6469.933198921983,
+          "ref_remote": 4347.061303111715
+        },
+        "median_ms": {
+          "jwt": 0.599958,
+          "ref_memory": 0.596875,
+          "ref_remote": 0.899833
+        },
+        "p95_ms": {
+          "jwt": 0.916416,
+          "ref_memory": 0.901333,
+          "ref_remote": 1.28
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.6213291435350863,
+            "transfer": 0.4179450610704839,
+            "other_handling": 0.01762889925315077,
+            "lookup": 0.0,
+            "verification": 0.18575518321145168
+          },
+          "ref_memory": {
+            "total": 0.6170608799351001,
+            "transfer": 0.40858539542609906,
+            "other_handling": 0.018342862473924127,
+            "lookup": 0.0006490978134899174,
+            "verification": 0.18948352422158696
+          },
+          "ref_remote": {
+            "total": 0.9187521687938369,
+            "transfer": 0.39084737771645395,
+            "other_handling": 0.01832070461078533,
+            "lookup": 0.32732876244682074,
+            "verification": 0.18225532401977695
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.004268263599986222,
+            "transfer": -0.00935966564438484,
+            "other_handling": 0.0007139632207733559,
+            "lookup": 0.0006490978134899174,
+            "verification": 0.0037283410101352776
+          },
+          "ref_remote": {
+            "total": 0.29742302525875064,
+            "transfer": -0.027097683354029956,
+            "other_handling": 0.0006918053576345576,
+            "lookup": 0.32732876244682074,
+            "verification": -0.0034998591916747257
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 14050,
+          "ref_memory": 15083,
+          "ref_remote": 9607
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 7023.645458366949,
+          "ref_memory": 7539.73083231912,
+          "ref_remote": 4802.266617056808
+        },
+        "median_ms": {
+          "jwt": 0.54775,
+          "ref_memory": 0.509958,
+          "ref_remote": 0.812708
+        },
+        "p95_ms": {
+          "jwt": 0.830667,
+          "ref_memory": 0.779666,
+          "ref_remote": 1.165333
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.5683596502491103,
+            "transfer": 0.3907693310320285,
+            "other_handling": 0.019002669893238434,
+            "lookup": 0.0,
+            "verification": 0.15858764932384342
+          },
+          "ref_memory": {
+            "total": 0.5293757401047536,
+            "transfer": 0.35392020625870185,
+            "other_handling": 0.019519719949612147,
+            "lookup": 0.0006474011801365777,
+            "verification": 0.15528841271630314
+          },
+          "ref_remote": {
+            "total": 0.8315930343499531,
+            "transfer": 0.360154165400229,
+            "other_handling": 0.018894855938378266,
+            "lookup": 0.31226792182783386,
+            "verification": 0.14027609118351203
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.03898391014435665,
+            "transfer": -0.036849124773326636,
+            "other_handling": 0.0005170500563737128,
+            "lookup": 0.0006474011801365777,
+            "verification": -0.003299236607540279
+          },
+          "ref_remote": {
+            "total": 0.26323338410084285,
+            "transfer": -0.0306151656317995,
+            "other_handling": -0.00010781395486016837,
+            "lookup": 0.31226792182783386,
+            "verification": -0.01831155814033139
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 7135,
+          "ref_memory": 8589,
+          "ref_remote": 6207
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 3566.044014540237,
+          "ref_memory": 4292.84045871053,
+          "ref_remote": 3101.936687499203
+        },
+        "median_ms": {
+          "jwt": 1.09875,
+          "ref_memory": 0.916959,
+          "ref_remote": 1.24475
+        },
+        "p95_ms": {
+          "jwt": 1.618458,
+          "ref_memory": 1.357125,
+          "ref_remote": 1.908666
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 1.1201371220742817,
+            "transfer": 0.9690749114225647,
+            "other_handling": 0.020612476804484935,
+            "lookup": 0.0,
+            "verification": 0.13044973384723196
+          },
+          "ref_memory": {
+            "total": 0.93047249970893,
+            "transfer": 0.778803651065316,
+            "other_handling": 0.02096303457911282,
+            "lookup": 0.0006634956339504017,
+            "verification": 0.1300423184305507
+          },
+          "ref_remote": {
+            "total": 1.2875198730465605,
+            "transfer": 0.5810457149991944,
+            "other_handling": 0.020926415015305302,
+            "lookup": 0.5560141203479941,
+            "verification": 0.12953362268406637
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.18966462236535175,
+            "transfer": -0.19027126035724873,
+            "other_handling": 0.000350557774627884,
+            "lookup": 0.0006634956339504017,
+            "verification": -0.00040741541668126713
+          },
+          "ref_remote": {
+            "total": 0.16738275097227873,
+            "transfer": -0.3880291964233703,
+            "other_handling": 0.0003139382108203678,
+            "lookup": 0.5560141203479941,
+            "verification": -0.0009161111631655894
+          }
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 3755,
+          "ref_memory": 4643,
+          "ref_remote": 3666
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 1876.267526768354,
+          "ref_memory": 2319.75621953185,
+          "ref_remote": 1831.7762205313709
+        },
+        "median_ms": {
+          "jwt": 2.108375,
+          "ref_memory": 1.707375,
+          "ref_remote": 2.1606455
+        },
+        "p95_ms": {
+          "jwt": 3.084959,
+          "ref_memory": 2.547833,
+          "ref_remote": 3.136042
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 2.129691183488682,
+            "transfer": 1.7789506561917443,
+            "other_handling": 0.024899341677762983,
+            "lookup": 0.0,
+            "verification": 0.32584118561917447
+          },
+          "ref_memory": {
+            "total": 1.7217895390911049,
+            "transfer": 1.3826304594012493,
+            "other_handling": 0.02475390264914926,
+            "lookup": 0.0006178979108335128,
+            "verification": 0.3137872791298729
+          },
+          "ref_remote": {
+            "total": 2.1803739929078017,
+            "transfer": 0.9191659705400982,
+            "other_handling": 0.024344786415711948,
+            "lookup": 0.9004405679214402,
+            "verification": 0.336422668030551
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.4079016443975769,
+            "transfer": -0.396320196790495,
+            "other_handling": -0.00014543902861372318,
+            "lookup": 0.0006178979108335128,
+            "verification": -0.012053906489301547
+          },
+          "ref_remote": {
+            "total": 0.050682809419119845,
+            "transfer": -0.8597846856516461,
+            "other_handling": -0.0005545552620510354,
+            "lookup": 0.9004405679214402,
+            "verification": 0.01058148241137652
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 4880,
+          "ref_memory": 4951,
+          "ref_remote": 3483
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2439.7560243975604,
+          "ref_memory": 2475.252474752525,
+          "ref_remote": 1741.238814177873
+        },
+        "median_ms": {
+          "jwt": 0.4,
+          "ref_memory": 0.4,
+          "ref_remote": 0.6
+        },
+        "p95_ms": {
+          "jwt": 0.5,
+          "ref_memory": 0.5,
+          "ref_remote": 0.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.4096311475409836,
+            "transfer": 0.33931659282786886,
+            "other_handling": 0.019245575,
+            "lookup": 0.0,
+            "verification": 0.051068979713114755
+          },
+          "ref_memory": {
+            "total": 0.40355483740658454,
+            "transfer": 0.33333190870531204,
+            "other_handling": 0.01954055443344779,
+            "lookup": 0.0006183152898404363,
+            "verification": 0.05006405897798425
+          },
+          "ref_remote": {
+            "total": 0.5739305196669539,
+            "transfer": 0.3583619069767442,
+            "other_handling": 0.02073093970714901,
+            "lookup": 0.14415851851851852,
+            "verification": 0.050679154464542055
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.006076310134399077,
+            "transfer": -0.005984684122556816,
+            "other_handling": 0.00029497943344778885,
+            "lookup": 0.0006183152898404363,
+            "verification": -0.0010049207351305045
+          },
+          "ref_remote": {
+            "total": 0.16429937212597023,
+            "transfer": 0.019045314148875336,
+            "other_handling": 0.001485364707149009,
+            "lookup": 0.14415851851851852,
+            "verification": -0.0003898252485727005
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 4188,
+          "ref_memory": 4553,
+          "ref_remote": 3397
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2093.790620937906,
+          "ref_memory": 2276.5,
+          "ref_remote": 1698.5
+        },
+        "median_ms": {
+          "jwt": 0.5,
+          "ref_memory": 0.4,
+          "ref_remote": 0.6
+        },
+        "p95_ms": {
+          "jwt": 0.6,
+          "ref_memory": 0.5,
+          "ref_remote": 0.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.477316141356256,
+            "transfer": 0.3913174684813754,
+            "other_handling": 0.019041307545367717,
+            "lookup": 0.0,
+            "verification": 0.0669573653295129
+          },
+          "ref_memory": {
+            "total": 0.43898528442784973,
+            "transfer": 0.3512770726993191,
+            "other_handling": 0.019635869097298485,
+            "lookup": 0.0006336365034043488,
+            "verification": 0.06743870612782782
+          },
+          "ref_remote": {
+            "total": 0.5883720930232558,
+            "transfer": 0.35589285045628494,
+            "other_handling": 0.020540875183985872,
+            "lookup": 0.14305301677951132,
+            "verification": 0.06888535060347364
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.038330856928406265,
+            "transfer": -0.04004039578205626,
+            "other_handling": 0.0005945615519307688,
+            "lookup": 0.0006336365034043488,
+            "verification": 0.0004813407983149248
+          },
+          "ref_remote": {
+            "total": 0.11105595166699977,
+            "transfer": -0.03542461802509045,
+            "other_handling": 0.0014995676386181551,
+            "lookup": 0.14305301677951132,
+            "verification": 0.00192798527396075
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 4346,
+          "ref_memory": 4615,
+          "ref_remote": 3435
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2172.674098885167,
+          "ref_memory": 2307.384630768461,
+          "ref_remote": 1717.3282671732827
+        },
+        "median_ms": {
+          "jwt": 0.4,
+          "ref_memory": 0.4,
+          "ref_remote": 0.6
+        },
+        "p95_ms": {
+          "jwt": 0.5,
+          "ref_memory": 0.5,
+          "ref_remote": 0.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.45998619420156467,
+            "transfer": 0.375062432121491,
+            "other_handling": 0.018906937873907043,
+            "lookup": 0.0,
+            "verification": 0.0660168242061666
+          },
+          "ref_memory": {
+            "total": 0.4330877573131094,
+            "transfer": 0.3464852277356446,
+            "other_handling": 0.019581258071505958,
+            "lookup": 0.0006283757313109426,
+            "verification": 0.06639289577464788
+          },
+          "ref_remote": {
+            "total": 0.5818922852983988,
+            "transfer": 0.35262434934497816,
+            "other_handling": 0.020494969141193597,
+            "lookup": 0.1413730669577875,
+            "verification": 0.06739989985443959
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.02689843688845528,
+            "transfer": -0.028577204385846378,
+            "other_handling": 0.0006743201975989155,
+            "lookup": 0.0006283757313109426,
+            "verification": 0.00037607156848128154
+          },
+          "ref_remote": {
+            "total": 0.12190609109683409,
+            "transfer": -0.022438082776512824,
+            "other_handling": 0.0015880312672865542,
+            "lookup": 0.1413730669577875,
+            "verification": 0.0013830756482729883
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 4131,
+          "ref_memory": 4744,
+          "ref_remote": 3505
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2065.0869826034796,
+          "ref_memory": 2372.0,
+          "ref_remote": 1752.0619845038739
+        },
+        "median_ms": {
+          "jwt": 0.5,
+          "ref_memory": 0.4,
+          "ref_remote": 0.6
+        },
+        "p95_ms": {
+          "jwt": 0.6,
+          "ref_memory": 0.5,
+          "ref_remote": 0.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.4838295812152021,
+            "transfer": 0.4079871987412249,
+            "other_handling": 0.019344003146937787,
+            "lookup": 0.0,
+            "verification": 0.05649837932703946
+          },
+          "ref_memory": {
+            "total": 0.4211424957841484,
+            "transfer": 0.34285286403878584,
+            "other_handling": 0.020364497259696458,
+            "lookup": 0.0006169413996627319,
+            "verification": 0.05730819308600338
+          },
+          "ref_remote": {
+            "total": 0.5704707560627674,
+            "transfer": 0.34653596490727534,
+            "other_handling": 0.021872811412268187,
+            "lookup": 0.1445688,
+            "verification": 0.05749317974322397
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.06268708543105367,
+            "transfer": -0.06513433470243907,
+            "other_handling": 0.0010204941127586707,
+            "lookup": 0.0006169413996627319,
+            "verification": 0.000809813758963919
+          },
+          "ref_remote": {
+            "total": 0.08664117484756534,
+            "transfer": -0.06145123383394957,
+            "other_handling": 0.0025288082653304005,
+            "lookup": 0.1445688,
+            "verification": 0.0009948004161845075
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 3199,
+          "ref_memory": 3825,
+          "ref_remote": 2889
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 1599.42002899855,
+          "ref_memory": 1912.117576484703,
+          "ref_remote": 1444.1389652586852
+        },
+        "median_ms": {
+          "jwt": 0.6,
+          "ref_memory": 0.5,
+          "ref_remote": 0.7
+        },
+        "p95_ms": {
+          "jwt": 0.7,
+          "ref_memory": 0.6,
+          "ref_remote": 0.8
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.6248515160987809,
+            "transfer": 0.479218611753673,
+            "other_handling": 0.022228047202250703,
+            "lookup": 0.0,
+            "verification": 0.12340485714285715
+          },
+          "ref_memory": {
+            "total": 0.522797385620915,
+            "transfer": 0.37592685986928104,
+            "other_handling": 0.022745827973856207,
+            "lookup": 0.0006351960784313726,
+            "verification": 0.12348950169934642
+          },
+          "ref_remote": {
+            "total": 0.6922464520595362,
+            "transfer": 0.3815706012461059,
+            "other_handling": 0.02237100934579439,
+            "lookup": 0.16792767185877466,
+            "verification": 0.12037716960886119
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.10205413047786582,
+            "transfer": -0.10329175188439194,
+            "other_handling": 0.0005177807716055041,
+            "lookup": 0.0006351960784313726,
+            "verification": 8.464455648926617e-05
+          },
+          "ref_remote": {
+            "total": 0.0673949359607553,
+            "transfer": -0.09764801050756705,
+            "other_handling": 0.0001429621435436873,
+            "lookup": 0.16792767185877466,
+            "verification": -0.0030276875339959597
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 2198,
+          "ref_memory": 2841,
+          "ref_remote": 2198
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 1098.8901109889011,
+          "ref_memory": 1420.1449637590601,
+          "ref_remote": 1098.9450527473625
+        },
+        "median_ms": {
+          "jwt": 0.9,
+          "ref_memory": 0.7,
+          "ref_remote": 0.9
+        },
+        "p95_ms": {
+          "jwt": 1.0,
+          "ref_memory": 0.8,
+          "ref_remote": 1.0
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.9096906278434941,
+            "transfer": 0.5758160514103731,
+            "other_handling": 0.025569462238398545,
+            "lookup": 0.0,
+            "verification": 0.3083051141947225
+          },
+          "ref_memory": {
+            "total": 0.7039422738472368,
+            "transfer": 0.36952730130235834,
+            "other_handling": 0.025886410418866596,
+            "lookup": 0.0006442917986624428,
+            "verification": 0.30788427032734955
+          },
+          "ref_remote": {
+            "total": 0.909417652411283,
+            "transfer": 0.3862525332120109,
+            "other_handling": 0.02508181483166515,
+            "lookup": 0.1819214922656961,
+            "verification": 0.3161618121019108
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.20574835399625724,
+            "transfer": -0.20628875010801473,
+            "other_handling": 0.00031694818046805115,
+            "lookup": 0.0006442917986624428,
+            "verification": -0.0004208438673729553
+          },
+          "ref_remote": {
+            "total": -0.00027297543221105336,
+            "transfer": -0.18956351819836215,
+            "other_handling": -0.00048764740673339427,
+            "lookup": 0.1819214922656961,
+            "verification": 0.007856697907188293
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8298,
+          "ref_memory": 8224,
+          "ref_remote": 6172
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4113.418926287612,
+          "ref_memory": 4102.768770266899,
+          "ref_remote": 3085.382923415317
+        },
+        "median_ms": {
+          "jwt": 0.9,
+          "ref_memory": 0.9,
+          "ref_remote": 1.2
+        },
+        "p95_ms": {
+          "jwt": 1.3,
+          "ref_memory": 1.3,
+          "ref_remote": 1.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.9720414557724754,
+            "transfer": 0.7805667556037599,
+            "other_handling": 0.022138197276452155,
+            "lookup": 0.0,
+            "verification": 0.1693365028922632
+          },
+          "ref_memory": {
+            "total": 0.9745379377431906,
+            "transfer": 0.7777785408560312,
+            "other_handling": 0.023286860165369648,
+            "lookup": 0.0007395189688715954,
+            "verification": 0.1727330177529183
+          },
+          "ref_remote": {
+            "total": 1.295755022683085,
+            "transfer": 0.6825218564484771,
+            "other_handling": 0.022534249837977964,
+            "lookup": 0.4393369740764744,
+            "verification": 0.15136194232015554
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": 0.0024964819707152808,
+            "transfer": -0.0027882147477287234,
+            "other_handling": 0.0011486628889174934,
+            "lookup": 0.0007395189688715954,
+            "verification": 0.003396514860655092
+          },
+          "ref_remote": {
+            "total": 0.3237135669106096,
+            "transfer": -0.0980448991552828,
+            "other_handling": 0.0003960525615258094,
+            "lookup": 0.4393369740764744,
+            "verification": -0.017974560572107667
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8321,
+          "ref_memory": 7975,
+          "ref_remote": 6177
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4152.610040922248,
+          "ref_memory": 3986.5033741564607,
+          "ref_remote": 3087.882423515297
+        },
+        "median_ms": {
+          "jwt": 0.9,
+          "ref_memory": 0.9,
+          "ref_remote": 1.2
+        },
+        "p95_ms": {
+          "jwt": 1.3,
+          "ref_memory": 1.4,
+          "ref_remote": 1.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.9628890758322317,
+            "transfer": 0.7447357538757361,
+            "other_handling": 0.021987389616632616,
+            "lookup": 0.0,
+            "verification": 0.19616593233986301
+          },
+          "ref_memory": {
+            "total": 1.0027586206896553,
+            "transfer": 0.7777197052037618,
+            "other_handling": 0.024044884764890282,
+            "lookup": 0.0007808630721003135,
+            "verification": 0.20021316764890285
+          },
+          "ref_remote": {
+            "total": 1.2946737898656306,
+            "transfer": 0.6622914953861098,
+            "other_handling": 0.02264824477901894,
+            "lookup": 0.4196213888619071,
+            "verification": 0.19011266083859477
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": 0.039869544857423556,
+            "transfer": 0.032983951328025674,
+            "other_handling": 0.002057495148257666,
+            "lookup": 0.0007808630721003135,
+            "verification": 0.004047235309039832
+          },
+          "ref_remote": {
+            "total": 0.33178471403339893,
+            "transfer": -0.08244425848962633,
+            "other_handling": 0.000660855162386325,
+            "lookup": 0.4196213888619071,
+            "verification": -0.006053271501268248
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8397,
+          "ref_memory": 8465,
+          "ref_remote": 6255
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4197.870319452082,
+          "ref_memory": 4231.442139465134,
+          "ref_remote": 3126.7183204198946
+        },
+        "median_ms": {
+          "jwt": 0.9,
+          "ref_memory": 0.9,
+          "ref_remote": 1.2
+        },
+        "p95_ms": {
+          "jwt": 1.3,
+          "ref_memory": 1.2,
+          "ref_remote": 1.7
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.9524473026080743,
+            "transfer": 0.7432504052637847,
+            "other_handling": 0.02206399130641896,
+            "lookup": 0.0,
+            "verification": 0.18713290603787067
+          },
+          "ref_memory": {
+            "total": 0.9445835794447726,
+            "transfer": 0.7329044984051979,
+            "other_handling": 0.02282488682811577,
+            "lookup": 0.0007264545776727703,
+            "verification": 0.18812773963378618
+          },
+          "ref_remote": {
+            "total": 1.2784812150279776,
+            "transfer": 0.6633041427657873,
+            "other_handling": 0.022554421103117506,
+            "lookup": 0.41056494404476424,
+            "verification": 0.18205770711430855
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.00786372316330175,
+            "transfer": -0.010345906858586829,
+            "other_handling": 0.0007608955216968083,
+            "lookup": 0.0007264545776727703,
+            "verification": 0.000994833595915512
+          },
+          "ref_remote": {
+            "total": 0.3260339124199033,
+            "transfer": -0.07994626249799741,
+            "other_handling": 0.0004904297966985445,
+            "lookup": 0.41056494404476424,
+            "verification": -0.005075198923562119
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 8777,
+          "ref_memory": 9256,
+          "ref_remote": 6787
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 4387.183844846546,
+          "ref_memory": 4626.843289177706,
+          "ref_remote": 3392.8214357128577
+        },
+        "median_ms": {
+          "jwt": 0.8,
+          "ref_memory": 0.8,
+          "ref_remote": 1.1
+        },
+        "p95_ms": {
+          "jwt": 1.2,
+          "ref_memory": 1.1,
+          "ref_remote": 1.5
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 0.9113478409479321,
+            "transfer": 0.734267781588242,
+            "other_handling": 0.023381430329269683,
+            "lookup": 0.0,
+            "verification": 0.15369862903042042
+          },
+          "ref_memory": {
+            "total": 0.8640233362143473,
+            "transfer": 0.6804500784356093,
+            "other_handling": 0.024190378241140884,
+            "lookup": 0.0007418815903197926,
+            "verification": 0.15864099794727746
+          },
+          "ref_remote": {
+            "total": 1.178016796817445,
+            "transfer": 0.6290983453661412,
+            "other_handling": 0.023736681302490056,
+            "lookup": 0.3815561169883601,
+            "verification": 0.1436256531604538
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.04732450473358474,
+            "transfer": -0.05381770315263268,
+            "other_handling": 0.0008089479118712009,
+            "lookup": 0.0007418815903197926,
+            "verification": 0.004942368916857037
+          },
+          "ref_remote": {
+            "total": 0.266668955869513,
+            "transfer": -0.10516943622210084,
+            "other_handling": 0.00035525097322037374,
+            "lookup": 0.3815561169883601,
+            "verification": -0.01007297586996661
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 5629,
+          "ref_memory": 6475,
+          "ref_remote": 5008
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 2813.234044679894,
+          "ref_memory": 3235.882058970515,
+          "ref_remote": 2502.7486256871566
+        },
+        "median_ms": {
+          "jwt": 1.3,
+          "ref_memory": 1.1,
+          "ref_remote": 1.5
+        },
+        "p95_ms": {
+          "jwt": 2.0,
+          "ref_memory": 1.8,
+          "ref_remote": 2.2
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 1.4209806359921833,
+            "transfer": 1.2574298859477704,
+            "other_handling": 0.024335381950612897,
+            "lookup": 0.0,
+            "verification": 0.13921536809379997
+          },
+          "ref_memory": {
+            "total": 1.235057915057915,
+            "transfer": 1.0681459335907337,
+            "other_handling": 0.0243993877992278,
+            "lookup": 0.0006479056370656371,
+            "verification": 0.14186468803088803
+          },
+          "ref_remote": {
+            "total": 1.5968650159744409,
+            "transfer": 0.8284298049121406,
+            "other_handling": 0.024807951477635783,
+            "lookup": 0.6045892937300319,
+            "verification": 0.13903796585463257
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.1859227209342682,
+            "transfer": -0.18928395235703666,
+            "other_handling": 6.400584861490297e-05,
+            "lookup": 0.0006479056370656371,
+            "verification": 0.002649319937088057
+          },
+          "ref_remote": {
+            "total": 0.1758843799822576,
+            "transfer": -0.4290000810356298,
+            "other_handling": 0.0004725695270228862,
+            "lookup": 0.6045892937300319,
+            "verification": -0.00017740223916740128
+          }
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "reference_bytes": 47,
+        "delivered": {
+          "jwt": true,
+          "ref_memory": true,
+          "ref_remote": true
+        },
+        "verified": {
+          "jwt": 3387,
+          "ref_memory": 4033,
+          "ref_remote": 3461
+        },
+        "failed": {
+          "jwt": 0,
+          "ref_memory": 0,
+          "ref_remote": 0
+        },
+        "throughput_rps": {
+          "jwt": 1691.3857677902622,
+          "ref_memory": 2014.8880895283776,
+          "ref_remote": 1728.8575852939707
+        },
+        "median_ms": {
+          "jwt": 2.3,
+          "ref_memory": 1.9,
+          "ref_remote": 2.3
+        },
+        "p95_ms": {
+          "jwt": 3.4,
+          "ref_memory": 3.0,
+          "ref_remote": 3.3
+        },
+        "mean_ms": {
+          "jwt": {
+            "total": 2.3619722468260997,
+            "transfer": 1.9935567670504872,
+            "other_handling": 0.02814414909949808,
+            "lookup": 0.0,
+            "verification": 0.34027133067611454
+          },
+          "ref_memory": {
+            "total": 1.9830647160922392,
+            "transfer": 1.611706060500868,
+            "other_handling": 0.028474208033721797,
+            "lookup": 0.000666281428217208,
+            "verification": 0.34221816612943223
+          },
+          "ref_remote": {
+            "total": 2.311499566599249,
+            "transfer": 1.0533558095926032,
+            "other_handling": 0.02772127853221612,
+            "lookup": 0.900470492921121,
+            "verification": 0.3299519855533083
+          }
+        },
+        "difference_ms": {
+          "ref_memory": {
+            "total": -0.3789075307338605,
+            "transfer": -0.3818507065496193,
+            "other_handling": 0.0003300589342237169,
+            "lookup": 0.000666281428217208,
+            "verification": 0.0019468354533176968
+          },
+          "ref_remote": {
+            "total": -0.05047268022685092,
+            "transfer": -0.940200957457884,
+            "other_handling": -0.0004228705672819598,
+            "lookup": 0.900470492921121,
+            "verification": -0.010319345122806245
+          }
+        }
+      }
+    ],
+    "network_model": [
+      {
+        "algorithm": "RS256",
+        "request_bytes": {
+          "jwt": 1360,
+          "ref": 203
+        },
+        "saved_bytes": 1157,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.09256
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.9256000000000001
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 9.256
+          }
+        ]
+      },
+      {
+        "algorithm": "ES256",
+        "request_bytes": {
+          "jwt": 1104,
+          "ref": 203
+        },
+        "saved_bytes": 901,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.07207999999999999
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.7208
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 7.207999999999998
+          }
+        ]
+      },
+      {
+        "algorithm": "EdDSA",
+        "request_bytes": {
+          "jwt": 1104,
+          "ref": 203
+        },
+        "saved_bytes": 901,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.07207999999999999
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 0.7208
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 7.207999999999998
+          }
+        ]
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "request_bytes": {
+          "jwt": 4251,
+          "ref": 203
+        },
+        "saved_bytes": 4048,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.32384
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 3.2384
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 32.38399999999999
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "request_bytes": {
+          "jwt": 11509,
+          "ref": 203
+        },
+        "saved_bytes": 11306,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 0.90448
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 9.0448
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 90.44800000000001
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "request_bytes": {
+          "jwt": 23818,
+          "ref": 203
+        },
+        "saved_bytes": 23615,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "saved_ms": 11.8892
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "saved_ms": 68.892
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "saved_ms": 288.91999999999996
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": {
+    "limits": {
+      "logs": {
+        "app.log": "limits/logs/app.log.gz",
+        "browser.log": "limits/logs/browser.log.gz",
+        "proxy-access.log": "limits/logs/proxy-access.log.gz",
+        "proxy-error.log": "limits/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "limits/nginx.conf"
+    },
+    "behavior": {
+      "logs": {
+        "app.log": "behavior/logs/app.log.gz",
+        "proxy-access.log": "behavior/logs/proxy-access.log.gz",
+        "proxy-error.log": "behavior/logs/proxy-error.log.gz",
+        "store.log": "behavior/logs/store.log.gz"
+      },
+      "nginx_conf": "behavior/nginx.conf"
+    },
+    "latency": {
+      "jwt": {
+        "load": "latency-jwt/load.json",
+        "raw": "latency-jwt/raw.csv.gz",
+        "logs": {
+          "app.log": "latency-jwt/logs/app.log.gz",
+          "browser.log": "latency-jwt/logs/browser.log.gz",
+          "proxy-access.log": "latency-jwt/logs/proxy-access.log.gz",
+          "proxy-error.log": "latency-jwt/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "latency-jwt/nginx.conf"
+      },
+      "ref_memory": {
+        "load": "latency-ref-memory/load.json",
+        "raw": "latency-ref-memory/raw.csv.gz",
+        "logs": {
+          "app.log": "latency-ref-memory/logs/app.log.gz",
+          "browser.log": "latency-ref-memory/logs/browser.log.gz",
+          "proxy-access.log": "latency-ref-memory/logs/proxy-access.log.gz",
+          "proxy-error.log": "latency-ref-memory/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "latency-ref-memory/nginx.conf"
+      },
+      "ref_remote": {
+        "load": "latency-ref-remote/load.json",
+        "raw": "latency-ref-remote/raw.csv.gz",
+        "logs": {
+          "app.log": "latency-ref-remote/logs/app.log.gz",
+          "browser.log": "latency-ref-remote/logs/browser.log.gz",
+          "proxy-access.log": "latency-ref-remote/logs/proxy-access.log.gz",
+          "proxy-error.log": "latency-ref-remote/logs/proxy-error.log.gz",
+          "store.log": "latency-ref-remote/logs/store.log.gz"
+        },
+        "nginx_conf": "latency-ref-remote/nginx.conf"
+      }
+    }
+  }
+}
