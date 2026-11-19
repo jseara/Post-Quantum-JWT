@@ -16,6 +16,11 @@ token size, so it has the configuration's size but the reference's verification 
 gets its token once, through nginx, before its warm-up and outside the timed window, and then
 sends it on every request, as an Authorization: Bearer header (the default), a `jwt` cookie, or
 the `jwt.<index>.<count>` chunk cookies of S3-02's cookie splitting (transport "split").
+S3-02's reference tokens add the reference carrier, REF_CARRIER ("ref_bearer"), outside the
+load command's choices: each cell gets a 47-byte `ref_` reference from /api/token/reference, and
+sends it as a Bearer header, so the application looks the token up in its reference store before
+it verifies it (run_reference_load). Such a run's raw rows end with lookup_ns, and its latency
+has a fourth server component, lookup, taken out of other_handling.
 
 Every timed request asks the application for its server timings with timing=1, which splits each
 request's client-measured total into three components: verification (the adapter's verify_token
@@ -60,7 +65,8 @@ from scripts.benchmark import environment
 from scripts.rsa_jwt import summarize
 from scripts.token_sizing import (CLAIM_SET_NAMES, claim_set, pad_for_target, padded_claims,
                                   token_bytes)
-from scripts.transport_app import COOKIE_NAME, chunk_cookie_line_bytes, split_token
+from scripts.transport_app import (COOKIE_NAME, REF_BYTES, REFERENCE_PATH,
+                                   chunk_cookie_line_bytes, split_token)
 from scripts.transport_stack import (BROWSER_CHANNEL, PROXY_MARKER, check_timeout,
                                      check_upstream_keepalive, http_get, load_manifest,
                                      manifest_layers, nginx_size)
@@ -81,6 +87,9 @@ RAW_FIELDS = ("client", "concurrency", "algorithm", "variant", "signed_with", "p
               "verify_ns", "status", "verified", "error")
 RAW_FILE = "raw.csv.gz"
 RESULT_FILE = "load.json"
+# A reference run's extra raw column and latency component: the application's REF_STORE.get.
+LOOKUP_FIELD = "lookup_ns"
+REF_LATENCY_COMPONENTS = ("total", "transfer", "other_handling", "lookup", "verification")
 # The last requests of a run are near the end of proxy-access.log; read only that much of it.
 LOG_TAIL_BYTES = 256 * 1024
 
@@ -184,6 +193,10 @@ class Carrier:
     header_name: str  # The request header the direct client sends.
     header_prefix: str  # Text before the token in that header's value.
     issue_delivery: str  # How the browser asks /api/token/issue to deliver the token.
+    # Class attributes, not fields: where the untimed issue step asks for the cell's credential,
+    # and the key of the JSON body that holds it with delivery=body.
+    issue_path = ISSUE_PATH
+    issued_key = "token"
 
     def direct_headers(self, token: str) -> dict:
         """Request headers that carry the token from the direct client."""
@@ -219,11 +232,36 @@ class SplitCarrier(Carrier):
         return chunk_cookie_line_bytes(token_size)
 
 
+@dataclass(frozen=True)
+class RefCarrier(Carrier):
+    """S3-02's reference tokens: a ref_ reference, not the token, in an Authorization: Bearer
+    header.
+
+    Both clients get the reference in the JSON body of /api/token/reference (delivery=body), and
+    the application looks the token up by it before verifying; the header line is the same 71
+    bytes whatever the token's size.
+    """
+
+    issue_path = REFERENCE_PATH
+    issued_key = "reference"
+
+    def header_line_bytes(self, token_size: int) -> int:
+        """Bytes of the Authorization line that carries a reference, CRLF included: always 71."""
+        return len(f"{self.header_name}: {self.header_prefix}\r\n") + REF_BYTES
+
+
 CARRIERS = {
     "bearer": Carrier("bearer", "Authorization", "Bearer ", issue_delivery="body"),
     "cookie": Carrier("cookie", "Cookie", f"{COOKIE_NAME}=", issue_delivery="cookie"),
     "split": SplitCarrier("split", "Cookie", "", issue_delivery="split"),
 }
+# Not one of the load command's transports: run_reference_load measures it.
+REF_CARRIER = RefCarrier("ref_bearer", "Authorization", "Bearer ", issue_delivery="body")
+
+
+def carrier_of(transport: str) -> Carrier:
+    """The carrier of a run's transport: one of CARRIERS, or REF_CARRIER for a reference run."""
+    return REF_CARRIER if transport == REF_CARRIER.name else CARRIERS[transport]
 
 
 @dataclass(frozen=True)
@@ -468,18 +506,19 @@ class DirectClient:
         self.stop = threading.Event()  # Set when the run is interrupted.
 
     def issue(self, plan: CellPlan) -> Issue:
-        """Get the cell's token in the JSON body through nginx; this step is not timed."""
-        url, _ = nonce_url(self.stack.proxy_url, ISSUE_PATH, alg=plan.signed_with,
+        """Get the cell's token (or, for REF_CARRIER, its reference) in the JSON body through
+        nginx; this step is not timed."""
+        url, _ = nonce_url(self.stack.proxy_url, self.carrier.issue_path, alg=plan.signed_with,
                            delivery="body", claims=self.settings["claims"], pad=str(plan.pad))
         try:
             status, _, body = http_get(url, timeout=self.settings["timeout"])
         except (OSError, http.client.HTTPException) as error:
             return Issue(None, False, f"no response: {type(error).__name__}: {error}")
-        token = (json_object(body) or {}).get("token")
+        token = (json_object(body) or {}).get(self.carrier.issued_key)
         if status != 200:
             return Issue(status, False, f"the issue request got status {status}")
         if not isinstance(token, str):
-            return Issue(status, False, "the issue response carried no token")
+            return Issue(status, False, f"the issue response carried no {self.carrier.issued_key}")
         return Issue(status, True, token=token)
 
     def measure(self, plan: CellPlan, nonce_prefix: str) -> tuple[Issue, list[Sample]]:
@@ -597,8 +636,8 @@ class BrowserClient:
         page_status, page_error = load_test_page(page, page_url, timeout)
         if page_status != 200:
             return Issue(None, False, f"the test page returned {page_status or page_error}")
-        url, nonce = nonce_url(self.stack.proxy_url, ISSUE_PATH, alg=plan.signed_with,
-                               delivery=self.carrier.issue_delivery,
+        url, nonce = nonce_url(self.stack.proxy_url, self.carrier.issue_path,
+                               alg=plan.signed_with, delivery=self.carrier.issue_delivery,
                                claims=self.settings["claims"], pad=str(plan.pad))
         reply = send_fetch(page, url, nonce, timeout)
         cookie_names = [cookie["name"] for cookie in context.cookies()]
@@ -617,9 +656,10 @@ class BrowserClient:
             return Issue(reply.status, True)
         if self.carrier.issue_delivery == "split":
             return split_issue(reply, cookie_names)
-        token = (reply.body or {}).get("token")
+        token = (reply.body or {}).get(self.carrier.issued_key)
         if not isinstance(token, str):
-            return Issue(reply.status, False, "the issue response carried no token")
+            return Issue(reply.status, False,
+                         f"the issue response carried no {self.carrier.issued_key}")
         return Issue(reply.status, True, token=token)
 
     def run_loop(self, page, plan: CellPlan, issue: Issue, nonce_prefix: str) -> list[Sample]:
@@ -665,7 +705,7 @@ def started_clients(stack, settings: dict) -> Iterator[tuple[dict, dict | None]]
     Headless Chromium is launched only when the browser client runs, and closed on exit.
     Playwright errors become RuntimeError("browser: ...").
     """
-    carrier = CARRIERS[settings["transport"]]
+    carrier = carrier_of(settings["transport"])
     clients = {}
     if "direct" in settings["clients"]:
         clients["direct"] = DirectClient(stack, carrier, settings)
@@ -709,25 +749,44 @@ def server_timing(body: dict | None) -> tuple[int | None, int | None]:
             verify_ns if type(verify_ns) is int else None)
 
 
+def lookup_timing(body: dict | None) -> int | None:
+    """Return lookup_ns from a verify body's timing object, or None."""
+    timing = (body or {}).get("timing")
+    lookup_ns = timing.get(LOOKUP_FIELD) if isinstance(timing, dict) else None
+    return lookup_ns if type(lookup_ns) is int else None
+
+
 def raw_row(plan: CellPlan, sample: Sample, transport: str) -> dict:
-    """One raw row (RAW_FIELDS, in order) for one measured request."""
+    """One raw row (RAW_FIELDS, in order) for one measured request; a reference run's row ends
+    with lookup_ns."""
     handler_ns, verify_ns = server_timing(sample.body)
-    return {"client": plan.client, "concurrency": plan.concurrency, "algorithm": plan.algorithm,
-            "variant": plan.variant, "signed_with": plan.signed_with, "pad": plan.pad,
-            "token_bytes": plan.token_bytes, "worker": sample.worker, "sequence": sample.sequence,
-            "nonce": sample.nonce, "start_ns": sample.start_ns, "total_ns": sample.total_ns,
-            "handler_ns": handler_ns, "verify_ns": verify_ns, "status": sample.status,
-            "verified": is_verified(sample, plan, transport), "error": sample.error}
+    row = {"client": plan.client, "concurrency": plan.concurrency, "algorithm": plan.algorithm,
+           "variant": plan.variant, "signed_with": plan.signed_with, "pad": plan.pad,
+           "token_bytes": plan.token_bytes, "worker": sample.worker, "sequence": sample.sequence,
+           "nonce": sample.nonce, "start_ns": sample.start_ns, "total_ns": sample.total_ns,
+           "handler_ns": handler_ns, "verify_ns": verify_ns, "status": sample.status,
+           "verified": is_verified(sample, plan, transport), "error": sample.error}
+    if transport == REF_CARRIER.name:
+        row[LOOKUP_FIELD] = lookup_timing(sample.body)
+    return row
 
 
 def component_ns(row: dict) -> dict[str, int]:
-    """Split one verified request's total into transfer, other handling, and verification."""
-    if row["handler_ns"] is None or row["verify_ns"] is None:
+    """Split one verified request's total into transfer, other handling, and verification, and
+    for a reference run's row also the lookup, which is taken out of other handling."""
+    if (row["handler_ns"] is None or row["verify_ns"] is None
+            or (LOOKUP_FIELD in row and row[LOOKUP_FIELD] is None)):
         raise RuntimeError(f"application: the verify response for nonce {row['nonce']} has no "
                            "timing; the application must support timing=1")
+    if LOOKUP_FIELD not in row:
+        return {"total": row["total_ns"],
+                "transfer": row["total_ns"] - row["handler_ns"],
+                "other_handling": row["handler_ns"] - row["verify_ns"],
+                "verification": row["verify_ns"]}
     return {"total": row["total_ns"],
             "transfer": row["total_ns"] - row["handler_ns"],
-            "other_handling": row["handler_ns"] - row["verify_ns"],
+            "other_handling": row["handler_ns"] - row["verify_ns"] - row[LOOKUP_FIELD],
+            "lookup": row[LOOKUP_FIELD],
             "verification": row["verify_ns"]}
 
 
@@ -737,12 +796,13 @@ def describe_ns(samples: list[int]) -> dict:
 
 
 def latency_summary(rows: list[dict]) -> dict | None:
-    """Summarize each latency component over a cell's verified rows; None if none verified."""
+    """Summarize each latency component (LATENCY_COMPONENTS, or REF_LATENCY_COMPONENTS for a
+    reference run) over a cell's verified rows; None if none verified."""
     components = [component_ns(row) for row in rows if row["verified"]]
     if not components:
         return None
     return {name: describe_ns([values[name] for values in components])
-            for name in LATENCY_COMPONENTS}
+            for name in components[0]}
 
 
 def cell_entry(plan: CellPlan, settings: dict, issue: Issue, rows: list[dict],
@@ -754,6 +814,9 @@ def cell_entry(plan: CellPlan, settings: dict, issue: Issue, rows: list[dict],
                         if rows else 0.0)
     first_verified = next((sample for sample, row in zip(samples, rows) if row["verified"]), None)
     received = ((first_verified.body or {}).get("received") or {}) if first_verified else {}
+    carrier = carrier_of(settings["transport"])
+    # A reference run's cells also say how long the reference itself is.
+    reference = {"reference_bytes": REF_BYTES} if carrier is REF_CARRIER else {}
     return {
         "client": plan.client,
         "concurrency": plan.concurrency,
@@ -763,6 +826,7 @@ def cell_entry(plan: CellPlan, settings: dict, issue: Issue, rows: list[dict],
         "claims": settings["claims"],
         "pad": plan.pad,
         "token_bytes": plan.token_bytes,
+        **reference,
         "issue": issue.entry(),
         "requests": len(rows),
         "verified": verified,
@@ -772,7 +836,7 @@ def cell_entry(plan: CellPlan, settings: dict, issue: Issue, rows: list[dict],
         "throughput_rps": verified / measured_seconds if measured_seconds else 0.0,
         "latency": latency_summary(rows),
         "bytes": {
-            "header_line": CARRIERS[settings["transport"]].header_line_bytes(plan.token_bytes),
+            "header_line": carrier.header_line_bytes(plan.token_bytes),
             "app_received_headers": received.get("header_bytes"),
             "response_body": first_verified.body_bytes if first_verified else None,
         },
@@ -884,7 +948,7 @@ def direct_request_bytes(proxy_url: str, carrier: Carrier, token_size: int) -> i
 def network_model(settings: dict, proxy_url: str) -> dict:
     """Modeled upload time of each configuration's request at every profile, and its difference
     from the reference's; calculated, not measured."""
-    carrier, claims = CARRIERS[settings["transport"]], claim_set(settings["claims"])
+    carrier, claims = carrier_of(settings["transport"]), claim_set(settings["claims"])
     # Each configuration's token cell; it does not depend on which clients ran.
     sizes = {name: direct_request_bytes(proxy_url, carrier, token_bytes(name, claims))
              for name in settings["algorithms"]}
@@ -985,6 +1049,52 @@ def run_load(stack, algorithms: Sequence[str] | None = None, transport: str = "b
     settings = checked_settings(algorithms, transport, clients, concurrency, duration, warmup,
                                 claims, reference, size_controls, timeout, proxy_buffers,
                                 header_buffers, upstream_keepalive)
+    return measure_load(stack, settings)
+
+
+def stack_upstream_keepalive(stack, upstream_keepalive: int | None) -> int | None:
+    """The upstream_keepalive to record: the given one, or the stack's own when None.
+
+    Raises ValueError when both are given and differ, so the record always matches the stack.
+    """
+    stack_keepalive = getattr(stack, "upstream_keepalive", None)
+    if upstream_keepalive is None:
+        return stack_keepalive
+    if stack_keepalive is not None and upstream_keepalive != stack_keepalive:
+        raise ValueError(f"upstream_keepalive {upstream_keepalive!r} does not match the stack's "
+                         f"{stack_keepalive!r}")
+    return upstream_keepalive
+
+
+def run_reference_load(stack, algorithms: Sequence[str] | None = None,
+                       clients: Sequence[str] | None = None, concurrency: Sequence[int] = (1, 4),
+                       duration: float = 5.0, warmup: float = 1.0, claims: str = "minimal",
+                       reference: str = "ES256", size_controls: bool = True,
+                       timeout: float = 60.0, proxy_buffers: str | None = None,
+                       header_buffers: str | None = None,
+                       upstream_keepalive: int | None = None) -> dict:
+    """Measure the workload with REF_CARRIER: a Bearer reference instead of the token.
+
+    Takes run_load's arguments except transport, checks them as run_load checks a Bearer run,
+    and returns what run_load returns, with settings.transport "ref_bearer" and
+    settings.ref_store, the stack's store ("memory" or "remote"). Its raw rows end with
+    lookup_ns, and each verified cell's latency has a lookup component. write_load_results saves
+    it; the load command does not take ref_bearer, so `load --settings` cannot repeat it.
+    """
+    upstream_keepalive = stack_upstream_keepalive(stack, upstream_keepalive)
+    settings = checked_settings(algorithms, "bearer", clients, concurrency, duration, warmup,
+                                claims, reference, size_controls, timeout, proxy_buffers,
+                                header_buffers, upstream_keepalive)
+    settings = {**settings, "transport": REF_CARRIER.name,
+                "ref_store": getattr(stack, "ref_store", "memory")}
+    return measure_load(stack, settings)
+
+
+def measure_load(stack, settings: dict) -> dict:
+    """Measure every cell of checked settings through the stack; run_load's result.
+
+    Raises RuntimeError when the browser client runs and Playwright is missing or fails.
+    """
     if "browser" in settings["clients"]:
         try:
             import playwright.sync_api  # noqa: F401  Only checks that it can be imported.
@@ -1046,14 +1156,15 @@ def gzip_writer(file) -> gzip.GzipFile:
     return gzip.GzipFile(filename="", mode="wb", fileobj=file, mtime=0)
 
 
-def write_raw_csv(raw: list[dict], target: Path) -> None:
-    """Write the raw rows as a gzip-compressed CSV with RAW_FIELDS as its header."""
+def write_raw_csv(raw: list[dict], target: Path,
+                  fields: Sequence[str] = RAW_FIELDS) -> None:
+    """Write the raw rows as a gzip-compressed CSV with fields (RAW_FIELDS) as its header."""
     with target.open("wb") as file:
         with io.TextIOWrapper(gzip_writer(file), encoding="utf-8", newline="") as text:
             writer = csv.writer(text)
-            writer.writerow(RAW_FIELDS)
+            writer.writerow(fields)
             for row in raw:
-                writer.writerow([csv_field(row[field]) for field in RAW_FIELDS])
+                writer.writerow([csv_field(row[field]) for field in fields])
 
 
 def save_logs(log_dir: Path, target_dir: Path) -> dict[str, str]:
@@ -1074,14 +1185,18 @@ def write_load_results(result: dict, output_dir: Path) -> Path:
 
     load.json is the result without its raw rows, plus recorded_utc and evidence, which names
     every saved file. Logs are compressed because a saved result is evidence rather than a
-    runtime log (git ignores *.log).
+    runtime log (git ignores *.log). A reference run's raw.csv.gz has one more last column,
+    lookup_ns.
     """
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     run_dir = Path(result["run_dir"])
     saved_logs = save_logs(run_dir / "logs", output_dir / "logs")
     shutil.copy2(run_dir / "nginx" / "nginx.conf", output_dir / "nginx.conf")
-    write_raw_csv(result["raw"], output_dir / RAW_FILE)
+    fields = RAW_FIELDS
+    if result["settings"]["transport"] == REF_CARRIER.name:
+        fields = (*RAW_FIELDS, LOOKUP_FIELD)
+    write_raw_csv(result["raw"], output_dir / RAW_FILE, fields)
     saved = {key: value for key, value in result.items() if key != "raw"}
     saved["recorded_utc"] = datetime.now(timezone.utc).isoformat()
     saved["evidence"] = {"raw": RAW_FILE, "logs": saved_logs, "nginx_conf": "nginx.conf"}

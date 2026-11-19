@@ -1,10 +1,10 @@
 # Sprint 3 results: mitigations
 
-Mitigations for the token sizes that break transport in Sprint 2, measured through the same stack, Chromium or http.client → nginx → waitress → application, and with the S3-01 workload (stack and commands: [TRANSPORT.md](TRANSPORT.md#the-claims-command) for the `claims` command and [TRANSPORT.md](TRANSPORT.md#the-cookies-command) for the `cookies` command; task: [PROGRESS.md](PROGRESS.md#s3-02--compare-mitigations); Sprint 2 limits: [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md); S3-01 workload: [END_TO_END_RESULTS.md](END_TO_END_RESULTS.md)). This document covers S3-02's first two mitigations: smaller claim sets, measured with the `claims` command, and cookie splitting, measured with the `cookies` command. Reference tokens are measured in a later run, which adds its own section here:
+Mitigations for the token sizes that break transport in Sprint 2, measured through the same stack, Chromium or http.client → nginx → waitress → application, and with the S3-01 workload (stack and commands: [TRANSPORT.md](TRANSPORT.md#the-claims-command) for the `claims` command, [TRANSPORT.md](TRANSPORT.md#the-cookies-command) for the `cookies` command, and [TRANSPORT.md](TRANSPORT.md#the-refs-command) for the `refs` command; task: [PROGRESS.md](PROGRESS.md#s3-02--compare-mitigations); Sprint 2 limits: [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md); S3-01 workload: [END_TO_END_RESULTS.md](END_TO_END_RESULTS.md)). This document covers all three of S3-02's mitigations, each in its own section: the first two, smaller claim sets, measured with the `claims` command, and cookie splitting, measured with the `cookies` command, and the third, reference tokens, measured with the `refs` command:
 
 - **Smaller claim sets:** covered below.
 - **Cookie splitting:** covered below. Splitting a token into `jwt.<index>.<count>` cookies of at most 4,000 characters gets every configuration under Chromium's 4,096-byte cookie limit, but cookie splitting does not get past the limits on the whole token: nginx's 8,192-byte `Cookie` header line, which still carries every chunk, nginx's response buffer for the `Set-Cookie` headers, and Chromium's 180 cookies per domain.
-- **Reference tokens:** not covered yet.
+- **Reference tokens:** covered below. A 47-byte reference token in place of the JWT got every configuration, and SLH-DSA-SHA2-128f tokens of up to 300,000 bytes, through Chromium, nginx, and waitress at the documented defaults, as a cookie and as a Bearer header, but the application could not verify a reference without its reference store: with the store stopped, every reference got 503, and the lookup cost 0.123–0.179 ms per request from a separate store process over loopback (http.client, concurrency 1).
 
 ## Smaller claim sets
 
@@ -607,3 +607,306 @@ Saved the results to results/cookies/20261118T174416Z-macos
 - **Not the default limits.** The raised-limits stack and both latency stacks use `--header-buffers 32k` and `--proxy-buffers 32k`, and the latency stacks the non-default `--upstream-keepalive 64`, as recorded in `cookies.json` and marked in each `nginx.conf`; the default-limits stack keeps every default.
 - **Tokens in two logs.** The size-limit phases' `browser.log.gz` files hold the tokens and chunks Chromium handled, and nginx's error log in `limits-default/` holds a truncated prefix of each rejected `Cookie` line (`client sent too long header line`); all were signed with discarded experiment keys.
 - **Machine state.** Nothing else from the project was running, but Spotify and Steam were open. The 1-minute load average was 1.3 when the run started and 3.9 when it ended, including the run's own load.
+
+## Reference tokens
+
+The question: if the application sends a short opaque reference instead of the signed JWT and looks the JWT up on the server, which size limits does it still run into, what does the lookup cost in latency, and what does the design give up? The answer from this run:
+
+- **Size:** a reference is 47 bytes whatever the token, so its `Cookie` line is 65 bytes, its `Authorization: Bearer` line 71 bytes, and its `Set-Cookie` line with production attributes 126 bytes (calculated), against 962–23,676, 972–23,686, and 1,023–23,737 bytes for the JWTs. The application received the same 608 bytes of request headers for every cookie-carried reference from Chromium, and 614 for every Bearer one, from ES256's 948-byte token to a 300,000-byte one (measured).
+- **Limits:** at the documented defaults every reference verified, browser → nginx → waitress, as a `jwt_ref` cookie and as a Bearer header, for all six configurations and for SLH-DSA-SHA2-128f tokens padded to 65,536 and 300,000 bytes; the second is beyond waitress's 262,144-byte header limit, the last limit Sprint 2 found. Compared with the JWT verdicts derived from the committed claims run, five of the twelve pairs moved from rejected to verified: ML-DSA-44's cookie and both SLH-DSA configurations in both carriers.
+- **Handling:** every case got the status the application's rules give it. Unknown, expired, and revoked references got 401 after the lookup and before any verification, and a malformed `jwt_ref` cookie 401 without a lookup; two references, or a reference with a JWT, got 400. Revocation took effect on the next request. A reference sent as a `jwt` cookie got 401, because it carries no claims or signature.
+- **What it gives up:** once the store process was stopped, every reference got 503 and no new reference could be issued, while a Bearer JWT still verified on the same stack (see [What the design gives up](#what-the-design-gives-up)).
+- **Latency:** over loopback from http.client at concurrency 1, the lookup took 0.001 ms in the application's own memory and 0.123–0.179 ms in the separate store process, growing with the token the store sends back. With the memory store, Bearer references were 0.031, 0.074, and 0.164 ms faster than Bearer JWTs for ML-DSA-44, SLH-DSA-SHA2-128s, and SLH-DSA-SHA2-128f, almost all of it transfer, and 0.004 ms faster for the classical ones. With the remote store they were 0.130–0.132 ms slower for the classical configurations, 0.118 and 0.102 ms slower for ML-DSA-44 and SLH-DSA-SHA2-128s, and only 0.013 ms slower for SLH-DSA-SHA2-128f, whose shorter request almost paid for the lookup. At concurrency 4 the remote lookups queued, at 0.310–0.883 ms. The calculated network saving is 901–23,615 request bytes, up to 288.920 ms per request on a 1 Mbit/s uplink.
+
+Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores, macOS 26.5.1, arm64, 16 KiB memory pages; Python 3.15.2, Playwright 1.64.1, Chromium 156.0.8078.4, nginx 1.31.8, waitress 3.0.2 with its default 4 threads), recorded with `make refs` on November 18, 2026 (UTC, 22:55–22:59; 5:55 p.m. local time) at commit `5779ae0`, with no uncommitted change to `scripts/` or `fixtures/`. Every token was signed with **ephemeral experiment keys, not production credentials**: each key was generated in memory by the run's applications and discarded. Every reference is 32 random bytes that named a token only in the memory of its stack's application or store process, so the references in the size-limits browser log are meaningless now that those stacks have stopped. Calculated and derived figures are labeled as such; everything else was measured.
+
+| Machine | Run | Files |
+| --- | --- | --- |
+| Apple M5 Pro (macOS) | [`20261118T225526Z-macos`](results/refs/20261118T225526Z-macos/) | [refs.json](results/refs/20261118T225526Z-macos/refs.json) |
+
+| Phase | Evidence |
+| --- | --- |
+| Size limits and probes, at the documented defaults, memory store | [nginx.conf](results/refs/20261118T225526Z-macos/limits/nginx.conf), [app.log.gz](results/refs/20261118T225526Z-macos/limits/logs/app.log.gz), [browser.log.gz](results/refs/20261118T225526Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261118T225526Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261118T225526Z-macos/limits/logs/proxy-error.log.gz) |
+| Reference handling, remote store | [nginx.conf](results/refs/20261118T225526Z-macos/behavior/nginx.conf), [app.log.gz](results/refs/20261118T225526Z-macos/behavior/logs/app.log.gz), [proxy-access.log.gz](results/refs/20261118T225526Z-macos/behavior/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261118T225526Z-macos/behavior/logs/proxy-error.log.gz), [store.log.gz](results/refs/20261118T225526Z-macos/behavior/logs/store.log.gz) |
+| Latency, Bearer JWTs | [load.json](results/refs/20261118T225526Z-macos/latency-jwt/load.json), [raw.csv.gz](results/refs/20261118T225526Z-macos/latency-jwt/raw.csv.gz), [app.log.gz](results/refs/20261118T225526Z-macos/latency-jwt/logs/app.log.gz), [browser.log.gz](results/refs/20261118T225526Z-macos/latency-jwt/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261118T225526Z-macos/latency-jwt/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261118T225526Z-macos/latency-jwt/logs/proxy-error.log.gz), [nginx.conf](results/refs/20261118T225526Z-macos/latency-jwt/nginx.conf) |
+| Latency, Bearer references, memory store | [load.json](results/refs/20261118T225526Z-macos/latency-ref-memory/load.json), [raw.csv.gz](results/refs/20261118T225526Z-macos/latency-ref-memory/raw.csv.gz), [app.log.gz](results/refs/20261118T225526Z-macos/latency-ref-memory/logs/app.log.gz), [browser.log.gz](results/refs/20261118T225526Z-macos/latency-ref-memory/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261118T225526Z-macos/latency-ref-memory/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261118T225526Z-macos/latency-ref-memory/logs/proxy-error.log.gz), [nginx.conf](results/refs/20261118T225526Z-macos/latency-ref-memory/nginx.conf) |
+| Latency, Bearer references, remote store | [load.json](results/refs/20261118T225526Z-macos/latency-ref-remote/load.json), [raw.csv.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/raw.csv.gz), [app.log.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/logs/app.log.gz), [browser.log.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/logs/proxy-error.log.gz), [store.log.gz](results/refs/20261118T225526Z-macos/latency-ref-remote/logs/store.log.gz), [nginx.conf](results/refs/20261118T225526Z-macos/latency-ref-remote/nginx.conf) |
+
+`refs.json` holds the settings, the environment, the reference format, the plan, every size-limit pair and probe with its bytes, evidence, and nonces, the derived JWT verdicts, the handling cases, and the latency comparison; each latency directory is what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `refs.json`, every `load.json` and `raw.csv.gz`, every `app.log.gz`, `proxy-access.log.gz`, `proxy-error.log.gz`, and `store.log.gz`, and the latency runs' `browser.log.gz` hold no token, reference, or cookie value. Only `limits/logs/browser.log.gz` holds references: the ones Chromium received, stored, and sent.
+
+**Machine state.** Nothing else from the project was running during the run: no other candidate's stack, run, or test suite (checked every 5 seconds while it ran), and the `make serve` stack from the main checkout was not running. When the run started (22:55:26 UTC), 1 socket was in TIME_WAIT and the 1-minute load average was 1.91 on 18 cores; at the end it was 3.24, including the run's own load, with 136 sockets in TIME_WAIT. Spotify, Steam, Discord, and the Claude app were open. The other two S3-02 candidates were being built and tested on the same Mac before and after the run, and two earlier attempts of this run that overlapped their test suites and runs were discarded, so this run is provisional until it is re-recorded on an idle Mac.
+
+### Format
+
+The application ([scripts/transport_app.py](scripts/transport_app.py), [Token endpoints](TRANSPORT.md#token-endpoints)) issues a reference with `GET /api/token/reference?alg=<name>`, signs and verifies the token exactly as `/api/token/issue` does, and keeps it in its reference store:
+
+| Property | Value |
+| --- | --- |
+| Reference | `ref_` and 43 base64url characters, `secrets.token_urlsafe(32)`: 32 random bytes, 47 bytes in all. It encodes nothing about the token or its claims, and it has no dot, so it is never mistaken for a JWT |
+| Carriers | a `jwt_ref` cookie (`delivery=cookie`, source `ref_cookie`), or the JSON body (`delivery=body`) for an `Authorization: Bearer <reference>` header (source `ref_bearer`); any Bearer value that is not exactly a reference is a JWT, as before |
+| Attributes | the size-limit pairs and probes use the production set `Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600` |
+| Time to live | `ttl`, 3,600 seconds by default (the production cookie's `Max-Age`), at most 86,400 |
+| Stores | `memory`: the application's own memory; `remote`: a separate waitress store process on `127.0.0.1`, reached over loopback HTTP/1.1 with one persistent connection per application thread. Both keep everything in memory |
+| Verify | the token found is checked and verified exactly like a cookie or Bearer token; `ref.status` is `found`, `unknown`, `expired`, `revoked`, `malformed`, or `unavailable`, and `timing.lookup_ns` times the store's `get` |
+| Revoke | `POST /api/token/revoke` with the reference; the store answers `revoked` for it from then on |
+
+The application verifies the signature again after every lookup, as the phantom-token pattern does, so verification stays in the comparison and the lookup is its own component. The memory store gives a lookup with no network in it, a lower bound; the remote store, a separate process the application reaches over loopback HTTP, as it would reach a token service (RFC 7662 introspection, for example), gives a networked one.
+
+### Size limits
+
+**Calculated, not measured.** Each configuration's unpadded OIDC token (`token_sizing.token_bytes`) and a 47-byte reference, with the bytes each limit counts: a cookie's name + value (Chromium's 4,096 bytes), the `Cookie` and `Authorization: Bearer` lines the client sends (nginx's 8,192-byte header line), and the `Set-Cookie` line with production attributes (which must fit, with the other response headers, in nginx's `proxy_buffer_size`). Every line includes its CRLF.
+
+| Configuration | Token | Reference | JWT cookie name + value | Reference cookie name + value | JWT Cookie line | Reference Cookie line | JWT Authorization line | Reference Authorization line | JWT Set-Cookie line | Reference Set-Cookie line |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,204 | 47 | 1,207 | 54 | 1,218 | 65 | 1,228 | 71 | 1,279 | 126 |
+| ES256 | 948 | 47 | 951 | 54 | 962 | 65 | 972 | 71 | 1,023 | 126 |
+| EdDSA | 948 | 47 | 951 | 54 | 962 | 65 | 972 | 71 | 1,023 | 126 |
+| ML-DSA-44 | 4,095 | 47 | 4,098 | 54 | 4,109 | 65 | 4,119 | 71 | 4,170 | 126 |
+| SLH-DSA-SHA2-128s | 11,353 | 47 | 11,356 | 54 | 11,367 | 65 | 11,377 | 71 | 11,428 | 126 |
+| SLH-DSA-SHA2-128f | 23,662 | 47 | 23,665 | 54 | 23,676 | 65 | 23,686 | 71 | 23,737 | 126 |
+
+Against the documented limits (calculated): every reference fits all three, while ML-DSA-44's JWT is over the 4,096-byte cookie limit and both SLH-DSA JWTs are over the cookie limit and nginx's 8,192-byte line in both carriers.
+
+**Measured at the documented defaults** (stack `limits`, memory store; its [nginx.conf](results/refs/20261118T225526Z-macos/limits/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page). For each configuration and carrier, a new Chromium context loaded the test page through nginx, `fetch()`ed `/api/token/reference` with OIDC claims and production attributes, read its cookie jar, and `fetch()`ed `/api/token/verify` with the stored `jwt_ref` cookie or an `Authorization: Bearer <reference>` header. The JWT column is **derived, not measured**: it is the outcome the committed claims run measured on this Mac for the same OIDC token and carrier at the same defaults ([results/claims/20261118T053507Z-macos/claims.json](results/claims/20261118T053507Z-macos/claims.json), `limits.jwt` in `refs.json`), so this run sent no JWT that nginx would reject. A pair has **moved** when the JWT was rejected and the reference verified.
+
+| Configuration | Carrier | Token | JWT, derived | Reference | Reference header line | Application received | Verified directly | Moved |
+| --- | --- | ---: | --- | --- | ---: | ---: | --- | --- |
+| RS256 | Cookie | 1,204 | verified | verified | 65 | 608 | yes | no |
+| RS256 | Bearer | 1,204 | verified | verified | 71 | 614 | yes | no |
+| ES256 | Cookie | 948 | verified | verified | 65 | 608 | yes | no |
+| ES256 | Bearer | 948 | verified | verified | 71 | 614 | yes | no |
+| EdDSA | Cookie | 948 | verified | verified | 65 | 608 | yes | no |
+| EdDSA | Bearer | 948 | verified | verified | 71 | 614 | yes | no |
+| ML-DSA-44 | Cookie | 4,095 | rejected by the browser | verified | 65 | 608 | yes | **yes** |
+| ML-DSA-44 | Bearer | 4,095 | verified | verified | 71 | 614 | yes | no |
+| SLH-DSA-SHA2-128s | Cookie | 11,353 | rejected by the browser | verified | 65 | 608 | yes | **yes** |
+| SLH-DSA-SHA2-128s | Bearer | 11,353 | rejected by the proxy | verified | 71 | 614 | yes | **yes** |
+| SLH-DSA-SHA2-128f | Cookie | 23,662 | rejected by the proxy | verified | 65 | 608 | yes | **yes** |
+| SLH-DSA-SHA2-128f | Bearer | 23,662 | rejected by the proxy | verified | 71 | 614 | yes | **yes** |
+
+The reference header line is calculated; "Application received" is `header_bytes` from the verify request's own `app.log` line, every header the application received from Chromium through nginx. "Verified directly" sends a reference issued straight from the application straight back to it with the same carrier. In the claims run, Chromium refused the ML-DSA-44 and SLH-DSA-SHA2-128s cookies (over 4,096 bytes of name + value), nginx answered 502 to SLH-DSA-SHA2-128f's `Set-Cookie` response (over its 16 KiB `proxy_buffer_size`), and nginx answered 400 to both SLH-DSA Bearer headers (over its 8,192-byte line). A reference meets none of those limits: its `Set-Cookie` header is 126 bytes and its request line 65 or 71.
+
+**Probes.** On the same stack, SLH-DSA-SHA2-128f tokens with OIDC claims were padded to the largest pad whose token is at most each target, and their references sent as a cookie and as a Bearer header in the same way:
+
+| Target | Pad | Token | Carrier | Reference | Outcome | Reference header line | Application received |
+| ---: | ---: | ---: | --- | ---: | --- | ---: | ---: |
+| 65,536 | 31,396 | 65,536 | Cookie | 47 | verified | 65 | 608 |
+| 65,536 | 31,396 | 65,536 | Bearer | 47 | verified | 71 | 614 |
+| 300,000 | 207,244 | 300,000 | Cookie | 47 | verified | 65 | 608 |
+| 300,000 | 207,244 | 300,000 | Bearer | 47 | verified | 71 | 614 |
+
+The 300,000-byte token is beyond waitress's 262,144-byte request header limit, the last limit Sprint 2 found: as a JWT it could not reach the application in any header, whatever nginx's buffers. As a reference it never travels: it stays in the store, and the request carries 47 bytes.
+
+**A request size independent of the token.** `app_received_headers` was 608 bytes for every cookie-carried reference and 614 for every Bearer one, from ES256's 948-byte token to the 300,000-byte probe; the difference is `cookie: jwt_ref=<reference>` against `authorization: Bearer <reference>`. In the latency runs the same holds for http.client: 121 bytes of headers for every reference, against 1,022–23,736 bytes for the Bearer JWTs (`bytes.app_received_headers` in each `load.json`). The size limits no longer depend on the signature scheme; what depends on it now is the store, which holds the whole token.
+
+### Reference handling
+
+**Measured on the remote store.** A new stack with the store process and no raised limit (stack `behavior`). References A, B (`ttl=1`), and C to ML-DSA-44's 4,095-byte OIDC token, and the JWT J itself, were issued straight from the application with `delivery=body`. http.client then sent `GET /api/token/verify?timing=1&nonce=<32 hex digits>` through nginx with the cookies and headers below, in this order; before `store_unavailable` the run stopped the store process while nginx and the application kept running. "Lookup" means the store's `get` was called (`timing.lookup_ns` not null), and "Verify called" that the adapter's `verify_token` ran (`timing.verify_ns` not null).
+
+| Case | Sent | Store | Status | Verified | Source | `ref.status` | Lookup | Verify called | Error |
+| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
+| `cookie` | `jwt_ref` (A) | running | 200 | yes | ref_cookie | found | yes | yes | — |
+| `bearer` | `Authorization: Bearer` (A) | running | 200 | yes | ref_bearer | found | yes | yes | — |
+| `among_other_cookies` | `a`, `jwt_ref` (A), `theme` | running | 200 | yes | ref_cookie | found | yes | yes | — |
+| `unknown` | `Authorization: Bearer` (a reference never stored) | running | 401 | no | ref_bearer | unknown | yes | no | unknown reference: the store holds no token for it |
+| `malformed_cookie` | `jwt_ref` (`not-a-reference`) | running | 401 | no | ref_cookie | malformed | no | no | malformed reference: a jwt_ref cookie must hold ref_ and 43 base64url characters |
+| `expired` | `Authorization: Bearer` (B, more than 1 s after its issue) | running | 401 | no | ref_bearer | expired | yes | no | expired reference: its time to live has passed |
+| `revoked` | `Authorization: Bearer` (C, after `POST /api/token/revoke` with C got 200) | running | 401 | no | ref_bearer | revoked | yes | no | revoked reference: it was revoked |
+| `two_references` | `jwt_ref` (A), `jwt_ref` (A) | running | 400 | no | null | — | no | no | more than one token: send one jwt_ref cookie or one Bearer reference alone, without another reference, a jwt cookie, chunk cookies, or a Bearer token |
+| `reference_and_jwt` | `jwt_ref` (A), `Authorization: Bearer` (J) | running | 400 | no | null | — | no | no | more than one token (as above) |
+| `reference_as_jwt` | `jwt` (A) | running | 401 | no | cookie | — | no | no | the token header has no readable alg naming one of RS256, ES256, EdDSA, ML-DSA-44, SLH-DSA-SHA2-128s, SLH-DSA-SHA2-128f |
+| `store_unavailable` | `Authorization: Bearer` (A) | stopped | 503 | no | ref_bearer | unavailable | yes | no | reference store unavailable: the store at http://127.0.0.1:57268 could not be reached again: ConnectionRefusedError: [Errno 61] Connection refused |
+| `jwt_without_store` | `Authorization: Bearer` (J) | stopped | 200 | yes | bearer | — | no | yes | — |
+| `issue_without_store` | none: `GET /api/token/reference?alg=ML-DSA-44&delivery=cookie&claims=oidc` | stopped | 503 | no | null | — | no | no | reference store unavailable (as above); no `Set-Cookie` |
+
+Every case got the status the application's rules give it. The store's own log ([store.log.gz](results/refs/20261118T225526Z-macos/behavior/logs/store.log.gz)) has one `POST /get` for each case with a lookup up to `revoked`, and the `POST /revoke` between `expired` and `revoked`; the reference itself travels only in the request body, so no log line holds it. In `store_unavailable`, the application's kept-alive connection to the stopped store failed, it reopened it once, and that was refused, so the lookup was timed and the answer was 503 rather than a 401 that would wrongly call the reference invalid.
+
+### What the design gives up
+
+- **Stateless verification.** A JWT is verified with the public key alone; a reference needs the store on every request. On the same stack, with nginx and the application running and only the store process stopped, the reference got 503 (`store_unavailable`) while the Bearer JWT still verified (`jwt_without_store`, 200), and no new reference could be issued (`issue_without_store`, 503). The store is now part of every authenticated request's availability, measured here only for a stopped store; a slow or partly failing store was not measured.
+- **Offline and third-party verification.** The reference carries no claims or signature, only 32 random bytes (see [Format](#format-1)), so a party without the store learns nothing from it: sent as if it were a JWT, it got 401 because it has no readable header (`reference_as_jwt`), and a well-formed reference that the store does not hold is refused like any other (`unknown`). A JWT can be verified offline, or by another service, with the issuer's public key; this run does not show that, because the application never publishes its experiment public keys, so it is stated, not measured. Another service would have to call the store, or an introspection endpoint in front of it, to accept a reference.
+- **Unknown, expired, and revoked references.** The store answers for each reference, so the application can refuse an unknown (`unknown`), expired (`expired`, after its 1-second time to live), or revoked (`revoked`) reference before it verifies anything, all with 401. Revocation is immediate: the request right after `POST /api/token/revoke` was refused. A JWT stays valid until its `exp` (or the application keeps its own deny list); `POST /api/token/revoke` refuses a JWT with 400, which this run did not measure. The experiment's stores keep expired and revoked entries to tell them apart from unknown ones (see Limitations).
+- **A lookup on every request.** Every verified request first calls the store: 0.001 ms in the application's memory and 0.123–0.179 ms over loopback HTTP from http.client at concurrency 1, 0.310–0.883 ms at concurrency 4 (see [Latency](#latency-2)). The application also verifies the signature again after each lookup; trusting the store, or caching verified tokens, would save the verification but means the store, not the signature, decides what is valid. That alternative was not measured.
+- **The store is new state.** The token no longer travels, but it has to be kept: the run stored every token on the server, including the 300,000-byte probe, and the store grows with the number of live references (not measured). The memory store belongs to one application process, so a second application instance, or a restart, would not know its references (not measured); the remote store is shared by whatever reaches it, but it is one more process to run, secure, and keep available, and every reference is lost when it stops.
+
+### Latency
+
+The S3-01 workload ([END_TO_END_RESULTS.md](END_TO_END_RESULTS.md#workload)) ran three times, each on a new stack, in this fixed order: Bearer JWTs (`latency-jwt`), Bearer references with the memory store (`latency-ref-memory`), and Bearer references with the remote store (`latency-ref-remote`). Each was a closed loop of `GET /api/token/verify?timing=1&nonce=<32 hex digits>` requests with OIDC tokens, from http.client threads and from Chromium's test page, at concurrency 1 and 4, with 1 second of warm-up and 2 seconds measured per cell, `--header-buffers 32k`, and `--upstream-keepalive 64`; size-control cells were off. In the reference runs each cell got its reference through nginx from `/api/token/reference?delivery=body`, outside the timed window. The same header carries a JWT and a reference, so the comparison isolates the reference. Every measured request verified: 172,643 with JWTs, 185,547 with the memory store, and 128,287 with the remote store, none failed, and every cell had at least 2,170 verified requests.
+
+Latency is the client-measured time from sending a request to reading its whole response body, in milliseconds; p95 is nearest-rank. Each difference is a reference run's mean minus the JWT run's mean, so a positive difference means the reference was slower. Chromium coarsens its timer to about 0.1 ms, so its medians and p95 values are multiples of 0.1 ms.
+
+**http.client (direct), concurrency 1**
+
+| Configuration | Token | JWT mean | Ref (memory) mean | Ref (remote) mean | Memory difference | Remote difference | JWT median | Memory median | Remote median | JWT p95 | Memory p95 | Remote p95 | JWT req/s | Memory req/s | Remote req/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,204 | 0.201 | 0.197 | 0.331 | -0.004 | +0.130 | 0.201 | 0.196 | 0.331 | 0.214 | 0.210 | 0.348 | 4,945 | 5,057 | 3,009 |
+| ES256 | 948 | 0.218 | 0.214 | 0.350 | -0.004 | +0.132 | 0.217 | 0.213 | 0.350 | 0.231 | 0.226 | 0.365 | 4,572 | 4,658 | 2,852 |
+| EdDSA | 948 | 0.216 | 0.213 | 0.349 | -0.004 | +0.132 | 0.216 | 0.212 | 0.349 | 0.229 | 0.224 | 0.363 | 4,601 | 4,676 | 2,860 |
+| ML-DSA-44 | 4,095 | 0.229 | 0.198 | 0.347 | -0.031 | +0.118 | 0.228 | 0.197 | 0.346 | 0.241 | 0.212 | 0.359 | 4,348 | 5,026 | 2,873 |
+| SLH-DSA-SHA2-128s | 11,353 | 0.408 | 0.334 | 0.511 | -0.074 | +0.102 | 0.409 | 0.333 | 0.510 | 0.421 | 0.342 | 0.522 | 2,443 | 2,986 | 1,954 |
+| SLH-DSA-SHA2-128f | 23,662 | 0.692 | 0.528 | 0.705 | -0.164 | +0.013 | 0.691 | 0.527 | 0.705 | 0.713 | 0.541 | 0.717 | 1,442 | 1,890 | 1,416 |
+
+**http.client (direct), concurrency 4**
+
+| Configuration | Token | JWT mean | Ref (memory) mean | Ref (remote) mean | Memory difference | Remote difference | JWT median | Memory median | Remote median | JWT p95 | Memory p95 | Remote p95 | JWT req/s | Memory req/s | Remote req/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,204 | 0.644 | 0.643 | 0.931 | -0.001 | +0.287 | 0.619 | 0.619 | 0.906 | 0.952 | 0.955 | 1.326 | 6,204 | 6,212 | 4,288 |
+| ES256 | 948 | 0.628 | 0.626 | 0.907 | -0.001 | +0.280 | 0.605 | 0.600 | 0.886 | 0.917 | 0.913 | 1.259 | 6,361 | 6,375 | 4,402 |
+| EdDSA | 948 | 0.621 | 0.606 | 0.891 | -0.014 | +0.271 | 0.598 | 0.587 | 0.872 | 0.915 | 0.896 | 1.252 | 6,431 | 6,584 | 4,480 |
+| ML-DSA-44 | 4,095 | 0.569 | 0.503 | 0.816 | -0.066 | +0.247 | 0.546 | 0.484 | 0.799 | 0.838 | 0.750 | 1.136 | 7,014 | 7,932 | 4,894 |
+| SLH-DSA-SHA2-128s | 11,353 | 1.103 | 0.915 | 1.245 | -0.187 | +0.143 | 1.077 | 0.902 | 1.213 | 1.620 | 1.320 | 1.855 | 3,622 | 4,363 | 3,208 |
+| SLH-DSA-SHA2-128f | 23,662 | 2.121 | 1.745 | 2.118 | -0.376 | -0.003 | 2.100 | 1.732 | 2.100 | 3.084 | 2.584 | 3.050 | 1,883 | 2,289 | 1,886 |
+
+**Chromium (browser), concurrency 1**
+
+| Configuration | Token | JWT mean | Ref (memory) mean | Ref (remote) mean | Memory difference | Remote difference | JWT median | Memory median | Remote median | JWT p95 | Memory p95 | Remote p95 | JWT req/s | Memory req/s | Remote req/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,204 | 0.437 | 0.430 | 0.565 | -0.007 | +0.128 | 0.400 | 0.400 | 0.600 | 0.500 | 0.500 | 0.700 | 2,287 | 2,322 | 1,768 |
+| ES256 | 948 | 0.470 | 0.466 | 0.578 | -0.004 | +0.108 | 0.500 | 0.500 | 0.600 | 0.600 | 0.500 | 0.700 | 2,126 | 2,145 | 1,730 |
+| EdDSA | 948 | 0.461 | 0.436 | 0.572 | -0.025 | +0.111 | 0.400 | 0.400 | 0.600 | 0.500 | 0.500 | 0.700 | 2,169 | 2,293 | 1,747 |
+| ML-DSA-44 | 4,095 | 0.483 | 0.427 | 0.577 | -0.056 | +0.094 | 0.500 | 0.400 | 0.600 | 0.600 | 0.500 | 0.700 | 2,069 | 2,343 | 1,733 |
+| SLH-DSA-SHA2-128s | 11,353 | 0.609 | 0.522 | 0.698 | -0.087 | +0.089 | 0.600 | 0.500 | 0.700 | 0.700 | 0.600 | 0.800 | 1,640 | 1,914 | 1,431 |
+| SLH-DSA-SHA2-128f | 23,662 | 0.922 | 0.701 | 0.902 | -0.221 | -0.020 | 0.900 | 0.700 | 0.900 | 1.000 | 0.800 | 1.000 | 1,085 | 1,427 | 1,109 |
+
+**Chromium (browser), concurrency 4**
+
+| Configuration | Token | JWT mean | Ref (memory) mean | Ref (remote) mean | Memory difference | Remote difference | JWT median | Memory median | Remote median | JWT p95 | Memory p95 | Remote p95 | JWT req/s | Memory req/s | Remote req/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,204 | 0.979 | 0.972 | 1.329 | -0.007 | +0.350 | 0.900 | 0.900 | 1.200 | 1.400 | 1.400 | 1.800 | 4,085 | 4,116 | 3,009 |
+| ES256 | 948 | 0.990 | 0.965 | 1.305 | -0.025 | +0.314 | 0.900 | 0.900 | 1.200 | 1.300 | 1.300 | 1.700 | 4,038 | 4,142 | 3,064 |
+| EdDSA | 948 | 0.975 | 0.962 | 1.294 | -0.013 | +0.319 | 0.900 | 0.900 | 1.200 | 1.300 | 1.300 | 1.700 | 4,100 | 4,157 | 3,090 |
+| ML-DSA-44 | 4,095 | 0.929 | 0.873 | 1.258 | -0.056 | +0.330 | 0.800 | 0.800 | 1.200 | 1.200 | 1.200 | 1.600 | 4,305 | 4,579 | 3,178 |
+| SLH-DSA-SHA2-128s | 11,353 | 1.408 | 1.217 | 1.650 | -0.191 | +0.242 | 1.300 | 1.100 | 1.500 | 2.000 | 1.800 | 2.300 | 2,840 | 3,285 | 2,423 |
+| SLH-DSA-SHA2-128f | 23,662 | 2.363 | 2.021 | 2.442 | -0.341 | +0.079 | 2.300 | 2.000 | 2.400 | 3.500 | 3.100 | 3.500 | 1,692 | 1,977 | 1,637 |
+
+Where the difference is clearest, http.client at concurrency 1, the components show where it comes from (difference of each component's mean, reference run minus JWT run, in ms; the JWT run's lookup is 0, so the lookup column is the reference run's mean lookup):
+
+| Configuration | Store | Total | Transfer | Other handling | Lookup | Verification |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| RS256 | memory | -0.004 | -0.008 | +0.002 | +0.001 | +0.001 |
+| RS256 | remote | +0.130 | +0.003 | +0.002 | +0.123 | +0.001 |
+| ES256 | memory | -0.004 | -0.007 | +0.002 | +0.001 | +0.000 |
+| ES256 | remote | +0.132 | +0.005 | +0.002 | +0.124 | +0.001 |
+| EdDSA | memory | -0.004 | -0.006 | +0.002 | +0.001 | +0.000 |
+| EdDSA | remote | +0.132 | +0.005 | +0.002 | +0.124 | +0.001 |
+| ML-DSA-44 | memory | -0.031 | -0.035 | +0.001 | +0.001 | +0.002 |
+| ML-DSA-44 | remote | +0.118 | -0.015 | +0.003 | +0.129 | +0.000 |
+| SLH-DSA-SHA2-128s | memory | -0.074 | -0.080 | +0.003 | +0.001 | +0.003 |
+| SLH-DSA-SHA2-128s | remote | +0.102 | -0.068 | +0.001 | +0.165 | +0.004 |
+| SLH-DSA-SHA2-128f | memory | -0.164 | -0.168 | +0.003 | +0.001 | +0.001 |
+| SLH-DSA-SHA2-128f | remote | +0.013 | -0.159 | +0.000 | +0.179 | -0.007 |
+
+**Noise level.** EdDSA and ES256 tokens are the same size, so the difference between their means shows how much two cells differ without any change in size. With Bearer JWTs it is -0.001 ms from http.client at concurrency 1 and -0.007 ms at concurrency 4, and -0.009 and -0.015 ms from Chromium; with the memory store -0.001, -0.020, -0.030, and -0.004 ms; with the remote store -0.001, -0.016, -0.006, and -0.011 ms. This measures noise within one run only. The three runs ran one after the other, always JWTs first, then the memory store, then the remote store, so a drift between runs affects every configuration's difference alike.
+
+- **The lookup itself.** In the application's memory it took 0.0006 ms on average, which rounds to 0.001 ms in every cell. In the store process it took 0.123–0.129 ms for the classical tokens and ML-DSA-44 and 0.165 and 0.179 ms for the two SLH-DSA tokens from http.client at concurrency 1: one HTTP/1.1 round trip over loopback to another waitress process, which sends the whole token back in its JSON body (4,164 bytes for ML-DSA-44 in `store.log`). At concurrency 4 it took 0.310–0.883 ms, growing with the token, consistent with four application threads queueing at one store process; the queueing itself was not measured.
+- **Memory store, http.client:** for the post-quantum configurations the reference was faster, by 0.031, 0.074, and 0.164 ms at concurrency 1 and 0.066, 0.187, and 0.376 ms at concurrency 4, and transfer accounts for all of it at concurrency 1 (0.035, 0.080, and 0.168 ms less), far beyond the noise: the request is 4,048, 11,306, and 23,615 bytes shorter. For the classical configurations the totals moved by -0.004 ms at concurrency 1, with transfer 0.006–0.008 ms lower and other handling 0.002 ms higher (the reference parsing and lookup); their requests are 901–1,157 bytes shorter, but a 0.008 ms transfer drift between two runs was also seen in the cookie-splitting run for a 4-byte change, so these are not attributed to the reference.
+- **Remote store, http.client:** every configuration but SLH-DSA-SHA2-128f was slower, by 0.102–0.132 ms at concurrency 1 and 0.143–0.287 ms at concurrency 4. At concurrency 1 the lookup accounts for it: the other components moved by at most 0.007 ms, except transfer for the post-quantum tokens. For SLH-DSA-SHA2-128f the shorter request (0.159 ms less transfer) and the lookup (0.179 ms) nearly cancel, +0.013 ms at concurrency 1 and -0.003 ms at concurrency 4. Throughput fell accordingly: for the classical configurations from 4,572–4,945 to 2,852–3,009 requests per second at concurrency 1.
+- **Chromium:** the same pattern within its 0.1 ms timer: the memory store was 0.004–0.025 ms faster for the classical configurations (within the same-size noise of up to 0.030 ms) and 0.056–0.341 ms faster for the post-quantum ones, and the remote store 0.089–0.350 ms slower except for SLH-DSA-SHA2-128f (-0.020 and +0.079 ms).
+
+**Modeled network cost (calculated, not measured).** Loopback makes transfer nearly free. From the network model of the JWT run and of the memory-store run (the remote store does not change the request), the modeled upload time of the direct client's request on a new or idle TCP connection (the S3-01 model: bytes at the uplink rate plus one round trip per extra slow-start round, with an initial window of 14,600 bytes) shrinks by, at each illustrative profile:
+
+| Configuration | JWT request bytes | Reference request bytes | Saved bytes | 100 Mbit/s, 10 ms RTT | 10 Mbit/s, 50 ms RTT | 1 Mbit/s, 100 ms RTT |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| RS256 | 1,360 | 203 | 1,157 | 0.093 | 0.926 | 9.256 |
+| ES256 | 1,104 | 203 | 901 | 0.072 | 0.721 | 7.208 |
+| EdDSA | 1,104 | 203 | 901 | 0.072 | 0.721 | 7.208 |
+| ML-DSA-44 | 4,251 | 203 | 4,048 | 0.324 | 3.238 | 32.384 |
+| SLH-DSA-SHA2-128s | 11,509 | 203 | 11,306 | 0.904 | 9.045 | 90.448 |
+| SLH-DSA-SHA2-128f | 23,818 | 203 | 23,615 | 11.889 | 68.892 | 288.920 |
+
+Every reference request is 203 bytes. SLH-DSA-SHA2-128f's 23,818-byte JWT request needs a second slow-start round, which the reference saves, so its saving includes one round trip at every profile. The lookup is not in this model: over a real network the remote store adds its own round trip from the application to the store, which this run measured only over loopback.
+
+### Reproduce
+
+From a clean checkout with the environment from [TRANSPORT.md](TRANSPORT.md#setup), with `TRANSPORT_ENV` set, `TMPDIR` unset (so the stacks' run directories land in `/tmp`), and no other load on the machine:
+
+```bash
+make refs
+# the same command, which make refs runs with --output-dir results/refs/<UTC time>-<platform>:
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py refs --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir results/refs/<YYYYMMDDTHHMMSSZ>-macos
+# the same settings, from this run's refs.json:
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py refs --settings results/refs/20261118T225526Z-macos/refs.json --output-dir results/refs/<YYYYMMDDTHHMMSSZ>-macos
+# the JWT latency run alone, from its saved load.json:
+"$TRANSPORT_ENV/bin/python" scripts/transport_stack.py load --settings results/refs/20261118T225526Z-macos/latency-jwt/load.json --output-dir /tmp/latency-jwt
+```
+
+The run took 4 minutes 12 seconds. `--output-dir` must not exist yet or be empty. [TRANSPORT.md](TRANSPORT.md#the-refs-command) describes every option and output file. The tables above come from `refs.json`, and each latency cell's numbers can be recomputed from its rows in the `raw.csv.gz` files (the reference runs' rows end with `lookup_ns`). The two reference runs' `load.json` files record `"transport": "ref_bearer"` and `ref_store`, which the `load` command does not take, so only the JWT run can be repeated with `load --settings`.
+
+The recorded run's printed output: one line per configuration of the plan (JWT -> reference); per configuration and carrier of the size limits (the measured reference, the derived JWT, and `moved`); each probe; each handling case; and each latency row (the three means, both differences, the two stores' lookups, medians, p95s, and throughput, in the order jwt / ref-memory / ref-remote):
+
+```text
+plan     RS256               1,204 -> 47 B  name+value  1,207 -> 54 B  Cookie line  1,218 -> 65 B  Authorization line  1,228 -> 71 B  Set-Cookie  1,279 -> 126 B  jwt fits, ref fits
+plan     ES256                 948 -> 47 B  name+value    951 -> 54 B  Cookie line    962 -> 65 B  Authorization line    972 -> 71 B  Set-Cookie  1,023 -> 126 B  jwt fits, ref fits
+plan     EdDSA                 948 -> 47 B  name+value    951 -> 54 B  Cookie line    962 -> 65 B  Authorization line    972 -> 71 B  Set-Cookie  1,023 -> 126 B  jwt fits, ref fits
+plan     ML-DSA-44           4,095 -> 47 B  name+value  4,098 -> 54 B  Cookie line  4,109 -> 65 B  Authorization line  4,119 -> 71 B  Set-Cookie  4,170 -> 126 B  jwt over per-cookie, ref fits
+plan     SLH-DSA-SHA2-128s  11,353 -> 47 B  name+value 11,356 -> 54 B  Cookie line 11,367 -> 65 B  Authorization line 11,377 -> 71 B  Set-Cookie 11,428 -> 126 B  jwt over per-cookie+cookie-line+authorization-line, ref fits
+plan     SLH-DSA-SHA2-128f  23,662 -> 47 B  name+value 23,665 -> 54 B  Cookie line 23,676 -> 65 B  Authorization line 23,686 -> 71 B  Set-Cookie 23,737 -> 126 B  jwt over per-cookie+cookie-line+authorization-line, ref fits
+limits   cookie RS256               1,204 B  ref 47 B verified                 jwt verified (derived)
+limits   bearer RS256               1,204 B  ref 47 B verified                 jwt verified (derived)
+limits   cookie ES256                 948 B  ref 47 B verified                 jwt verified (derived)
+limits   bearer ES256                 948 B  ref 47 B verified                 jwt verified (derived)
+limits   cookie EdDSA                 948 B  ref 47 B verified                 jwt verified (derived)
+limits   bearer EdDSA                 948 B  ref 47 B verified                 jwt verified (derived)
+limits   cookie ML-DSA-44           4,095 B  ref 47 B verified                 jwt rejected by browser (derived)  moved
+limits   bearer ML-DSA-44           4,095 B  ref 47 B verified                 jwt verified (derived)
+limits   cookie SLH-DSA-SHA2-128s  11,353 B  ref 47 B verified                 jwt rejected by browser (derived)  moved
+limits   bearer SLH-DSA-SHA2-128s  11,353 B  ref 47 B verified                 jwt rejected by proxy (derived)  moved
+limits   cookie SLH-DSA-SHA2-128f  23,662 B  ref 47 B verified                 jwt rejected by proxy (derived)  moved
+limits   bearer SLH-DSA-SHA2-128f  23,662 B  ref 47 B verified                 jwt rejected by proxy (derived)  moved
+probe    SLH-DSA-SHA2-128f  target  65,536 B  pad  31,396   65,536 B  cookie  ref 47 B  verified
+probe    SLH-DSA-SHA2-128f  target  65,536 B  pad  31,396   65,536 B  bearer  ref 47 B  verified
+probe    SLH-DSA-SHA2-128f  target 300,000 B  pad 207,244  300,000 B  cookie  ref 47 B  verified
+probe    SLH-DSA-SHA2-128f  target 300,000 B  pad 207,244  300,000 B  bearer  ref 47 B  verified
+handling cookie               store running  status 200  verified      source ref_cookie  ref found        lookup called      verify_token called
+handling bearer               store running  status 200  verified      source ref_bearer  ref found        lookup called      verify_token called
+handling among_other_cookies  store running  status 200  verified      source ref_cookie  ref found        lookup called      verify_token called
+handling unknown              store running  status 401  not verified  source ref_bearer  ref unknown      lookup called      verify_token not called
+handling malformed_cookie     store running  status 401  not verified  source ref_cookie  ref malformed    lookup not called  verify_token not called
+handling expired              store running  status 401  not verified  source ref_bearer  ref expired      lookup called      verify_token not called
+handling revoked              store running  status 401  not verified  source ref_bearer  ref revoked      lookup called      verify_token not called  revoke status 200
+handling two_references       store running  status 400  not verified  source -           ref -            lookup not called  verify_token not called
+handling reference_and_jwt    store running  status 400  not verified  source -           ref -            lookup not called  verify_token not called
+handling reference_as_jwt     store running  status 401  not verified  source cookie      ref -            lookup not called  verify_token not called
+handling store_unavailable    store stopped  status 503  not verified  source ref_bearer  ref unavailable  lookup called      verify_token not called
+handling jwt_without_store    store stopped  status 200  verified      source bearer      ref -            lookup not called  verify_token called
+handling issue_without_store  store stopped  status 503  not verified  source -           ref -            lookup not called  verify_token not called
+latency  direct  c=1   RS256               1,204 B  mean jwt 0.201, ref-memory 0.197 (-0.004), ref-remote 0.331 (+0.130) ms  lookup 0.001, 0.123  median 0.201 / 0.196 / 0.331  p95 0.214 / 0.210 / 0.348  4,945.4 / 5,057.3 / 3,009.0 req/s
+latency  direct  c=1   ES256                 948 B  mean jwt 0.218, ref-memory 0.214 (-0.004), ref-remote 0.350 (+0.132) ms  lookup 0.001, 0.124  median 0.217 / 0.213 / 0.350  p95 0.231 / 0.226 / 0.365  4,571.7 / 4,657.6 / 2,851.7 req/s
+latency  direct  c=1   EdDSA                 948 B  mean jwt 0.216, ref-memory 0.213 (-0.004), ref-remote 0.349 (+0.132) ms  lookup 0.001, 0.124  median 0.216 / 0.212 / 0.349  p95 0.229 / 0.224 / 0.363  4,600.6 / 4,676.2 / 2,859.6 req/s
+latency  direct  c=1   ML-DSA-44           4,095 B  mean jwt 0.229, ref-memory 0.198 (-0.031), ref-remote 0.347 (+0.118) ms  lookup 0.001, 0.129  median 0.228 / 0.197 / 0.346  p95 0.241 / 0.212 / 0.359  4,348.3 / 5,026.3 / 2,873.0 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128s  11,353 B  mean jwt 0.408, ref-memory 0.334 (-0.074), ref-remote 0.511 (+0.102) ms  lookup 0.001, 0.165  median 0.409 / 0.333 / 0.510  p95 0.421 / 0.342 / 0.522  2,442.7 / 2,986.3 / 1,953.9 req/s
+latency  direct  c=1   SLH-DSA-SHA2-128f  23,662 B  mean jwt 0.692, ref-memory 0.528 (-0.164), ref-remote 0.705 (+0.013) ms  lookup 0.001, 0.179  median 0.691 / 0.527 / 0.705  p95 0.713 / 0.541 / 0.717  1,442.4 / 1,889.8 / 1,416.3 req/s
+latency  direct  c=4   RS256               1,204 B  mean jwt 0.644, ref-memory 0.643 (-0.001), ref-remote 0.931 (+0.287) ms  lookup 0.001, 0.352  median 0.619 / 0.619 / 0.906  p95 0.952 / 0.955 / 1.326  6,203.9 / 6,212.4 / 4,288.3 req/s
+latency  direct  c=4   ES256                 948 B  mean jwt 0.628, ref-memory 0.626 (-0.001), ref-remote 0.907 (+0.280) ms  lookup 0.001, 0.327  median 0.605 / 0.600 / 0.886  p95 0.917 / 0.913 / 1.259  6,360.9 / 6,374.8 / 4,401.7 req/s
+latency  direct  c=4   EdDSA                 948 B  mean jwt 0.621, ref-memory 0.606 (-0.014), ref-remote 0.891 (+0.271) ms  lookup 0.001, 0.322  median 0.598 / 0.587 / 0.872  p95 0.915 / 0.896 / 1.252  6,431.3 / 6,584.3 / 4,480.2 req/s
+latency  direct  c=4   ML-DSA-44           4,095 B  mean jwt 0.569, ref-memory 0.503 (-0.066), ref-remote 0.816 (+0.247) ms  lookup 0.001, 0.310  median 0.546 / 0.484 / 0.799  p95 0.838 / 0.750 / 1.136  7,014.1 / 7,931.6 / 4,893.8 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128s  11,353 B  mean jwt 1.103, ref-memory 0.915 (-0.187), ref-remote 1.245 (+0.143) ms  lookup 0.001, 0.535  median 1.077 / 0.902 / 1.213  p95 1.620 / 1.320 / 1.855  3,621.8 / 4,363.3 / 3,207.8 req/s
+latency  direct  c=4   SLH-DSA-SHA2-128f  23,662 B  mean jwt 2.121, ref-memory 1.745 (-0.376), ref-remote 2.118 (-0.003) ms  lookup 0.001, 0.883  median 2.100 / 1.732 / 2.100  p95 3.084 / 2.584 / 3.050  1,883.3 / 2,288.7 / 1,886.3 req/s
+latency  browser c=1   RS256               1,204 B  mean jwt 0.437, ref-memory 0.430 (-0.007), ref-remote 0.565 (+0.128) ms  lookup 0.001, 0.142  median 0.400 / 0.400 / 0.600  p95 0.500 / 0.500 / 0.700  2,286.8 / 2,321.9 / 1,768.5 req/s
+latency  browser c=1   ES256                 948 B  mean jwt 0.470, ref-memory 0.466 (-0.004), ref-remote 0.578 (+0.108) ms  lookup 0.001, 0.140  median 0.500 / 0.500 / 0.600  p95 0.600 / 0.500 / 0.700  2,126.3 / 2,145.2 / 1,729.5 req/s
+latency  browser c=1   EdDSA                 948 B  mean jwt 0.461, ref-memory 0.436 (-0.025), ref-remote 0.572 (+0.111) ms  lookup 0.001, 0.140  median 0.400 / 0.400 / 0.600  p95 0.500 / 0.500 / 0.700  2,169.0 / 2,293.0 / 1,746.7 req/s
+latency  browser c=1   ML-DSA-44           4,095 B  mean jwt 0.483, ref-memory 0.427 (-0.056), ref-remote 0.577 (+0.094) ms  lookup 0.001, 0.146  median 0.500 / 0.400 / 0.600  p95 0.600 / 0.500 / 0.700  2,068.6 / 2,342.8 / 1,733.1 req/s
+latency  browser c=1   SLH-DSA-SHA2-128s  11,353 B  mean jwt 0.609, ref-memory 0.522 (-0.087), ref-remote 0.698 (+0.089) ms  lookup 0.001, 0.170  median 0.600 / 0.500 / 0.700  p95 0.700 / 0.600 / 0.800  1,640.5 / 1,914.3 / 1,431.1 req/s
+latency  browser c=1   SLH-DSA-SHA2-128f  23,662 B  mean jwt 0.922, ref-memory 0.701 (-0.221), ref-remote 0.902 (-0.020) ms  lookup 0.001, 0.184  median 0.900 / 0.700 / 0.900  p95 1.000 / 0.800 / 1.000  1,084.7 / 1,426.8 / 1,108.6 req/s
+latency  browser c=4   RS256               1,204 B  mean jwt 0.979, ref-memory 0.972 (-0.007), ref-remote 1.329 (+0.350) ms  lookup 0.001, 0.451  median 0.900 / 0.900 / 1.200  p95 1.400 / 1.400 / 1.800  4,085.0 / 4,115.8 / 3,008.8 req/s
+latency  browser c=4   ES256                 948 B  mean jwt 0.990, ref-memory 0.965 (-0.025), ref-remote 1.305 (+0.314) ms  lookup 0.001, 0.417  median 0.900 / 0.900 / 1.200  p95 1.300 / 1.300 / 1.700  4,037.8 / 4,142.5 / 3,064.0 req/s
+latency  browser c=4   EdDSA                 948 B  mean jwt 0.975, ref-memory 0.962 (-0.013), ref-remote 1.294 (+0.319) ms  lookup 0.001, 0.422  median 0.900 / 0.900 / 1.200  p95 1.300 / 1.300 / 1.700  4,100.3 / 4,156.8 / 3,089.8 req/s
+latency  browser c=4   ML-DSA-44           4,095 B  mean jwt 0.929, ref-memory 0.873 (-0.056), ref-remote 1.258 (+0.330) ms  lookup 0.001, 0.409  median 0.800 / 0.800 / 1.200  p95 1.200 / 1.200 / 1.600  4,304.7 / 4,579.4 / 3,177.5 req/s
+latency  browser c=4   SLH-DSA-SHA2-128s  11,353 B  mean jwt 1.408, ref-memory 1.217 (-0.191), ref-remote 1.650 (+0.242) ms  lookup 0.001, 0.626  median 1.300 / 1.100 / 1.500  p95 2.000 / 1.800 / 2.300  2,840.2 / 3,285.4 / 2,423.3 req/s
+latency  browser c=4   SLH-DSA-SHA2-128f  23,662 B  mean jwt 2.363, ref-memory 2.021 (-0.341), ref-remote 2.442 (+0.079) ms  lookup 0.001, 0.920  median 2.300 / 2.000 / 2.400  p95 3.500 / 3.100 / 3.500  1,691.6 / 1,976.6 / 1,636.5 req/s
+Saved the results to results/refs/20261118T225526Z-macos
+```
+
+### Limitations
+
+- **WSL2 was not run.** The `refs` command has not been run on WSL2, so every measurement here is from this Mac. A reference's request and response are small enough for WSL2's 4 KiB `proxy_buffer_size` too, but that is calculated from this run's sizes, not measured.
+- **Loopback only.** Every client, nginx, waitress, and the store process ran on one machine over loopback, so the remote store's lookup is a loopback round trip; across a real network it would add at least one network round trip per request. The network cost of the request is only calculated, with S3-01's assumptions (upload only, no loss, no TLS or HTTP/2 framing) and its illustrative profiles.
+- **One run each, in a fixed order.** Each of the three latency runs ran once, JWTs first, so run-to-run variation was not measured and a drift between runs cannot be told apart from the classical configurations' small differences. EdDSA's difference from ES256 shows the noise within a run.
+- **Derived JWT verdicts.** The JWT column of the size limits is copied from the committed claims run on this Mac ([results/claims/20261118T053507Z-macos/claims.json](results/claims/20261118T053507Z-macos/claims.json)), recorded at another time with the same documented defaults; it was not measured again here, so this run sent no rejected JWT. With `--claims minimal` no claims run applies, and the verdicts and `moved` are null.
+- **The stores are experiment stores.** The memory store is per-process: it lives in one application process and is lost with it; the remote store is a single waitress process over loopback HTTP/1.1 with JSON bodies, not a production store such as Redis, which the team excluded. Both keep expired and revoked entries so they can report `expired` and `revoked` apart from `unknown`; a store with its own time to live, such as Redis's `EXPIRE`, would forget an expired reference and could not tell it from an unknown one. Neither store persists, replicates, or bounds its entries.
+- **Re-verification on every request.** The application verifies the JWT's signature after every lookup, so verification stays in every reference measurement. A design that trusts the store or caches verified tokens would save that time (0.048–0.311 ms per request for verification in the JWT run, http.client at concurrency 1); that was not measured.
+- **Chromium only, one browser profile.** Firefox and Safari were not measured.
+- **HTTP/1.1 without TLS.** The stack serves plain HTTP/1.1 on 127.0.0.1; HTTPS and HTTP/2 (S3-04) would change the request's bytes on the wire and, for the remote store, the cost of its connection.
+- **References in one log.** `limits/logs/browser.log.gz` holds the references Chromium received, stored, and sent, as the token check's `browser.log` holds tokens; each names a token only in the memory of a stack that has stopped. No other file holds a reference or a token.
+- **Not the default limits.** The three latency stacks raise nginx's header buffers with `--header-buffers 32k`, which SLH-DSA-SHA2-128f's 23,686-byte Bearer line needs, and the non-default `--upstream-keepalive 64`, as recorded in `refs.json` and marked in each `nginx.conf`; the size-limits and behavior stacks keep every default.
+- **Machine state.** Nothing else from the project was running during the run, but Spotify, Steam, Discord, and the Claude app were open, and the other S3-02 candidates were built and tested on the same Mac before and after it. The 1-minute load average was 1.91 when the run started and 3.24 when it ended, including the run's own load.

@@ -12,9 +12,14 @@ raw timings (see scripts/transport_load.py). claims measures the smaller-claim-s
 oidc and essential claims (see scripts/transport_claims.py). cookies measures the
 cookie-splitting mitigation (S3-02): the chunk plan, size limits at the default and raised nginx
 buffers, the handling of missing or reordered chunks, and load latency with one jwt cookie and
-with split cookies (see scripts/transport_cookies.py). serve starts the stack and keeps it
-running until SIGINT or SIGTERM. versions compares the installed component versions with
-transport/stack.json.
+with split cookies (see scripts/transport_cookies.py). refs measures the third, reference
+tokens (S3-02): the request sizes, the size limits of a short opaque reference at the defaults,
+how the application handles unknown, expired, revoked, and doubled references and a stopped
+reference store, and load latency with Bearer JWTs and Bearer references backed by the
+application's memory or by a separate store process (see scripts/transport_refs.py); with
+ref_store="remote", start_stack also starts that store process on 127.0.0.1. serve starts the
+stack and keeps it running until SIGINT or SIGTERM. versions compares the installed component
+versions with transport/stack.json.
 """
 
 import argparse
@@ -65,6 +70,15 @@ class Stack:
     app_url: str
     run_dir: Path
     upstream_keepalive: int | None = None  # See upstream_keepalive_config; None is the default.
+    ref_store: str = "memory"  # Where the application keeps references; see start_stack.
+    store_url: str | None = None  # The store process's URL with ref_store="remote".
+
+
+# start_stack's ref_store values: the application's own memory, or a separate store process.
+REF_STORES = ("memory", "remote")
+# The store process of each running stack with ref_store="remote", by its store_url, so that a
+# run can stop the store alone while nginx and the application keep running (stop_store).
+STORE_PROCESSES: dict[str, subprocess.Popen] = {}
 
 
 def load_manifest() -> dict:
@@ -199,10 +213,14 @@ def log_tail(path: Path, lines: int = 5) -> str:
 
 
 def stop_process(process: subprocess.Popen) -> None:
-    """Stop a process and every process in its session, such as nginx workers."""
+    """Stop a process and every process in its session, such as nginx workers.
+
+    On macOS, killpg raises PermissionError for a group whose only member is a leader that has
+    exited but is not reaped yet, so that counts as a group still stopping, never as an error.
+    """
     try:
         os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
+    except (ProcessLookupError, PermissionError):
         pass
     deadline = time.monotonic() + STOP_GRACE_SECONDS
     while time.monotonic() < deadline:
@@ -211,10 +229,12 @@ def stop_process(process: subprocess.Popen) -> None:
             os.killpg(process.pid, 0)
         except ProcessLookupError:
             break
+        except PermissionError:  # Only the unreaped leader is left; poll() reaps it next.
+            pass
         time.sleep(0.05)
     try:
         os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
+    except (ProcessLookupError, PermissionError):
         pass
     process.wait()
 
@@ -228,8 +248,10 @@ def launch(command: list[str], run_dir: Path, log_path: Path) -> subprocess.Pope
 
 
 def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: float,
-               timeout: float, log_path: Path, proxied: bool) -> None:
-    """Wait until GET <base_url>/api/echo returns the application's echo."""
+               timeout: float, log_path: Path, proxied: bool, path: str = "/api/echo",
+               answering: str = "application") -> None:
+    """Wait until GET <base_url><path> returns JSON whose layer is `answering`: by default the
+    application's echo, and for the reference store its readiness answer at /."""
     while True:
         status = process.poll()
         if status is not None:
@@ -237,8 +259,8 @@ def wait_ready(layer: str, process: subprocess.Popen, base_url: str, deadline: f
                                f"see {log_path}{log_tail(log_path)}")
         try:
             attempt = min(1.0, max(0.05, deadline - time.monotonic()))
-            code, headers, body = http_get(f"{base_url}/api/echo", timeout=attempt)
-            if (code == 200 and json.loads(body).get("layer") == "application"
+            code, headers, body = http_get(f"{base_url}{path}", timeout=attempt)
+            if (code == 200 and json.loads(body).get("layer") == answering
                     and (not proxied or PROXY_MARKER.lower() in headers)):
                 return
         except (OSError, http.client.HTTPException, ValueError):
@@ -333,24 +355,46 @@ def upstream_keepalive_config(config: str, app_port: int, connections: int) -> s
                                                     for line in block), server_line]), 1)
 
 
+STORE_LAYER = "reference_store"  # What the store process answers at / once it is ready.
+
+
+def stop_store(stack: Stack) -> None:
+    """Stop a running stack's reference store process; nginx and the application keep running.
+
+    The application then answers 503 for every reference (S3-02's store_unavailable case).
+    Raises ValueError for a stack that has no running store process.
+    """
+    process = STORE_PROCESSES.get(stack.store_url) if stack.store_url else None
+    if process is None:
+        raise ValueError("the stack has no running reference store process")
+    stop_process(process)
+
+
 @contextmanager
 def start_stack(proxy_port: int | None = None, app_port: int | None = None,
                 run_dir: str | Path | None = None, timeout: float = 60.0,
                 proxy_buffers: str | None = None, header_buffers: str | None = None,
-                upstream_keepalive: int | None = None):
+                upstream_keepalive: int | None = None, ref_store: str = "memory"):
     """Start the application server and the reverse proxy; yield a Stack and stop both on exit.
 
     proxy_buffers, such as "16k", sets nginx's upstream response buffers (see
     proxy_buffer_directives), header_buffers, such as "512k", raises nginx's request header
     line limit (see header_buffer_directives), and upstream_keepalive, such as 64, keeps that
     many idle connections from nginx to waitress open (see upstream_keepalive_config); None
-    keeps nginx's defaults, as transport/nginx.conf.template does.
+    keeps nginx's defaults, as transport/nginx.conf.template does. ref_store "memory" keeps the
+    application's references in its own memory; "remote" first starts the reference store
+    process (transport_app.py --serve-store) on another free 127.0.0.1 port, logging to
+    <run_dir>/logs/store.log, starts the application with --store-port, and stops the store
+    after the application. The store is not behind nginx, so nginx.conf is the same for both.
+    Raises ValueError for an invalid argument before anything starts.
     """
     for name, port in (("proxy_port", proxy_port), ("app_port", app_port)):
         if port is not None and not valid_port(port):
             raise ValueError(f"{name} must be an int in 1-65535, got {port!r}")
     if proxy_port is not None and proxy_port == app_port:
         raise ValueError("proxy_port and app_port must differ")
+    if not isinstance(ref_store, str) or ref_store not in REF_STORES:
+        raise ValueError(f"ref_store must be one of {', '.join(REF_STORES)}, got {ref_store!r}")
     check_timeout(timeout)
     buffer_directives = None if proxy_buffers is None else proxy_buffer_directives(proxy_buffers)
     header_directives = None if header_buffers is None else header_buffer_directives(header_buffers)
@@ -371,9 +415,12 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
     if app_port is None:
         app_port = free_port({proxy_port})
     proxy_url, app_url = f"http://{HOST}:{proxy_port}", f"http://{HOST}:{app_port}"
+    store_port = free_port({proxy_port, app_port}) if ref_store == "remote" else None
+    store_url = None if store_port is None else f"http://{HOST}:{store_port}"
     deadline = time.monotonic() + timeout
 
     processes = []
+    store = None
     try:
         for role, port in (("proxy", proxy_port), ("app_server", app_port)):
             if port_in_use(port):
@@ -382,8 +429,18 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
         if nginx is None:
             raise RuntimeError(f"{names['proxy']}: nginx executable not found")
 
-        processes.append(launch([sys.executable, str(APP_SCRIPT), "--port", str(app_port)],
-                                run_dir, logs / "app.log"))
+        app_command = [sys.executable, str(APP_SCRIPT), "--port", str(app_port)]
+        if store_port is not None:
+            if port_in_use(store_port):
+                raise RuntimeError(f"reference store: port {store_port} on {HOST} is already "
+                                   "in use")
+            store = launch([sys.executable, str(APP_SCRIPT), "--serve-store", "--port",
+                            str(store_port)], run_dir, logs / "store.log")
+            STORE_PROCESSES[store_url] = store
+            wait_ready("reference store", store, store_url, deadline, timeout,
+                       logs / "store.log", False, path="/", answering=STORE_LAYER)
+            app_command += ["--store-port", str(store_port)]
+        processes.append(launch(app_command, run_dir, logs / "app.log"))
         wait_ready(names["app_server"], processes[-1], app_url, deadline, timeout,
                    logs / "app.log", False)
 
@@ -409,10 +466,15 @@ def start_stack(proxy_port: int | None = None, app_port: int | None = None,
         wait_ready(names["proxy"], processes[-1], proxy_url, deadline, timeout, error_log, True)
 
         yield Stack(proxy_url=proxy_url, app_url=app_url, run_dir=run_dir,
-                    upstream_keepalive=upstream_keepalive)
+                    upstream_keepalive=upstream_keepalive, ref_store=ref_store,
+                    store_url=store_url)
     finally:
         for process in reversed(processes):
             stop_process(process)
+        if store is not None:  # After the application, which holds connections to it.
+            STORE_PROCESSES.pop(store_url, None)
+            if store.returncode is None:  # stop_store may have stopped it already.
+                stop_process(store)
 
 
 def run_check(stack, timeout: float = 60.0) -> dict:
@@ -745,6 +807,62 @@ def run_cookies_command(parser: argparse.ArgumentParser, args: argparse.Namespac
     sys.stdout.write(f"Saved the results to {args.output_dir}\n")
 
 
+# Each run_refs setting, mapped to the attribute of the refs command's option that sets it.
+REFS_SETTING_OPTIONS = {
+    "algorithms": "alg", "claims": "claims", "clients": "client", "concurrency": "concurrency",
+    "duration": "duration", "warmup": "warmup", "timeout": "timeout",
+    "header_buffers": "header_buffers", "upstream_keepalive": "upstream_keepalive",
+}
+
+
+def refs_command_settings(parser: argparse.ArgumentParser, args: argparse.Namespace) -> dict:
+    """Return the refs command's run_refs settings; exit 2 on a usage error, before any start.
+
+    As for cookies, each setting comes from its option when it was given, else from the
+    --settings file (an earlier refs.json), else from run_refs's default. --output-dir and
+    --run-dir are never taken from the file.
+    """
+    from scripts.transport_refs import checked_settings, default_settings, read_saved_settings
+
+    reject_repeated_values(parser, args)
+    reject_used_output_dir(parser, args.output_dir)
+
+    settings = default_settings()
+    if args.settings is not None:
+        try:
+            settings.update(read_saved_settings(args.settings))
+        except ValueError as error:
+            parser.error(f"--settings: {error}")
+    given = {name: getattr(args, option) for name, option in REFS_SETTING_OPTIONS.items()}
+    settings.update({name: value for name, value in given.items() if value is not None})
+    try:
+        return checked_settings(**settings)
+    except ValueError as error:  # Options are checked as they are parsed, so a saved value.
+        parser.error(f"--settings: {error}")
+
+
+def run_refs_command(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Run every phase of the refs command, print its summary, and say where it was saved.
+
+    Usage errors exit 2 before any process starts. Runtime failures and SIGINT or SIGTERM print
+    'Error: ...' and exit 1, after every started process has been stopped. Rejected pairs are
+    results, not failures, so they still exit 0.
+    """
+    settings = refs_command_settings(parser, args)
+    from scripts.transport_refs import run_refs, summary_lines
+
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, interrupt)
+    try:
+        result = run_refs(args.output_dir, run_dir=args.run_dir, **settings)
+    except KeyboardInterrupt:
+        parser.exit(1, "Error: interrupted\n")
+    except (OSError, RuntimeError, ValueError) as error:
+        parser.exit(1, f"Error: {error}\n")
+    sys.stdout.write("".join(f"{line}\n" for line in summary_lines(result)))
+    sys.stdout.write(f"Saved the results to {args.output_dir}\n")
+
+
 def report_token_check(parser: argparse.ArgumentParser, result: dict) -> None:
     """Summarize each pair on stderr, and exit 1 if a pair did not match the documented limits."""
     from scripts.transport_tokens import mismatch_message, summary_lines
@@ -919,6 +1037,53 @@ def add_cookies_command(commands) -> None:
                               "temporary directory each)")
 
 
+def add_refs_command(commands) -> None:
+    """Add the refs command; its options default to None so --settings can fill them in.
+
+    Like cookies, it starts its own stacks, so it takes none of the shared stack options except
+    --timeout, --header-buffers, and --run-dir.
+    """
+    refs = commands.add_parser("refs",
+                               help="measure the reference-token mitigation (S3-02): request "
+                                    "sizes, size limits, reference handling, and lookup latency")
+    refs.add_argument("--output-dir", type=Path, required=True, metavar="DIR",
+                      help="save refs.json, limits/, behavior/, latency-jwt/, "
+                           "latency-ref-memory/, and latency-ref-remote/ here; it must not "
+                           "exist yet or be empty")
+    refs.add_argument("--settings", type=Path, metavar="PATH",
+                      help="reuse the settings of an earlier run's refs.json; options given "
+                           "here override the saved values")
+    refs.add_argument("--alg", action="extend", nargs="+", type=algorithm_name, metavar="NAME",
+                      help="configuration to measure; repeat or list several (default: all "
+                           "six; ES256, the latency reference, is always measured)")
+    # Literal names, so importing this module never loads scripts.token_sizing.
+    refs.add_argument("--claims", choices=("minimal", "oidc", "essential"),
+                      help="claims fixture of every token (default: oidc)")
+    refs.add_argument("--client", action="extend", nargs="+", choices=("direct", "browser"),
+                      help="latency clients: http.client threads (direct), Chromium's test "
+                           "page (browser), or both (default: direct browser)")
+    refs.add_argument("--concurrency", action="extend", nargs="+", type=concurrency_level,
+                      metavar="N", help="latency closed-loop workers, 1-64; repeat or list "
+                                        "several (default: 1 4)")
+    refs.add_argument("--duration", type=duration_seconds, metavar="SECONDS",
+                      help="measured seconds per latency cell (default: 5)")
+    refs.add_argument("--warmup", type=warmup_seconds, metavar="SECONDS",
+                      help="unrecorded seconds before each latency cell (default: 1)")
+    refs.add_argument("--timeout", type=positive_seconds, metavar="SECONDS",
+                      help="seconds allowed for startup and for each browser step (default: 60)")
+    refs.add_argument("--header-buffers", type=header_buffer_size, metavar="SIZE",
+                      help="latency stacks only: set nginx's large_client_header_buffers to 4 "
+                           "SIZE (default: 32k); the size-limits and behavior stacks always keep "
+                           "nginx's 4 8k")
+    refs.add_argument("--upstream-keepalive", type=keepalive_connections, metavar="N",
+                      help="latency stacks only, not a default: let nginx keep up to N idle "
+                           "connections to waitress (default: a new connection per request)")
+    refs.add_argument("--run-dir", type=Path, metavar="DIR",
+                      help="put the five stacks' run directories (limits, behavior, latency-jwt, "
+                           "latency-ref-memory, latency-ref-remote) here (default: a new "
+                           "temporary directory each)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -957,6 +1122,7 @@ def main() -> None:
     add_load_command(commands)
     add_claims_command(commands)
     add_cookies_command(commands)
+    add_refs_command(commands)
     commands.add_parser("serve", parents=[options], help="start the stack until SIGINT or SIGTERM")
     commands.add_parser("versions", help="compare installed versions with transport/stack.json")
     args = parser.parse_args()
@@ -978,6 +1144,9 @@ def main() -> None:
         return
     if args.command == "cookies":  # So does cookies.
         run_cookies_command(parser, args)
+        return
+    if args.command == "refs":  # And refs.
+        run_refs_command(parser, args)
         return
 
     if args.proxy_port is not None and args.proxy_port == args.app_port:

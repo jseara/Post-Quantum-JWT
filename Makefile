@@ -12,7 +12,7 @@ LOGS := $(RUN_DIR)/logs
 STACK := PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/transport_stack.py
 
 .DEFAULT_GOAL := help
-.PHONY: help serve logs check tokens sweep load claims cookies versions test benchmark setup
+.PHONY: help serve logs check tokens sweep load claims cookies refs versions test benchmark setup
 
 help:
 	@echo "make serve      start nginx (http://localhost:$(PROXY_PORT)) and the app (port $(APP_PORT)); Ctrl+C stops both"
@@ -23,6 +23,7 @@ help:
 	@echo "make load       end-to-end latency and throughput of all six through the stack (LOAD_DIR=$(LOAD_DIR))"
 	@echo "make claims     smaller claim sets: token sizes, size limits, and latency, oidc vs essential (CLAIMS_DIR=$(CLAIMS_DIR))"
 	@echo "make cookies    cookie splitting: chunk plan, size limits, chunk handling, and latency, jwt cookie vs split (COOKIES_DIR=$(COOKIES_DIR))"
+	@echo "make refs       reference tokens: size limits, reference handling, and lookup latency, Bearer JWT vs reference (REFS_DIR=$(REFS_DIR))"
 	@echo "make versions   compare installed versions with transport/stack.json"
 	@echo "make test       run the full test suite"
 	@echo "make benchmark  run the Sprint 1 benchmark (ITERATIONS=$(ITERATIONS), WARMUP=$(WARMUP))"
@@ -75,6 +76,13 @@ COOKIES_DIR ?= results/cookies/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
 # repeat make load's keepalive and 2 s cells.
 cookies:
 	$(STACK) cookies --header-buffers 32k --proxy-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(COOKIES_DIR)"
+
+REFS_DIR ?= results/refs/$(shell date -u +%Y%m%dT%H%M%SZ)-$(LOAD_PLATFORM)
+# S3-02's reference tokens (see MITIGATION_RESULTS.md). The size-limits and behavior stacks keep
+# nginx's defaults; the three latency stacks repeat make load's header buffers, keepalive, and
+# 2 s cells.
+refs:
+	$(STACK) refs --header-buffers 32k --upstream-keepalive 64 --duration 2 --output-dir "$(REFS_DIR)"
 
 versions:
 	$(STACK) versions
