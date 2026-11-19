@@ -2594,17 +2594,18 @@ class MakefileTests(unittest.TestCase):
         if before is None:
             self.skipTest("BASE_COMMIT is not available in this checkout")
         old, new = make_blocks(before), make_blocks(self.text)
-        self.assertEqual(set(new), set(old) | {"refs"})
+        # Later Sprint 3 items (S3-04) may add their own targets and help lines.
+        self.assertLessEqual(set(old) | {"refs"}, set(new))
         for target, lines in old.items():
             with self.subTest(target=target):
                 if target == "help":  # help gains the refs line, after the cookies line.
                     added = [line for line in new[target] if line not in lines]
-                    self.assertEqual(len(added), 1, added)
-                    self.assertTrue(added[0].startswith('\t@echo "make refs'), added[0])
+                    refs = [line for line in added if line.startswith('\t@echo "make refs')]
+                    self.assertEqual(len(refs), 1, added)
                     self.assertEqual([line for line in new[target] if line in lines], lines)
                     cookies = next(index for index, line in enumerate(new[target])
                                    if 'make cookies' in line)
-                    self.assertGreater(new[target].index(added[0]), cookies)
+                    self.assertGreater(new[target].index(refs[0]), cookies)
                 else:
                     self.assertEqual(new[target], lines)
         assignments = [line for line in before.splitlines()
@@ -2615,7 +2616,7 @@ class MakefileTests(unittest.TestCase):
                 self.assertIn(line, self.text.splitlines())
         phony_before = next(line for line in before.splitlines() if line.startswith(".PHONY:"))
         phony_after = next(line for line in self.text.splitlines() if line.startswith(".PHONY:"))
-        self.assertEqual(set(phony_after.split()), set(phony_before.split()) | {"refs"})
+        self.assertLessEqual(set(phony_before.split()) | {"refs"}, set(phony_after.split()))
 
 
 # ---- R21: the committed run --------------------------------------------------------------
@@ -3169,10 +3170,13 @@ class UnchangedTests(unittest.TestCase):
         later = {"tests/test_transport_claims.py", "tests/test_transport_cookies.py"}
         tests = [path for path in tests if path not in later]
         self.assertTrue(tests)
+        # S3-04 adds HTTPS and HTTP/2 rendering and new sweep runs, so the nginx template and
+        # results/transport are not frozen here; test_template_keeps_its_limits still checks
+        # the template's limits.
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
-                 "transport/conda-requirements.txt", "transport/nginx.conf.template",
+                 "transport/conda-requirements.txt",
                  "transport/static/index.html", "transport/setup.sh", "fixtures",
-                 "END_TO_END_RESULTS.md", "RESULTS.md", "results/transport", "results/load",
+                 "END_TO_END_RESULTS.md", "RESULTS.md", "results/load",
                  "results/claims", "results/cookies", ":(glob)results/2026110*/**", *tests]
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
@@ -3185,21 +3189,23 @@ class UnchangedTests(unittest.TestCase):
             with self.subTest(directory=directory):
                 listing = self.require(git("ls-tree", "--name-only", f"{BASE_COMMIT}:{directory}"))
                 on_disk = {path.name for path in (REPO / directory).iterdir() if path.is_dir()}
-                self.assertEqual(on_disk, set(listing.split()))
+                if directory == "results/transport":  # S3-04 adds its HTTPS and HTTP/2 runs here.
+                    self.assertLessEqual(set(listing.split()), on_disk)
+                else:
+                    self.assertEqual(on_disk, set(listing.split()))
 
     def test_template_keeps_its_limits(self):
         template = (REPO / "transport" / "nginx.conf.template").read_text(encoding="utf-8")
         self.assertIn("timer_resolution 100ms;", template)
         self.assertNotIn("Not a default", template)
 
-    def test_transport_results_only_gains_links(self):
+    def test_transport_results_gains_links(self):
+        # S3-04 adds its HTTPS and HTTP/2 results to TRANSPORT_RESULTS.md, so only the links
+        # to MITIGATION_RESULTS.md are checked here.
         before = self.require(git_show("TRANSPORT_RESULTS.md")).splitlines()
         after = TRANSPORT_RESULTS.read_text(encoding="utf-8").splitlines()
         added = [line for line in after if line not in before]
-        removed = [line for line in before if line not in after]
-        for line in added:
-            self.assertIn("](MITIGATION_RESULTS.md", line)
-        self.assertLessEqual(len(removed), len(added))
+        self.assertTrue(any("](MITIGATION_RESULTS.md" in line for line in added), added)
 
     def test_stack_module_docstring_describes_refs(self):
         text = (REPO / "scripts" / "transport_stack.py").read_text(encoding="utf-8")
