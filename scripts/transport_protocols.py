@@ -298,7 +298,7 @@ def run_one(output_dir: Path, protocol: str, sweep: str, definition: dict,
     return saved, check, entry
 
 
-def run_protocols(output_dir, protocols: Sequence[str] = DEFAULT_PROTOCOLS,
+def run_protocols(output_dir, protocols: Sequence[str] | None = DEFAULT_PROTOCOLS,
                   sweeps: Sequence[str] | None = None,
                   algorithms: Sequence[str] | None = None, baseline=None,
                   step: int | None = None, max_bytes: int | None = None,
@@ -307,13 +307,16 @@ def run_protocols(output_dir, protocols: Sequence[str] = DEFAULT_PROTOCOLS,
     return what it holds.
 
     Protocols run in PROTOCOLS order and sweeps in SWEEPS order, whatever order they are given
-    in, and algorithms in ADAPTER_LIST order. step and max_bytes, if given, override every
+    in, and algorithms in ADAPTER_LIST order. protocols None means DEFAULT_PROTOCOLS, as sweeps
+    and algorithms None mean all of them. step and max_bytes, if given, override every
     sweep's own. run_dir, if given, holds each stack's run directory at
     <run_dir>/<protocol>-<sweep>. Raises ValueError for any invalid argument, or an output_dir
     that exists and is not empty, before any process starts or output_dir is created, and
     RuntimeError when a layer, Playwright, or a TLS stack's negotiated protocol fails. Every
     started process is stopped, and every experiment key deleted, before this returns or raises.
     """
+    if protocols is None:
+        protocols = DEFAULT_PROTOCOLS
     settings = checked_settings(protocols, sweeps, algorithms, baseline, step, max_bytes,
                                 timeout)
     output_dir = check_output_dir(output_dir)

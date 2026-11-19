@@ -487,7 +487,7 @@ def start_tls_stack(protocol: str = "https", proxy_port: int | None = None,
     if not isinstance(protocol, str) or protocol not in TLS_PROTOCOLS:
         raise ValueError(f"protocol must be one of {', '.join(TLS_PROTOCOLS)}, got {protocol!r}")
     with launch_stack(proxy_port, app_port, run_dir, timeout, proxy_buffers, header_buffers,
-                      None, "memory", protocol) as stack:
+                      upstream_keepalive=None, ref_store="memory", protocol=protocol) as stack:
         yield stack
 
 
