@@ -1,0 +1,2453 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-11-24T16:02:16.621989+00:00",
+  "finished_utc": "2026-11-24T16:44:22.335942+00:00",
+  "recorded_utc": "2026-11-24T16:44:22.335969+00:00",
+  "settings": {
+    "protocols": [
+      "https",
+      "h2"
+    ],
+    "sweeps": [
+      "cookie-default",
+      "cookie-16k",
+      "bearer-default",
+      "bearer-512k"
+    ],
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA",
+      "ML-DSA-44",
+      "SLH-DSA-SHA2-128s",
+      "SLH-DSA-SHA2-128f"
+    ],
+    "baseline": "results/transport/20261113T074114Z-wsl2",
+    "step": null,
+    "max_bytes": null,
+    "timeout": 60.0
+  },
+  "sweep_definitions": {
+    "cookie-default": {
+      "transport": "cookie",
+      "clients": [
+        "browser"
+      ],
+      "claims": "minimal",
+      "attrs": "default",
+      "proxy_buffers": null,
+      "header_buffers": null,
+      "step": 512,
+      "max_bytes": 24576
+    },
+    "cookie-16k": {
+      "transport": "cookie",
+      "clients": [
+        "browser"
+      ],
+      "claims": "minimal",
+      "attrs": "default",
+      "proxy_buffers": "16k",
+      "header_buffers": null,
+      "step": 512,
+      "max_bytes": 24576
+    },
+    "bearer-default": {
+      "transport": "bearer",
+      "clients": [
+        "browser",
+        "direct"
+      ],
+      "claims": "minimal",
+      "attrs": "default",
+      "proxy_buffers": null,
+      "header_buffers": null,
+      "step": 512,
+      "max_bytes": 24576
+    },
+    "bearer-512k": {
+      "transport": "bearer",
+      "clients": [
+        "browser",
+        "direct"
+      ],
+      "claims": "minimal",
+      "attrs": "default",
+      "proxy_buffers": null,
+      "header_buffers": "512k",
+      "step": 16384,
+      "max_bytes": 327680
+    }
+  },
+  "environment": {
+    "python": "3.15.2",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "processor": "x86_64",
+    "cpu_count": 8,
+    "cryptography": "50.0.2",
+    "pyjwt": "2.15.1",
+    "pqcrypto": "1.0.0",
+    "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+    "timer": "perf_counter_ns",
+    "git_commit": "e57ed916be058727fda51ea0011f7acb3e64a149",
+    "git_dirty_scripts_or_fixtures": false,
+    "page_size_bytes": 4096,
+    "waitress_threads": 4
+  },
+  "layers": [
+    {
+      "role": "automation",
+      "component": "Playwright for Python",
+      "version": "1.64.1"
+    },
+    {
+      "role": "browser",
+      "component": "Chromium (Chrome for Testing)",
+      "version": "156.0.8078.4"
+    },
+    {
+      "role": "proxy",
+      "component": "nginx",
+      "version": "1.31.8"
+    },
+    {
+      "role": "app_server",
+      "component": "waitress",
+      "version": "3.0.2"
+    }
+  ],
+  "browser": {
+    "version": "156.0.8078.4",
+    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+  },
+  "experiment_keys": true,
+  "runs": [
+    {
+      "protocol": "https",
+      "sweep": "cookie-default",
+      "directory": "https-cookie-default",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/1.1"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/1.1": 518
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:01:17+00:00",
+        "not_after": "2026-12-01T16:02:17+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "10:CB:DD:69:1B:FC:A8:1C:8C:B8:1F:C9:45:72:B4:2C:E1:AC:8C:79:BB:A0:16:08:AA:BD:45:B1:CA:84:A3:20"
+      }
+    },
+    {
+      "protocol": "https",
+      "sweep": "cookie-16k",
+      "directory": "https-cookie-16k",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/1.1"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/1.1": 602
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:03:46+00:00",
+        "not_after": "2026-12-01T16:04:46+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "5D:A1:B3:0B:13:94:FA:E2:C7:6F:F1:51:AD:DD:19:C0:66:04:13:65:92:57:8E:E3:B8:59:D8:16:DC:AA:65:E9"
+      }
+    },
+    {
+      "protocol": "https",
+      "sweep": "bearer-default",
+      "directory": "https-bearer-default",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/1.1"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/1.1": 512
+        },
+        "direct": {
+          "HTTP/1.1": 256
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:27:55+00:00",
+        "not_after": "2026-12-01T16:28:55+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "5D:A5:51:A1:C2:30:80:AE:BC:C2:86:25:13:AC:2D:05:50:FB:DA:1C:48:6D:B6:84:EE:EB:00:38:77:A2:2E:D8"
+      }
+    },
+    {
+      "protocol": "https",
+      "sweep": "bearer-512k",
+      "directory": "https-bearer-512k",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/1.1"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/1.1": 418
+        },
+        "direct": {
+          "HTTP/1.1": 203
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:30:35+00:00",
+        "not_after": "2026-12-01T16:31:35+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "25:4C:B9:28:2A:D4:26:DD:B7:75:71:B2:FD:8E:A2:F6:E2:3A:C4:69:32:15:71:0D:04:F8:2F:CF:2E:80:E3:3B"
+      }
+    },
+    {
+      "protocol": "h2",
+      "sweep": "cookie-default",
+      "directory": "h2-cookie-default",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/2.0"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/2.0": 518
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:33:31+00:00",
+        "not_after": "2026-12-01T16:34:31+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "61:DB:42:36:7E:83:B0:82:6B:76:CE:CD:ED:88:2A:1D:43:0D:CD:6F:69:2B:20:21:BE:C8:77:94:3A:AC:71:D9"
+      }
+    },
+    {
+      "protocol": "h2",
+      "sweep": "cookie-16k",
+      "directory": "h2-cookie-16k",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/2.0"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/2.0": 602
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:35:46+00:00",
+        "not_after": "2026-12-01T16:36:46+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "42:C6:82:66:CF:D3:65:94:67:04:D1:04:0B:10:AF:2E:B5:C4:CC:FE:35:D2:A9:C1:89:ED:0F:99:14:FA:A5:4B"
+      }
+    },
+    {
+      "protocol": "h2",
+      "sweep": "bearer-default",
+      "directory": "h2-bearer-default",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/2.0"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/2.0": 516
+        },
+        "direct": {
+          "HTTP/1.1": 256
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:38:27+00:00",
+        "not_after": "2026-12-01T16:39:27+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "FD:79:99:DC:FB:67:B8:21:70:04:C4:8B:6A:02:FA:17:88:84:C2:00:15:3B:99:D9:53:AC:A9:91:5A:01:F5:27"
+      }
+    },
+    {
+      "protocol": "h2",
+      "sweep": "bearer-512k",
+      "directory": "h2-bearer-512k",
+      "check": {
+        "page_status": 200,
+        "negotiated_protocol": "HTTP/2.0"
+      },
+      "negotiated": {
+        "browser": {
+          "HTTP/2.0": 406
+        },
+        "direct": {
+          "HTTP/1.1": 203
+        }
+      },
+      "certificate": {
+        "subject": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "issuer": "O=CIS 628 transport experiment key - not a production credential,CN=localhost",
+        "subject_alt_names": [
+          "DNS:localhost",
+          "IP:127.0.0.1"
+        ],
+        "not_before": "2026-11-24T16:40:45+00:00",
+        "not_after": "2026-12-01T16:41:45+00:00",
+        "public_key": "EC P-256",
+        "sha256_fingerprint": "09:D1:0B:11:97:8B:C1:C8:7F:B9:E2:85:95:BE:33:09:7D:00:CE:FD:4B:56:75:A1:E0:B5:E6:89:62:7F:2E:4E"
+      }
+    }
+  ],
+  "comparison": [
+    {
+      "sweep": "cookie-default",
+      "algorithm": "RS256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 3915,
+        "first_rejection": {
+          "token_bytes": 3916,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 3916,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-default",
+      "algorithm": "ES256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 3915,
+        "first_rejection": {
+          "token_bytes": 3916,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 3916,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-default",
+      "algorithm": "EdDSA",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 3915,
+        "first_rejection": {
+          "token_bytes": 3916,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 3916,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3916,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3916,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-default",
+      "algorithm": "ML-DSA-44",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 3915,
+        "first_rejection": {
+          "token_bytes": 3917,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 3917,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3917,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3917,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 3915,
+          "first_rejection": {
+            "token_bytes": 3917,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 3917,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-default",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 10613,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-default",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 22922,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "RS256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 4092,
+        "first_rejection": {
+          "token_bytes": 4094,
+          "rejected_by": "browser"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 4094,
+            "outcome": "rejected",
+            "rejected_by": "browser"
+          },
+          {
+            "token_bytes": 16204,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "ES256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 4092,
+        "first_rejection": {
+          "token_bytes": 4094,
+          "rejected_by": "browser"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 4094,
+            "outcome": "rejected",
+            "rejected_by": "browser"
+          },
+          {
+            "token_bytes": 16204,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "EdDSA",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 4092,
+        "first_rejection": {
+          "token_bytes": 4094,
+          "rejected_by": "browser"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 4094,
+            "outcome": "rejected",
+            "rejected_by": "browser"
+          },
+          {
+            "token_bytes": 16204,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 4092,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "ML-DSA-44",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 4093,
+        "first_rejection": {
+          "token_bytes": 4094,
+          "rejected_by": "browser"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 4094,
+            "outcome": "rejected",
+            "rejected_by": "browser"
+          },
+          {
+            "token_bytes": 16205,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 4093,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16205,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 4093,
+          "first_rejection": {
+            "token_bytes": 4094,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 4094,
+              "outcome": "rejected",
+              "rejected_by": "browser"
+            },
+            {
+              "token_bytes": 16205,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 10613,
+          "rejected_by": "browser"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 16204,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "browser"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 16204,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "cookie-16k",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 22922,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "RS256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 10887,
+          "first_rejection": {
+            "token_bytes": 10888,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 10888,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 2719
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "RS256",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "ES256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 10903,
+          "first_rejection": {
+            "token_bytes": 10904,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 10904,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 2735
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "ES256",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "EdDSA",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 10900,
+          "first_rejection": {
+            "token_bytes": 10902,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 10902,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 2732
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "EdDSA",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 8168,
+        "first_rejection": {
+          "token_bytes": 8170,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8170,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 8168,
+          "first_rejection": {
+            "token_bytes": 8170,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8170,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "ML-DSA-44",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 8167,
+        "first_rejection": {
+          "token_bytes": 8169,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8169,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8167,
+          "first_rejection": {
+            "token_bytes": 8169,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8169,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 10703,
+          "first_rejection": {
+            "token_bytes": 10705,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 10705,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 2536
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "ML-DSA-44",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 8167,
+        "first_rejection": {
+          "token_bytes": 8169,
+          "rejected_by": "proxy"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 8169,
+            "outcome": "rejected",
+            "rejected_by": "proxy"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 8167,
+          "first_rejection": {
+            "token_bytes": 8169,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8169,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 8167,
+          "first_rejection": {
+            "token_bytes": 8169,
+            "rejected_by": "proxy"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 8169,
+              "outcome": "rejected",
+              "rejected_by": "proxy"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 10613,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 10613,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 10613,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 22922,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-default",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": null,
+        "first_rejection": {
+          "token_bytes": 22922,
+          "rejected_by": "proxy"
+        },
+        "boundaries": []
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        },
+        "h2": {
+          "largest_verified_token_bytes": null,
+          "first_rejection": {
+            "token_bytes": 22922,
+            "rejected_by": "proxy"
+          },
+          "boundaries": []
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": null,
+        "h2": null
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "RS256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261519,
+        "first_rejection": {
+          "token_bytes": 261520,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261520,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261518,
+          "first_rejection": {
+            "token_bytes": 261519,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261519,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261500,
+          "first_rejection": {
+            "token_bytes": 261502,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261502,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": true,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": -1,
+        "h2": -19
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "RS256",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261996,
+        "first_rejection": {
+          "token_bytes": 261998,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261998,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "ES256",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261519,
+        "first_rejection": {
+          "token_bytes": 261520,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261520,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261518,
+          "first_rejection": {
+            "token_bytes": 261519,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261519,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261500,
+          "first_rejection": {
+            "token_bytes": 261502,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261502,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": true,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": -1,
+        "h2": -19
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "ES256",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261996,
+        "first_rejection": {
+          "token_bytes": 261998,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261998,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "EdDSA",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261519,
+        "first_rejection": {
+          "token_bytes": 261520,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261520,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261518,
+          "first_rejection": {
+            "token_bytes": 261519,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261519,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261500,
+          "first_rejection": {
+            "token_bytes": 261502,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261502,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": true,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": -1,
+        "h2": -19
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "EdDSA",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261996,
+        "first_rejection": {
+          "token_bytes": 261998,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261998,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261998,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261998,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "ML-DSA-44",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261519,
+        "first_rejection": {
+          "token_bytes": 261521,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261521,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261518,
+          "first_rejection": {
+            "token_bytes": 261519,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261519,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261499,
+          "first_rejection": {
+            "token_bytes": 261501,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261501,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": true,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": -1,
+        "h2": -20
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "ML-DSA-44",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261995,
+        "first_rejection": {
+          "token_bytes": 261997,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261997,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261995,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261995,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261519,
+        "first_rejection": {
+          "token_bytes": 261520,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261520,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261517,
+          "first_rejection": {
+            "token_bytes": 261519,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261519,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261500,
+          "first_rejection": {
+            "token_bytes": 261501,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261501,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": true,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": -2,
+        "h2": -19
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261996,
+        "first_rejection": {
+          "token_bytes": 261997,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261997,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "browser",
+      "baseline": {
+        "largest_verified_token_bytes": 261518,
+        "first_rejection": {
+          "token_bytes": 261520,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261520,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261518,
+          "first_rejection": {
+            "token_bytes": 261520,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261520,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261500,
+          "first_rejection": {
+            "token_bytes": 261501,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261501,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": true
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": -18
+      },
+      "moved_by_http2": true
+    },
+    {
+      "sweep": "bearer-512k",
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "client": "direct",
+      "baseline": {
+        "largest_verified_token_bytes": 261996,
+        "first_rejection": {
+          "token_bytes": 261997,
+          "rejected_by": "app_server"
+        },
+        "boundaries": [
+          {
+            "token_bytes": 261997,
+            "outcome": "rejected",
+            "rejected_by": "app_server"
+          }
+        ]
+      },
+      "measured": {
+        "https": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        },
+        "h2": {
+          "largest_verified_token_bytes": 261996,
+          "first_rejection": {
+            "token_bytes": 261997,
+            "rejected_by": "app_server"
+          },
+          "boundaries": [
+            {
+              "token_bytes": 261997,
+              "outcome": "rejected",
+              "rejected_by": "app_server"
+            }
+          ]
+        }
+      },
+      "moved": {
+        "https": false,
+        "h2": false
+      },
+      "difference_bytes": {
+        "https": 0,
+        "h2": 0
+      },
+      "moved_by_http2": false
+    }
+  ],
+  "evidence": {
+    "https-cookie-default": {
+      "sweep": "https-cookie-default/sweep.json",
+      "logs": {
+        "app.log": "https-cookie-default/logs/app.log.gz",
+        "browser.log": "https-cookie-default/logs/browser.log.gz",
+        "proxy-access.log": "https-cookie-default/logs/proxy-access.log.gz",
+        "proxy-error.log": "https-cookie-default/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "https-cookie-default/nginx.conf"
+    },
+    "https-cookie-16k": {
+      "sweep": "https-cookie-16k/sweep.json",
+      "logs": {
+        "app.log": "https-cookie-16k/logs/app.log.gz",
+        "browser.log": "https-cookie-16k/logs/browser.log.gz",
+        "proxy-access.log": "https-cookie-16k/logs/proxy-access.log.gz",
+        "proxy-error.log": "https-cookie-16k/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "https-cookie-16k/nginx.conf"
+    },
+    "https-bearer-default": {
+      "sweep": "https-bearer-default/sweep.json",
+      "logs": {
+        "app.log": "https-bearer-default/logs/app.log.gz",
+        "browser.log": "https-bearer-default/logs/browser.log.gz",
+        "proxy-access.log": "https-bearer-default/logs/proxy-access.log.gz",
+        "proxy-error.log": "https-bearer-default/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "https-bearer-default/nginx.conf"
+    },
+    "https-bearer-512k": {
+      "sweep": "https-bearer-512k/sweep.json",
+      "logs": {
+        "app.log": "https-bearer-512k/logs/app.log.gz",
+        "browser.log": "https-bearer-512k/logs/browser.log.gz",
+        "proxy-access.log": "https-bearer-512k/logs/proxy-access.log.gz",
+        "proxy-error.log": "https-bearer-512k/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "https-bearer-512k/nginx.conf"
+    },
+    "h2-cookie-default": {
+      "sweep": "h2-cookie-default/sweep.json",
+      "logs": {
+        "app.log": "h2-cookie-default/logs/app.log.gz",
+        "browser.log": "h2-cookie-default/logs/browser.log.gz",
+        "proxy-access.log": "h2-cookie-default/logs/proxy-access.log.gz",
+        "proxy-error.log": "h2-cookie-default/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "h2-cookie-default/nginx.conf"
+    },
+    "h2-cookie-16k": {
+      "sweep": "h2-cookie-16k/sweep.json",
+      "logs": {
+        "app.log": "h2-cookie-16k/logs/app.log.gz",
+        "browser.log": "h2-cookie-16k/logs/browser.log.gz",
+        "proxy-access.log": "h2-cookie-16k/logs/proxy-access.log.gz",
+        "proxy-error.log": "h2-cookie-16k/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "h2-cookie-16k/nginx.conf"
+    },
+    "h2-bearer-default": {
+      "sweep": "h2-bearer-default/sweep.json",
+      "logs": {
+        "app.log": "h2-bearer-default/logs/app.log.gz",
+        "browser.log": "h2-bearer-default/logs/browser.log.gz",
+        "proxy-access.log": "h2-bearer-default/logs/proxy-access.log.gz",
+        "proxy-error.log": "h2-bearer-default/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "h2-bearer-default/nginx.conf"
+    },
+    "h2-bearer-512k": {
+      "sweep": "h2-bearer-512k/sweep.json",
+      "logs": {
+        "app.log": "h2-bearer-512k/logs/app.log.gz",
+        "browser.log": "h2-bearer-512k/logs/browser.log.gz",
+        "proxy-access.log": "h2-bearer-512k/logs/proxy-access.log.gz",
+        "proxy-error.log": "h2-bearer-512k/logs/proxy-error.log.gz"
+      },
+      "nginx_conf": "h2-bearer-512k/nginx.conf"
+    }
+  }
+}
