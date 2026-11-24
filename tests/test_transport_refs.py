@@ -74,6 +74,8 @@ RUN_NAME = re.compile(r"\d{8}T\d{6}Z-macos")
 ERROR_LINE = re.compile(r"(?m)^Error:")
 TOKEN_LIKE = re.compile(r"[A-Za-z0-9_-]{40,}")
 HEX_COMMIT = re.compile(r"[0-9a-f]{40}")
+# The tail of a Linux platform.platform() string, e.g. on WSL2 (see token_runs).
+PLATFORM_TAG = re.compile(r"[A-Za-z0-9_-]*-(?:x86_64|aarch64)-with-glibc[0-9]*")
 NONCE = re.compile(r"[0-9a-f]{32}")
 REF_FORMAT = re.compile(r"ref_[A-Za-z0-9_-]{43}")
 APP_STATUS = re.compile(r'" (\d{3}) headers=')
@@ -235,7 +237,10 @@ def visible_names(directory: Path) -> set[str]:
 
 def token_runs(text: str) -> list[str]:
     """Base64url runs of 40 or more characters (tokens and references), except git commits."""
-    return [run for run in TOKEN_LIKE.findall(text) if not HEX_COMMIT.fullmatch(run)]
+    # Also skips the tail of a Linux platform.platform() string: on WSL2,
+    # "...-microsoft-standard-WSL2-x86_64-with-glibc2.39" holds a 44-character run.
+    return [run for run in TOKEN_LIKE.findall(text)
+            if not HEX_COMMIT.fullmatch(run) and not PLATFORM_TAG.fullmatch(run)]
 
 
 NGINX_TIME = re.compile(r"(?m)^(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[")

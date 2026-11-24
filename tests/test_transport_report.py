@@ -162,6 +162,8 @@ LINK = re.compile(r"\[([^\]]*)\]\(([^)\s]+)\)")
 DATE_TIME = re.compile(r"\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}")
 TOKEN_LIKE = re.compile(r"[A-Za-z0-9_-]{40,}")
 HEX_COMMIT = re.compile(r"[0-9a-f]{40}")
+# The tail of a Linux platform.platform() string, e.g. on WSL2 (see token_runs).
+PLATFORM_TAG = re.compile(r"[A-Za-z0-9_-]*-(?:x86_64|aarch64)-with-glibc[0-9]*")
 ERROR_LINE = re.compile(r"(?m)^Error: ")
 NUMBER = re.compile(r"(?<![\w.])[-−+]?\d[\d,]*(?:\.\d+)?")
 # Version strings, protocol versions, and standard numbers are names, not figures.
@@ -669,7 +671,10 @@ def split_doc(text: str) -> tuple[str, str, str]:
 
 def token_runs(text: str) -> list[str]:
     """Base64url runs of 40 or more characters (tokens and references), except git commits."""
-    return [run for run in TOKEN_LIKE.findall(text) if not HEX_COMMIT.fullmatch(run)]
+    # Also skips the tail of a Linux platform.platform() string: on WSL2,
+    # "...-microsoft-standard-WSL2-x86_64-with-glibc2.39" holds a 44-character run.
+    return [run for run in TOKEN_LIKE.findall(text)
+            if not HEX_COMMIT.fullmatch(run) and not PLATFORM_TAG.fullmatch(run)]
 
 
 def shown_numbers(text: str) -> list[tuple[str, float, int]]:
