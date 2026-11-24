@@ -1,0 +1,3203 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-11-24T15:54:56.253415+00:00",
+  "finished_utc": "2026-11-24T15:57:42.531016+00:00",
+  "recorded_utc": "2026-11-24T15:57:42.531049+00:00",
+  "settings": {
+    "algorithms": [
+      "RS256",
+      "ES256",
+      "EdDSA",
+      "ML-DSA-44",
+      "SLH-DSA-SHA2-128s",
+      "SLH-DSA-SHA2-128f"
+    ],
+    "claims": "oidc",
+    "clients": [
+      "direct",
+      "browser"
+    ],
+    "concurrency": [
+      1,
+      4
+    ],
+    "duration": 2.0,
+    "warmup": 1.0,
+    "timeout": 60.0,
+    "header_buffers": "32k",
+    "proxy_buffers": "32k",
+    "upstream_keepalive": 64
+  },
+  "environment": {
+    "python": "3.15.2",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "processor": "x86_64",
+    "cpu_count": 8,
+    "cryptography": "50.0.2",
+    "pyjwt": "2.15.1",
+    "pqcrypto": "1.0.0",
+    "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+    "timer": "perf_counter_ns",
+    "git_commit": "e57ed916be058727fda51ea0011f7acb3e64a149",
+    "git_dirty_scripts_or_fixtures": false,
+    "page_size_bytes": 4096,
+    "waitress_threads": 4
+  },
+  "layers": [
+    {
+      "role": "automation",
+      "component": "Playwright for Python",
+      "version": "1.64.1"
+    },
+    {
+      "role": "browser",
+      "component": "Chromium (Chrome for Testing)",
+      "version": "156.0.8078.4"
+    },
+    {
+      "role": "proxy",
+      "component": "nginx",
+      "version": "1.31.8"
+    },
+    {
+      "role": "app_server",
+      "component": "waitress",
+      "version": "3.0.2"
+    }
+  ],
+  "browser": {
+    "version": "156.0.8078.4",
+    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+  },
+  "experiment_keys": true,
+  "format": {
+    "cookie_name": "jwt.<index>.<count>",
+    "chunk_bytes": 4000,
+    "max_chunks": 1000,
+    "domain_max_cookies": 180,
+    "cookie_attributes": "Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600"
+  },
+  "plan": [
+    {
+      "algorithm": "RS256",
+      "token_bytes": 1204,
+      "chunks": 1,
+      "chunk_bytes": [
+        1204
+      ],
+      "cookie_names": [
+        "jwt.0.1"
+      ],
+      "name_value_bytes": {
+        "cookie": 1207,
+        "split": 1211
+      },
+      "set_cookie_bytes": {
+        "cookie": 1279,
+        "split": 1283
+      },
+      "cookie_line_bytes": {
+        "cookie": 1218,
+        "split": 1222
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": true,
+          "cookie_line": true
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "ES256",
+      "token_bytes": 948,
+      "chunks": 1,
+      "chunk_bytes": [
+        948
+      ],
+      "cookie_names": [
+        "jwt.0.1"
+      ],
+      "name_value_bytes": {
+        "cookie": 951,
+        "split": 955
+      },
+      "set_cookie_bytes": {
+        "cookie": 1023,
+        "split": 1027
+      },
+      "cookie_line_bytes": {
+        "cookie": 962,
+        "split": 966
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": true,
+          "cookie_line": true
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "EdDSA",
+      "token_bytes": 948,
+      "chunks": 1,
+      "chunk_bytes": [
+        948
+      ],
+      "cookie_names": [
+        "jwt.0.1"
+      ],
+      "name_value_bytes": {
+        "cookie": 951,
+        "split": 955
+      },
+      "set_cookie_bytes": {
+        "cookie": 1023,
+        "split": 1027
+      },
+      "cookie_line_bytes": {
+        "cookie": 962,
+        "split": 966
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": true,
+          "cookie_line": true
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "ML-DSA-44",
+      "token_bytes": 4095,
+      "chunks": 2,
+      "chunk_bytes": [
+        2048,
+        2047
+      ],
+      "cookie_names": [
+        "jwt.0.2",
+        "jwt.1.2"
+      ],
+      "name_value_bytes": {
+        "cookie": 4098,
+        "split": 2055
+      },
+      "set_cookie_bytes": {
+        "cookie": 4170,
+        "split": 4253
+      },
+      "cookie_line_bytes": {
+        "cookie": 4109,
+        "split": 4123
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": false,
+          "cookie_line": true
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": true
+        }
+      }
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128s",
+      "token_bytes": 11353,
+      "chunks": 3,
+      "chunk_bytes": [
+        3785,
+        3784,
+        3784
+      ],
+      "cookie_names": [
+        "jwt.0.3",
+        "jwt.1.3",
+        "jwt.2.3"
+      ],
+      "name_value_bytes": {
+        "cookie": 11356,
+        "split": 3792
+      },
+      "set_cookie_bytes": {
+        "cookie": 11428,
+        "split": 11590
+      },
+      "cookie_line_bytes": {
+        "cookie": 11367,
+        "split": 11391
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": false,
+          "cookie_line": false
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": false
+        }
+      }
+    },
+    {
+      "algorithm": "SLH-DSA-SHA2-128f",
+      "token_bytes": 23662,
+      "chunks": 6,
+      "chunk_bytes": [
+        3944,
+        3944,
+        3944,
+        3944,
+        3943,
+        3943
+      ],
+      "cookie_names": [
+        "jwt.0.6",
+        "jwt.1.6",
+        "jwt.2.6",
+        "jwt.3.6",
+        "jwt.4.6",
+        "jwt.5.6"
+      ],
+      "name_value_bytes": {
+        "cookie": 23665,
+        "split": 3951
+      },
+      "set_cookie_bytes": {
+        "cookie": 23737,
+        "split": 24136
+      },
+      "cookie_line_bytes": {
+        "cookie": 23676,
+        "split": 23730
+      },
+      "fits": {
+        "cookie": {
+          "per_cookie": false,
+          "cookie_line": false
+        },
+        "split": {
+          "per_cookie": true,
+          "cookie_count": true,
+          "cookie_line": false
+        }
+      }
+    }
+  ],
+  "limits": {
+    "default": {
+      "stack": "limits-default",
+      "header_buffers": null,
+      "proxy_buffers": null,
+      "results": [
+        {
+          "algorithm": "RS256",
+          "transport": "cookie",
+          "token_bytes": 1204,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 1207,
+            "cookie_line": 1218,
+            "upstream_response_headers": 1406,
+            "browser_request_headers": 1842,
+            "app_received_headers": 1745
+          },
+          "issue_nonce": "ce15e6a8e7ffc362108fdcfaa407c71d",
+          "verify_nonce": "91d706e2e46d7ee2627ec6a319cc1c60",
+          "evidence": "verified: the browser sent the 1,204-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "RS256",
+          "transport": "split",
+          "token_bytes": 1204,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 1211,
+            "cookie_line": 1222,
+            "upstream_response_headers": 1410,
+            "browser_request_headers": 1846,
+            "app_received_headers": 1749
+          },
+          "issue_nonce": "e51baae8fcab78d39c3421f8bc5bc404",
+          "verify_nonce": "a067b21002073d2590fc5914baafb8ae",
+          "evidence": "verified: the browser sent the 1,204-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 951,
+            "cookie_line": 962,
+            "upstream_response_headers": 1150,
+            "browser_request_headers": 1586,
+            "app_received_headers": 1489
+          },
+          "issue_nonce": "b9a911a1764ba06bc0b8ea348a782ccb",
+          "verify_nonce": "a93a31298db282c9374fcaf17f40b234",
+          "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "split",
+          "token_bytes": 948,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 955,
+            "cookie_line": 966,
+            "upstream_response_headers": 1154,
+            "browser_request_headers": 1590,
+            "app_received_headers": 1493
+          },
+          "issue_nonce": "bf997940523da5b492e73bc6b77259e1",
+          "verify_nonce": "45d030229a5679e5aeca2e570dad08e8",
+          "evidence": "verified: the browser sent the 948-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 951,
+            "cookie_line": 962,
+            "upstream_response_headers": 1150,
+            "browser_request_headers": 1586,
+            "app_received_headers": 1489
+          },
+          "issue_nonce": "601e4f15e43abc0baa70408cd27fbc11",
+          "verify_nonce": "f2e2c3f0091d453f0be9893cc71e464e",
+          "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "split",
+          "token_bytes": 948,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 955,
+            "cookie_line": 966,
+            "upstream_response_headers": 1154,
+            "browser_request_headers": 1590,
+            "app_received_headers": 1493
+          },
+          "issue_nonce": "77a0c63bb8260de1ea1b3ad03c1ef3ee",
+          "verify_nonce": "02427a3ef6cce624775d6b1ac972e28e",
+          "evidence": "verified: the browser sent the 948-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "cookie",
+          "token_bytes": 4095,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 4098,
+            "cookie_line": 4109,
+            "upstream_response_headers": 4297,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "07986ad6648d9f8eba964ac868744bae",
+          "verify_nonce": "375f780d6b910fbb9c3e1f8be26aa654",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:00 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=cookie&claims=oidc&attrs=full&nonce=07986ad6648d9f8eba964ac868744bae HTTP/1.1\" 502 559 request_length=676 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:00 [error] 77785#77785: *27 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=ML-DSA-44&delivery=cookie&claims=oidc&attrs=full&nonce=07986ad6648d9f8eba964ac868744bae HTTP/1...\"; app.log shows the application answered 200: \"2026-11-24 10:55:00,884 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=ML-DSA-44&delivery=cookie&claims=oidc&attrs=full&nonce=07986ad6648d9f8eba964ac868744bae HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=ML-DSA-44 token_bytes=4095\""
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "split",
+          "token_bytes": 4095,
+          "chunks": 2,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 2,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 2055,
+            "cookie_line": 4123,
+            "upstream_response_headers": 4380,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "982981278596d0fa1a744613e1a94305",
+          "verify_nonce": "2dd447f5bd64d8e4efd60db2e978f455",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:01 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&nonce=982981278596d0fa1a744613e1a94305 HTTP/1.1\" 502 559 request_length=675 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:01 [error] 77785#77785: *31 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&nonce=982981278596d0fa1a744613e1a94305 HTTP/1....\"; app.log shows the application answered 200: \"2026-11-24 10:55:01,252 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&nonce=982981278596d0fa1a744613e1a94305 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=ML-DSA-44 token_bytes=4095 c...\""
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "cookie",
+          "token_bytes": 11353,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 11356,
+            "cookie_line": 11367,
+            "upstream_response_headers": 11555,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "801399a6211d9c4a21ccc831d5bfe914",
+          "verify_nonce": "1d2183ceb46936ad73bc0d03b586ed0e",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:02 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=cookie&claims=oidc&attrs=full&nonce=801399a6211d9c4a21ccc831d5bfe914 HTTP/1.1\" 502 559 request_length=684 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:02 [error] 77785#77785: *35 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=cookie&claims=oidc&attrs=full&nonce=801399a6211d9c4a21ccc831d5bfe91...\"; app.log shows the application answered 200: \"2026-11-24 10:55:02,561 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=cookie&claims=oidc&attrs=full&nonce=801399a6211d9c4a21ccc831d5bfe914 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128s t...\""
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "split",
+          "token_bytes": 11353,
+          "chunks": 3,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 3,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 3792,
+            "cookie_line": 11391,
+            "upstream_response_headers": 11717,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "167030d98871207e8c2d83a559b41d49",
+          "verify_nonce": "e3586a5e23091c2111444383195888ad",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:03 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=split&claims=oidc&attrs=full&nonce=167030d98871207e8c2d83a559b41d49 HTTP/1.1\" 502 559 request_length=683 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:03 [error] 77785#77785: *39 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=split&claims=oidc&attrs=full&nonce=167030d98871207e8c2d83a559b41d49...\"; app.log shows the application answered 200: \"2026-11-24 10:55:03,745 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128s&delivery=split&claims=oidc&attrs=full&nonce=167030d98871207e8c2d83a559b41d49 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128s to...\""
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "cookie",
+          "token_bytes": 23662,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 23665,
+            "cookie_line": 23676,
+            "upstream_response_headers": 23864,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "e12d4bb46c666fb613ff5e15cab8814c",
+          "verify_nonce": "dd1ebae8cf7a055c511ff7256715b0c1",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:04 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=e12d4bb46c666fb613ff5e15cab8814c HTTP/1.1\" 502 559 request_length=684 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:04 [error] 77785#77785: *43 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=e12d4bb46c666fb613ff5e15cab8814...\"; app.log shows the application answered 200: \"2026-11-24 10:55:04,401 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=cookie&claims=oidc&attrs=full&nonce=e12d4bb46c666fb613ff5e15cab8814c HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128f t...\""
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "split",
+          "token_bytes": 23662,
+          "chunks": 6,
+          "outcome": "rejected",
+          "rejected_by": "proxy",
+          "verified_directly": true,
+          "cookies_expected": 6,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 502,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 3951,
+            "cookie_line": 23730,
+            "upstream_response_headers": 24263,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "6b90a28b03e0413a07f0bd4a05f6024f",
+          "verify_nonce": "c7d16d4a5e456788aa37501b086a7071",
+          "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:04 -0500] \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=split&claims=oidc&attrs=full&nonce=6b90a28b03e0413a07f0bd4a05f6024f HTTP/1.1\" 502 559 request_length=683 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:04 [error] 77785#77785: *47 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=split&claims=oidc&attrs=full&nonce=6b90a28b03e0413a07f0bd4a05f6024f...\"; app.log shows the application answered 200: \"2026-11-24 10:55:04,802 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=SLH-DSA-SHA2-128f&delivery=split&claims=oidc&attrs=full&nonce=6b90a28b03e0413a07f0bd4a05f6024f HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=SLH-DSA-SHA2-128f to...\""
+        }
+      ],
+      "moved": [
+        {
+          "algorithm": "RS256",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "ES256",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "EdDSA",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "cookie": "rejected",
+          "split": "rejected",
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "cookie": "rejected",
+          "split": "rejected",
+          "moved": false
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "cookie": "rejected",
+          "split": "rejected",
+          "moved": false
+        }
+      ]
+    },
+    "raised": {
+      "stack": "limits-raised",
+      "header_buffers": "32k",
+      "proxy_buffers": "32k",
+      "results": [
+        {
+          "algorithm": "RS256",
+          "transport": "cookie",
+          "token_bytes": 1204,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 1207,
+            "cookie_line": 1218,
+            "upstream_response_headers": 1406,
+            "browser_request_headers": 1842,
+            "app_received_headers": 1745
+          },
+          "issue_nonce": "4e5f73337dff205a6e6ac47f35675fa8",
+          "verify_nonce": "ea827aa86b1e9887c5088d923519ac25",
+          "evidence": "verified: the browser sent the 1,204-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "RS256",
+          "transport": "split",
+          "token_bytes": 1204,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 1211,
+            "cookie_line": 1222,
+            "upstream_response_headers": 1410,
+            "browser_request_headers": 1846,
+            "app_received_headers": 1749
+          },
+          "issue_nonce": "39401f90bceaaa69eca1ad90e8afb3e3",
+          "verify_nonce": "228147c8e03ce497c050d7855670df87",
+          "evidence": "verified: the browser sent the 1,204-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 951,
+            "cookie_line": 962,
+            "upstream_response_headers": 1150,
+            "browser_request_headers": 1586,
+            "app_received_headers": 1489
+          },
+          "issue_nonce": "54f197550bf7a8d2e17870f0b0ad3cea",
+          "verify_nonce": "77b413b367bf176e3aafac59783cb768",
+          "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ES256",
+          "transport": "split",
+          "token_bytes": 948,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 955,
+            "cookie_line": 966,
+            "upstream_response_headers": 1154,
+            "browser_request_headers": 1590,
+            "app_received_headers": 1493
+          },
+          "issue_nonce": "4670d15adf3470edee226ea51cfe6ed8",
+          "verify_nonce": "126994bd1b98308ebc4a1723b44cbf28",
+          "evidence": "verified: the browser sent the 948-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "cookie",
+          "token_bytes": 948,
+          "chunks": null,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 951,
+            "cookie_line": 962,
+            "upstream_response_headers": 1150,
+            "browser_request_headers": 1586,
+            "app_received_headers": 1489
+          },
+          "issue_nonce": "ef1d9de6649aff0a716c92d6dd6c661f",
+          "verify_nonce": "6a8a761ca0a72605f6c08aa6f450021d",
+          "evidence": "verified: the browser sent the 948-byte token as a jwt cookie through nginx, and the application verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "EdDSA",
+          "transport": "split",
+          "token_bytes": 948,
+          "chunks": 1,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 1,
+          "chunk_order": [
+            0
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 955,
+            "cookie_line": 966,
+            "upstream_response_headers": 1154,
+            "browser_request_headers": 1590,
+            "app_received_headers": 1493
+          },
+          "issue_nonce": "5164167778cd3ae8105078560b15a2ac",
+          "verify_nonce": "68c145c4c105d18d3b9943c9809ac2bd",
+          "evidence": "verified: the browser sent the 948-byte token as 1 jwt.<index>.1 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "cookie",
+          "token_bytes": 4095,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "browser",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 4098,
+            "cookie_line": 4109,
+            "upstream_response_headers": 4297,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "34532b8fee436c73a22a842a95bbd4af",
+          "verify_nonce": "665ed8a34fcec74d86b1df8dc4d6b772",
+          "evidence": "browser: the issue response carried a 4,156-byte Set-Cookie (browser.log) whose name + value is 4,098 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "transport": "split",
+          "token_bytes": 4095,
+          "chunks": 2,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 2,
+          "cookies_stored": 2,
+          "chunk_order": [
+            0,
+            1
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 2055,
+            "cookie_line": 4123,
+            "upstream_response_headers": 4380,
+            "browser_request_headers": 4747,
+            "app_received_headers": 4650
+          },
+          "issue_nonce": "d68fc33927bdf5b0e209c31acab6a6a1",
+          "verify_nonce": "04d7f51eed12f717f56d7272a9cbb840",
+          "evidence": "verified: the browser sent the 4,095-byte token as 2 jwt.<index>.2 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "cookie",
+          "token_bytes": 11353,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "browser",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 11356,
+            "cookie_line": 11367,
+            "upstream_response_headers": 11555,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "80a2550ef07b41e070fcfe575cb79586",
+          "verify_nonce": "6a779858916a507eec4d55ef5709f60b",
+          "evidence": "browser: the issue response carried a 11,414-byte Set-Cookie (browser.log) whose name + value is 11,356 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "transport": "split",
+          "token_bytes": 11353,
+          "chunks": 3,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 3,
+          "cookies_stored": 3,
+          "chunk_order": [
+            0,
+            1,
+            2
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 3792,
+            "cookie_line": 11391,
+            "upstream_response_headers": 11717,
+            "browser_request_headers": 12015,
+            "app_received_headers": 11918
+          },
+          "issue_nonce": "6b7e112fa8f7776cbacbc01772bf98dd",
+          "verify_nonce": "d9023b4194f07668f0f75b2385c70ffe",
+          "evidence": "verified: the browser sent the 11,353-byte token as 3 jwt.<index>.3 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "cookie",
+          "token_bytes": 23662,
+          "chunks": null,
+          "outcome": "rejected",
+          "rejected_by": "browser",
+          "verified_directly": true,
+          "cookies_expected": 1,
+          "cookies_stored": 0,
+          "chunk_order": null,
+          "issue_status": 200,
+          "verify_status": 401,
+          "bytes": {
+            "largest_name_value": 23665,
+            "cookie_line": 23676,
+            "upstream_response_headers": 23864,
+            "browser_request_headers": 624,
+            "app_received_headers": 527
+          },
+          "issue_nonce": "8bffc74deba957050d601c73c0a20a46",
+          "verify_nonce": "0b9985a68283eab35f6234fb7394b360",
+          "evidence": "browser: the issue response carried a 23,723-byte Set-Cookie (browser.log) whose name + value is 23,665 bytes, but BrowserContext.cookies() lists no jwt cookie afterwards"
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "transport": "split",
+          "token_bytes": 23662,
+          "chunks": 6,
+          "outcome": "verified",
+          "rejected_by": null,
+          "verified_directly": true,
+          "cookies_expected": 6,
+          "cookies_stored": 6,
+          "chunk_order": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "issue_status": 200,
+          "verify_status": 200,
+          "bytes": {
+            "largest_name_value": 3951,
+            "cookie_line": 23730,
+            "upstream_response_headers": 24263,
+            "browser_request_headers": 24354,
+            "app_received_headers": 24257
+          },
+          "issue_nonce": "dd5987a904562046fca39b1f745f25f1",
+          "verify_nonce": "558c2e37bf819e6d47088715aeb04637",
+          "evidence": "verified: the browser sent the 23,662-byte token as 6 jwt.<index>.6 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+        }
+      ],
+      "moved": [
+        {
+          "algorithm": "RS256",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "ES256",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "EdDSA",
+          "cookie": "verified",
+          "split": "verified",
+          "moved": false
+        },
+        {
+          "algorithm": "ML-DSA-44",
+          "cookie": "rejected",
+          "split": "verified",
+          "moved": true
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128s",
+          "cookie": "rejected",
+          "split": "verified",
+          "moved": true
+        },
+        {
+          "algorithm": "SLH-DSA-SHA2-128f",
+          "cookie": "rejected",
+          "split": "verified",
+          "moved": true
+        }
+      ]
+    }
+  },
+  "boundary": {
+    "algorithm": "ML-DSA-44",
+    "claims": "oidc",
+    "stack": "limits-default",
+    "low_pad": 0,
+    "high_pad": 9207,
+    "largest_verified": null,
+    "first_rejected": {
+      "pad": 0,
+      "token_bytes": 4095,
+      "chunks": 2,
+      "outcome": "rejected",
+      "rejected_by": "proxy",
+      "cookies_stored": 0,
+      "verify_status": 401,
+      "bytes": {
+        "largest_name_value": 2055,
+        "cookie_line": 4123,
+        "upstream_response_headers": 4380,
+        "browser_request_headers": 624,
+        "app_received_headers": 527
+      },
+      "issue_nonce": "0293ad958e92e2369d08c053868a2d04",
+      "verify_nonce": "ca10f1c3db4bee97fde2c224406903b4",
+      "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:05 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 HTTP/1.1\" 502 559 request_length=681 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:05 [error] 77785#77785: *51 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 H...\"; app.log shows the application answered 200: \"2026-11-24 10:55:05,205 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=ML-DSA-44 token_bytes=...\""
+    },
+    "probes": [
+      {
+        "pad": 0,
+        "token_bytes": 4095,
+        "chunks": 2,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "cookies_stored": 0,
+        "verify_status": 401,
+        "bytes": {
+          "largest_name_value": 2055,
+          "cookie_line": 4123,
+          "upstream_response_headers": 4380,
+          "browser_request_headers": 624,
+          "app_received_headers": 527
+        },
+        "issue_nonce": "0293ad958e92e2369d08c053868a2d04",
+        "verify_nonce": "ca10f1c3db4bee97fde2c224406903b4",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:05 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 HTTP/1.1\" 502 559 request_length=681 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:05 [error] 77785#77785: *51 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 H...\"; app.log shows the application answered 200: \"2026-11-24 10:55:05,205 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=0&nonce=0293ad958e92e2369d08c053868a2d04 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=ML-DSA-44 token_bytes=...\""
+      },
+      {
+        "pad": 9207,
+        "token_bytes": 16383,
+        "chunks": 5,
+        "outcome": "rejected",
+        "rejected_by": "proxy",
+        "cookies_stored": 0,
+        "verify_status": 401,
+        "bytes": {
+          "largest_name_value": 3284,
+          "cookie_line": 16441,
+          "upstream_response_headers": 16905,
+          "browser_request_headers": 624,
+          "app_received_headers": 527
+        },
+        "issue_nonce": "c6ff9ea6fbac225c30311901b4e60677",
+        "verify_nonce": "8662a9058ad3c92cf6b49b3b56a73849",
+        "evidence": "proxy: the browser got status 502 for the issue request; proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:05 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=9207&nonce=c6ff9ea6fbac225c30311901b4e60677 HTTP/1.1\" 502 559 request_length=684 upstream_status=502\"; proxy-error.log: \"2026/11/24 10:55:05 [error] 77785#77785: *55 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: , request: \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=9207&nonce=c6ff9ea6fbac225c30311901b4e6067...\"; app.log shows the application answered 200: \"2026-11-24 10:55:05,556 transport_app INFO 127.0.0.1 \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=9207&nonce=c6ff9ea6fbac225c30311901b4e60677 HTTP/1.1\" 200 headers=14 header_bytes=527 cookie_bytes=- authorization_bytes=- alg=ML-DSA-44 token_byt...\""
+      }
+    ]
+  },
+  "probes": {
+    "stack": "limits-raised",
+    "per_cookie": [
+      {
+        "name": "at_limit",
+        "pad": 3053,
+        "algorithm": "ML-DSA-44",
+        "transport": "split",
+        "token_bytes": 8178,
+        "chunks": 2,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookies_expected": 2,
+        "cookies_stored": 2,
+        "chunk_order": [
+          0,
+          1
+        ],
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "largest_name_value": 4096,
+          "cookie_line": 8206,
+          "upstream_response_headers": 8463,
+          "browser_request_headers": 8830,
+          "app_received_headers": 8733
+        },
+        "issue_nonce": "e7d7cd0e65690b01a0253d7514862d74",
+        "verify_nonce": "c73c42c7f216185ebedcd091de85eddf",
+        "evidence": "verified: the browser sent the 8,178-byte token as 2 jwt.<index>.2 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "name": "over_limit",
+        "pad": 3054,
+        "algorithm": "ML-DSA-44",
+        "transport": "split",
+        "token_bytes": 8179,
+        "chunks": 2,
+        "outcome": "rejected",
+        "rejected_by": "browser",
+        "verified_directly": true,
+        "cookies_expected": 2,
+        "cookies_stored": 1,
+        "chunk_order": [
+          1
+        ],
+        "issue_status": 200,
+        "verify_status": 401,
+        "bytes": {
+          "largest_name_value": 4097,
+          "cookie_line": 8207,
+          "upstream_response_headers": 8464,
+          "browser_request_headers": 4731,
+          "app_received_headers": 4634
+        },
+        "issue_nonce": "4e58399745420176fc9c6fd6588316f0",
+        "verify_nonce": "682b17d6e41f35f527714ddbe09d53e1",
+        "evidence": "browser: the issue response reached the browser (proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:14 -0500] \"GET /api/token/issue?alg=ML-DSA-44&delivery=split&claims=oidc&attrs=full&pad=3054&chunks=2&nonce=4e58399745420176fc9c6fd6588316f0 HTTP/1.1\" 200 343 request_length=693 upstream_status=200\") with 2 Set-Cookie header(s) (browser.log) for 2 chunk cookies whose largest name + value is 4,097 bytes, but BrowserContext.cookies() lists only 1 of them afterwards"
+      }
+    ],
+    "cookie_count": [
+      {
+        "name": "at_limit",
+        "pad": 0,
+        "algorithm": "ES256",
+        "transport": "split",
+        "token_bytes": 948,
+        "chunks": 180,
+        "outcome": "verified",
+        "rejected_by": null,
+        "verified_directly": true,
+        "cookies_expected": 180,
+        "cookies_stored": 180,
+        "chunk_order": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179
+        ],
+        "issue_status": 200,
+        "verify_status": 200,
+        "bytes": {
+          "largest_name_value": 16,
+          "cookie_line": 3366,
+          "upstream_response_headers": 15906,
+          "browser_request_headers": 3990,
+          "app_received_headers": 3893
+        },
+        "issue_nonce": "babc7e4205e1d786f39e998cc914b857",
+        "verify_nonce": "384f9d3da7ff2f525317c4e0174f4831",
+        "evidence": "verified: the browser sent the 948-byte token as 180 jwt.<index>.180 chunk cookies through nginx, and the application reassembled and verified it; both nonces are in browser.log, proxy-access.log, and app.log"
+      },
+      {
+        "name": "over_limit",
+        "pad": 0,
+        "algorithm": "ES256",
+        "transport": "split",
+        "token_bytes": 948,
+        "chunks": 181,
+        "outcome": "rejected",
+        "rejected_by": "browser",
+        "verified_directly": true,
+        "cookies_expected": 181,
+        "cookies_stored": 150,
+        "chunk_order": [
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87,
+          88,
+          89,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          130,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          171,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180
+        ],
+        "issue_status": 200,
+        "verify_status": 401,
+        "bytes": {
+          "largest_name_value": 16,
+          "cookie_line": 3380,
+          "upstream_response_headers": 15989,
+          "browser_request_headers": 3425,
+          "app_received_headers": 3328
+        },
+        "issue_nonce": "d427aac8efbe3fa8f9b15273d6781e13",
+        "verify_nonce": "8fef1d8b7e15b4413acbef7d06ad4d70",
+        "evidence": "browser: the issue response reached the browser (proxy-access.log: \"127.0.0.1 [24/Nov/2026:10:55:15 -0500] \"GET /api/token/issue?alg=ES256&delivery=split&claims=oidc&attrs=full&pad=0&chunks=181&nonce=d427aac8efbe3fa8f9b15273d6781e13 HTTP/1.1\" 200 6311 request_length=688 upstream_status=200\") with 181 Set-Cookie header(s) (browser.log) for 181 chunk cookies whose largest name + value is 16 bytes, but BrowserContext.cookies() lists only 150 of them afterwards"
+      }
+    ]
+  },
+  "handling": {
+    "algorithm": "ML-DSA-44",
+    "claims": "oidc",
+    "token_bytes": 4095,
+    "chunks": 3,
+    "stack": "limits-raised",
+    "cases": [
+      {
+        "name": "in_order",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3"
+        ],
+        "bearer": false,
+        "status": 200,
+        "verified": true,
+        "source": "split",
+        "error": null,
+        "verify_called": true,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            1,
+            2
+          ],
+          "missing": []
+        },
+        "nonce": "dd3315fcf9cb0883c137eba6dc11c5f9"
+      },
+      {
+        "name": "reversed",
+        "cookies": [
+          "jwt.2.3",
+          "jwt.1.3",
+          "jwt.0.3"
+        ],
+        "bearer": false,
+        "status": 200,
+        "verified": true,
+        "source": "split",
+        "error": null,
+        "verify_called": true,
+        "chunks": {
+          "count": 3,
+          "received": [
+            2,
+            1,
+            0
+          ],
+          "missing": []
+        },
+        "nonce": "415cda4f39e271493df784b1b4a7f742"
+      },
+      {
+        "name": "rotated",
+        "cookies": [
+          "jwt.1.3",
+          "jwt.2.3",
+          "jwt.0.3"
+        ],
+        "bearer": false,
+        "status": 200,
+        "verified": true,
+        "source": "split",
+        "error": null,
+        "verify_called": true,
+        "chunks": {
+          "count": 3,
+          "received": [
+            1,
+            2,
+            0
+          ],
+          "missing": []
+        },
+        "nonce": "0813e5d1eb1067d498cbb6ee39271ea0"
+      },
+      {
+        "name": "among_other_cookies",
+        "cookies": [
+          "a",
+          "jwt.2.3",
+          "jwt_old",
+          "jwt.0.3",
+          "theme",
+          "jwt.1.3"
+        ],
+        "bearer": false,
+        "status": 200,
+        "verified": true,
+        "source": "split",
+        "error": null,
+        "verify_called": true,
+        "chunks": {
+          "count": 3,
+          "received": [
+            2,
+            0,
+            1
+          ],
+          "missing": []
+        },
+        "nonce": "60603c192e8956e9fdf7eb5c5cdba4fe"
+      },
+      {
+        "name": "missing_0",
+        "cookies": [
+          "jwt.1.3",
+          "jwt.2.3"
+        ],
+        "bearer": false,
+        "status": 401,
+        "verified": false,
+        "source": "split",
+        "error": "incomplete chunks: 1 of 3 missing, index 0",
+        "verify_called": false,
+        "chunks": {
+          "count": 3,
+          "received": [
+            1,
+            2
+          ],
+          "missing": [
+            0
+          ]
+        },
+        "nonce": "c7aedddec769c074965d06439ba5a653"
+      },
+      {
+        "name": "missing_1",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.2.3"
+        ],
+        "bearer": false,
+        "status": 401,
+        "verified": false,
+        "source": "split",
+        "error": "incomplete chunks: 1 of 3 missing, index 1",
+        "verify_called": false,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            2
+          ],
+          "missing": [
+            1
+          ]
+        },
+        "nonce": "d1ec080610320f8a4986529eeaca37de"
+      },
+      {
+        "name": "missing_2",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3"
+        ],
+        "bearer": false,
+        "status": 401,
+        "verified": false,
+        "source": "split",
+        "error": "incomplete chunks: 1 of 3 missing, index 2",
+        "verify_called": false,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            1
+          ],
+          "missing": [
+            2
+          ]
+        },
+        "nonce": "db99270d71f90a34fb075c7500a72253"
+      },
+      {
+        "name": "duplicate",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.1.3",
+          "jwt.2.3"
+        ],
+        "bearer": false,
+        "status": 400,
+        "verified": false,
+        "source": "split",
+        "error": "ambiguous chunks: index 1 was sent more than once",
+        "verify_called": false,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            1,
+            1,
+            2
+          ],
+          "missing": []
+        },
+        "nonce": "a367e9dcf6671b6dc7c8de5c04bd7e77"
+      },
+      {
+        "name": "conflicting_count",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3",
+          "jwt.0.2"
+        ],
+        "bearer": false,
+        "status": 400,
+        "verified": false,
+        "source": "split",
+        "error": "ambiguous chunks: the chunk cookies do not share one count (2, 3)",
+        "verify_called": false,
+        "chunks": {
+          "count": null,
+          "received": [
+            0,
+            1,
+            2,
+            0
+          ],
+          "missing": []
+        },
+        "nonce": "eddbdbcc83e7af4014f96256c26f810c"
+      },
+      {
+        "name": "out_of_range_index",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3",
+          "jwt.3.3"
+        ],
+        "bearer": false,
+        "status": 400,
+        "verified": false,
+        "source": "split",
+        "error": "ambiguous chunks: index 3 is out of range for 3 chunks",
+        "verify_called": false,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "missing": []
+        },
+        "nonce": "447e0dce7687eb64129ac2cc7cb01799"
+      },
+      {
+        "name": "mixed_tokens",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3"
+        ],
+        "bearer": false,
+        "status": 401,
+        "verified": false,
+        "source": "split",
+        "error": "verification failed: Signature verification failed",
+        "verify_called": true,
+        "chunks": {
+          "count": 3,
+          "received": [
+            0,
+            1,
+            2
+          ],
+          "missing": []
+        },
+        "nonce": "4265be5dacb57abcf49a3fd9e77327ae"
+      },
+      {
+        "name": "with_jwt_cookie",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3",
+          "jwt"
+        ],
+        "bearer": false,
+        "status": 400,
+        "verified": false,
+        "source": null,
+        "error": "more than one token: send the jwt.<index>.<count> chunk cookies alone, without a jwt cookie or a Bearer header",
+        "verify_called": false,
+        "chunks": null,
+        "nonce": "02f96f1a5d27f6e7f1fdac81498dfa0d"
+      },
+      {
+        "name": "with_bearer",
+        "cookies": [
+          "jwt.0.3",
+          "jwt.1.3",
+          "jwt.2.3"
+        ],
+        "bearer": true,
+        "status": 400,
+        "verified": false,
+        "source": null,
+        "error": "more than one token: send the jwt.<index>.<count> chunk cookies alone, without a jwt cookie or a Bearer header",
+        "verify_called": false,
+        "chunks": null,
+        "nonce": "a7bc21d52c62360f3bdcc4035146a9f4"
+      }
+    ]
+  },
+  "latency": {
+    "transports": [
+      "cookie",
+      "split"
+    ],
+    "reference": "ES256",
+    "size_controls": false,
+    "runs": {
+      "cookie": "latency-cookie/load.json",
+      "split": "latency-split/load.json"
+    },
+    "rows": [
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1568,
+          "split": 1539
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 783.69606894978,
+          "split": 769.4478287441439
+        },
+        "median_ms": {
+          "cookie": 1.2211465,
+          "split": 1.241411
+        },
+        "p95_ms": {
+          "cookie": 1.549696,
+          "split": 1.63241
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 1.2643578048469386,
+            "transfer": 0.9519374789540817,
+            "other_handling": 0.08926828890306122,
+            "verification": 0.2231520369897959
+          },
+          "split": {
+            "total": 1.2891435977907733,
+            "transfer": 0.9518834113060429,
+            "other_handling": 0.1223244236517219,
+            "verification": 0.21493576283300844
+          }
+        },
+        "difference_ms": {
+          "total": 0.02478579294383465,
+          "transfer": -5.406764803872477e-05,
+          "other_handling": 0.033056134748660676,
+          "verification": -0.008216274156787468
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1571,
+          "split": 1393
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 785.4927546148314,
+          "split": 696.4149934966488
+        },
+        "median_ms": {
+          "cookie": 1.230252,
+          "split": 1.350655
+        },
+        "p95_ms": {
+          "cookie": 1.522968,
+          "split": 1.878225
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 1.2615947943984724,
+            "transfer": 0.9074946288987906,
+            "other_handling": 0.08127687014640357,
+            "verification": 0.27282329535327815
+          },
+          "split": {
+            "total": 1.4235249318018666,
+            "transfer": 1.0161241141421393,
+            "other_handling": 0.12665,
+            "verification": 0.2807508176597272
+          }
+        },
+        "difference_ms": {
+          "total": 0.16193013740339413,
+          "transfer": 0.1086294852433487,
+          "other_handling": 0.04537312985359644,
+          "verification": 0.007927522306449053
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1595,
+          "split": 1405
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 797.4750246771772,
+          "split": 702.349699271405
+        },
+        "median_ms": {
+          "cookie": 1.196619,
+          "split": 1.34221
+        },
+        "p95_ms": {
+          "cookie": 1.557992,
+          "split": 1.825178
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 1.2429372326018808,
+            "transfer": 0.9008834163009405,
+            "other_handling": 0.08207175423197492,
+            "verification": 0.2599820620689655
+          },
+          "split": {
+            "total": 1.4120978790035588,
+            "transfer": 1.0106561160142349,
+            "other_handling": 0.1286093971530249,
+            "verification": 0.2728323658362989
+          }
+        },
+        "difference_ms": {
+          "total": 0.16916064640167794,
+          "transfer": 0.1097726997132944,
+          "other_handling": 0.04653764292104999,
+          "verification": 0.012850303767333371
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "chunks": 2,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1541,
+          "split": 1441
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 770.2425260242494,
+          "split": 720.193320078511
+        },
+        "median_ms": {
+          "cookie": 1.208093,
+          "split": 1.304737
+        },
+        "p95_ms": {
+          "cookie": 1.799603,
+          "split": 1.787687
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 1.2868823491239454,
+            "transfer": 0.979832883192732,
+            "other_handling": 0.09113007852044126,
+            "verification": 0.21591938741077224
+          },
+          "split": {
+            "total": 1.376718456627342,
+            "transfer": 1.0105645572519084,
+            "other_handling": 0.14035570784177653,
+            "verification": 0.22579819153365716
+          }
+        },
+        "difference_ms": {
+          "total": 0.08983610750339666,
+          "transfer": 0.030731674059176428,
+          "other_handling": 0.04922562932133527,
+          "verification": 0.009878804122884915
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "chunks": 3,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1194,
+          "split": 1161
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 596.5845754898726,
+          "split": 580.1628856222958
+        },
+        "median_ms": {
+          "cookie": 1.5919915,
+          "split": 1.657613
+        },
+        "p95_ms": {
+          "cookie": 2.15824,
+          "split": 2.083158
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 1.6650614505862646,
+            "transfer": 1.137162960636516,
+            "other_handling": 0.11804095309882746,
+            "verification": 0.4098575368509213
+          },
+          "split": {
+            "total": 1.7125361696813093,
+            "transfer": 1.132068758828596,
+            "other_handling": 0.17034183548664944,
+            "verification": 0.41012557536606375
+          }
+        },
+        "difference_ms": {
+          "total": 0.04747471909504464,
+          "transfer": -0.0050942018079198625,
+          "other_handling": 0.052300882387821976,
+          "verification": 0.0002680385151424547
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "chunks": 6,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 737,
+          "split": 737
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 368.262555168173,
+          "split": 368.393831844813
+        },
+        "median_ms": {
+          "cookie": 2.665668,
+          "split": 2.665405
+        },
+        "p95_ms": {
+          "cookie": 3.301937,
+          "split": 3.254744
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 2.701455829036635,
+            "transfer": 1.5428603799185887,
+            "other_handling": 0.15972218588873813,
+            "verification": 0.9988732632293079
+          },
+          "split": {
+            "total": 2.7006748263229308,
+            "transfer": 1.5003385251017638,
+            "other_handling": 0.22278180868385344,
+            "verification": 0.9775544925373135
+          }
+        },
+        "difference_ms": {
+          "total": -0.000781002713704293,
+          "transfer": -0.04252185481682491,
+          "other_handling": 0.06305962279511532,
+          "verification": -0.021318770691994393
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1759,
+          "split": 1617
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 878.3251281546393,
+          "split": 806.5907545149809
+        },
+        "median_ms": {
+          "cookie": 4.285789,
+          "split": 4.613065
+        },
+        "p95_ms": {
+          "cookie": 7.142186,
+          "split": 8.1127
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.533605218305856,
+            "transfer": 3.774627058555998,
+            "other_handling": 0.08892934849346219,
+            "verification": 0.6700488112563957
+          },
+          "split": {
+            "total": 4.937212803957947,
+            "transfer": 4.114424147186147,
+            "other_handling": 0.13107366171923315,
+            "verification": 0.6917149950525665
+          }
+        },
+        "difference_ms": {
+          "total": 0.4036075856520913,
+          "transfer": 0.33979708863014935,
+          "other_handling": 0.04214431322577096,
+          "verification": 0.0216661837961708
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1802,
+          "split": 1743
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 899.9242049575539,
+          "split": 869.862385330235
+        },
+        "median_ms": {
+          "cookie": 4.261066,
+          "split": 4.416404
+        },
+        "p95_ms": {
+          "cookie": 6.603377,
+          "split": 6.811512
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.427190902330744,
+            "transfer": 3.599115566037736,
+            "other_handling": 0.08547724639289678,
+            "verification": 0.742598089900111
+          },
+          "split": {
+            "total": 4.572923300057372,
+            "transfer": 3.7056066253585773,
+            "other_handling": 0.12149290361445783,
+            "verification": 0.7458237710843374
+          }
+        },
+        "difference_ms": {
+          "total": 0.14573239772662827,
+          "transfer": 0.10649105932084124,
+          "other_handling": 0.036015657221561054,
+          "verification": 0.003225681184226392
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1936,
+          "split": 1783
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 966.4144125710245,
+          "split": 889.1078446746088
+        },
+        "median_ms": {
+          "cookie": 3.9545305,
+          "split": 4.253366
+        },
+        "p95_ms": {
+          "cookie": 6.079578,
+          "split": 6.801052
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.1188205867768595,
+            "transfer": 3.3163535191115705,
+            "other_handling": 0.08216722520661157,
+            "verification": 0.7202998424586777
+          },
+          "split": {
+            "total": 4.477267247335951,
+            "transfer": 3.59344735501963,
+            "other_handling": 0.12131990914189568,
+            "verification": 0.7624999831744251
+          }
+        },
+        "difference_ms": {
+          "total": 0.3584466605590917,
+          "transfer": 0.27709383590805947,
+          "other_handling": 0.03915268393528411,
+          "verification": 0.0422001407157474
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "chunks": 2,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1918,
+          "split": 1949
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 958.0017549862912,
+          "split": 972.92935635821
+        },
+        "median_ms": {
+          "cookie": 3.9236525,
+          "split": 3.917907
+        },
+        "p95_ms": {
+          "cookie": 6.405364,
+          "split": 5.979911
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.158197031282586,
+            "transfer": 3.3894294395203337,
+            "other_handling": 0.09478411991657977,
+            "verification": 0.6739834718456725
+          },
+          "split": {
+            "total": 4.0917836865059005,
+            "transfer": 3.293499300153925,
+            "other_handling": 0.13084221652129296,
+            "verification": 0.6674421698306825
+          }
+        },
+        "difference_ms": {
+          "total": -0.06641334477668526,
+          "transfer": -0.0959301393664087,
+          "other_handling": 0.036058096604713194,
+          "verification": -0.006541302014990036
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "chunks": 3,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 1501,
+          "split": 1470
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 748.9308954088257,
+          "split": 733.4184600997331
+        },
+        "median_ms": {
+          "cookie": 5.125764,
+          "split": 5.2918725
+        },
+        "p95_ms": {
+          "cookie": 7.995198,
+          "split": 7.912398
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 5.323291215189873,
+            "transfer": 4.811129007328448,
+            "other_handling": 0.10985897401732178,
+            "verification": 0.40230323384410394
+          },
+          "split": {
+            "total": 5.431954804761905,
+            "transfer": 4.887592459183673,
+            "other_handling": 0.15840756598639455,
+            "verification": 0.3859547795918367
+          }
+        },
+        "difference_ms": {
+          "total": 0.10866358957203204,
+          "transfer": 0.07646345185522474,
+          "other_handling": 0.04854859196907277,
+          "verification": -0.01634845425226722
+        }
+      },
+      {
+        "client": "direct",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "chunks": 6,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 921,
+          "split": 871
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 458.76385315658655,
+          "split": 434.2209444567172
+        },
+        "median_ms": {
+          "cookie": 8.485264,
+          "split": 8.977392
+        },
+        "p95_ms": {
+          "cookie": 12.714089,
+          "split": 13.515064
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 8.666700439739413,
+            "transfer": 7.513222586319219,
+            "other_handling": 0.15656404777415853,
+            "verification": 0.9969138056460368
+          },
+          "split": {
+            "total": 9.169536196326062,
+            "transfer": 7.934137516647532,
+            "other_handling": 0.23066930195177957,
+            "verification": 1.004729377726751
+          }
+        },
+        "difference_ms": {
+          "total": 0.5028357565866486,
+          "transfer": 0.42091493032831284,
+          "other_handling": 0.07410525417762104,
+          "verification": 0.00781557208071415
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 478,
+          "split": 462
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 238.63012330887128,
+          "split": 230.89609675645957
+        },
+        "median_ms": {
+          "cookie": 4.1,
+          "split": 4.3
+        },
+        "p95_ms": {
+          "cookie": 4.7,
+          "split": 5.0
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.177615062761506,
+            "transfer": 3.812912123430962,
+            "other_handling": 0.11552351673640167,
+            "verification": 0.24917942259414227
+          },
+          "split": {
+            "total": 4.31948051948052,
+            "transfer": 3.913401376623377,
+            "other_handling": 0.1650281103896104,
+            "verification": 0.24105103246753246
+          }
+        },
+        "difference_ms": {
+          "total": 0.14186545671901474,
+          "transfer": 0.10048925319241464,
+          "other_handling": 0.04950459365320874,
+          "verification": -0.008128390126609819
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 481,
+          "split": 477
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 240.22374269589972,
+          "split": 238.44038990252434
+        },
+        "median_ms": {
+          "cookie": 4.1,
+          "split": 4.1
+        },
+        "p95_ms": {
+          "cookie": 4.8,
+          "split": 4.9
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.146361746361746,
+            "transfer": 3.724851363825364,
+            "other_handling": 0.11245251975051976,
+            "verification": 0.3090578627858628
+          },
+          "split": {
+            "total": 4.179245283018868,
+            "transfer": 3.72255649475891,
+            "other_handling": 0.15771824528301887,
+            "verification": 0.2989705429769392
+          }
+        },
+        "difference_ms": {
+          "total": 0.032883536657121404,
+          "transfer": -0.0022948690664543747,
+          "other_handling": 0.04526572553249911,
+          "verification": -0.010087319808923578
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 477,
+          "split": 406
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 238.42847145856243,
+          "split": 202.71619732374674
+        },
+        "median_ms": {
+          "cookie": 4.1,
+          "split": 4.8
+        },
+        "p95_ms": {
+          "cookie": 4.9,
+          "split": 6.0
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 4.176729559748427,
+            "transfer": 3.772944865828092,
+            "other_handling": 0.11198600628930817,
+            "verification": 0.29179868763102723
+          },
+          "split": {
+            "total": 4.911083743842364,
+            "transfer": 4.408091421182267,
+            "other_handling": 0.185253539408867,
+            "verification": 0.31773878325123156
+          }
+        },
+        "difference_ms": {
+          "total": 0.7343541840939372,
+          "transfer": 0.6351465553541744,
+          "other_handling": 0.07326753311955882,
+          "verification": 0.02594009562020433
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "chunks": 2,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 469
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 234.10202655485674
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 4.1
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 5.2
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 4.254797441364606,
+            "transfer": 3.8435170980810236,
+            "other_handling": 0.1753246012793177,
+            "verification": 0.2359557420042644
+          }
+        },
+        "difference_ms": null
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "chunks": 3,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 420
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 209.80068934512212
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 4.6
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 5.8
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 4.745,
+            "transfer": 4.142188435714286,
+            "other_handling": 0.20848575,
+            "verification": 0.3943258142857143
+          }
+        },
+        "difference_ms": null
+      },
+      {
+        "client": "browser",
+        "concurrency": 1,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "chunks": 6,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 340
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 169.55914621982845
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 5.7
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 6.7
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 5.884117647058823,
+            "transfer": 4.617923764705883,
+            "other_handling": 0.25578005,
+            "verification": 1.0104138323529412
+          }
+        },
+        "difference_ms": null
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "RS256",
+        "token_bytes": 1204,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 923,
+          "split": 843
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 460.23435552231365,
+          "split": 420.59571920371195
+        },
+        "median_ms": {
+          "cookie": 8.4,
+          "split": 9.2
+        },
+        "p95_ms": {
+          "cookie": 12.0,
+          "split": 13.7
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 8.646370530877574,
+            "transfer": 7.72717059588299,
+            "other_handling": 0.16645653412784397,
+            "verification": 0.7527434008667389
+          },
+          "split": {
+            "total": 9.477224199288257,
+            "transfer": 8.386395389086596,
+            "other_handling": 0.2397526215895611,
+            "verification": 0.8510761886120997
+          }
+        },
+        "difference_ms": {
+          "total": 0.8308536684106826,
+          "transfer": 0.6592247932036059,
+          "other_handling": 0.07329608746171712,
+          "verification": 0.0983327877453608
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ES256",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 908,
+          "split": 744
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 451.8087276707966,
+          "split": 369.96519144704126
+        },
+        "median_ms": {
+          "cookie": 8.7,
+          "split": 10.3
+        },
+        "p95_ms": {
+          "cookie": 12.2,
+          "split": 16.1
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 8.81046255506608,
+            "transfer": 7.796046114537445,
+            "other_handling": 0.16867431828193832,
+            "verification": 0.845742122246696
+          },
+          "split": {
+            "total": 10.732123655913979,
+            "transfer": 9.456549422043011,
+            "other_handling": 0.2605531196236559,
+            "verification": 1.0150211142473118
+          }
+        },
+        "difference_ms": {
+          "total": 1.9216611008478992,
+          "transfer": 1.6605033075055662,
+          "other_handling": 0.09187880134171758,
+          "verification": 0.1692789920006158
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "EdDSA",
+        "token_bytes": 948,
+        "chunks": 1,
+        "delivered": {
+          "cookie": true,
+          "split": true
+        },
+        "verified": {
+          "cookie": 854,
+          "split": 820
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 425.65917360315007,
+          "split": 409.3246143862627
+        },
+        "median_ms": {
+          "cookie": 9.1,
+          "split": 9.5
+        },
+        "p95_ms": {
+          "cookie": 13.1,
+          "split": 13.6
+        },
+        "mean_ms": {
+          "cookie": {
+            "total": 9.331264637002342,
+            "transfer": 8.31836950234192,
+            "other_handling": 0.1768824473067916,
+            "verification": 0.83601268735363
+          },
+          "split": {
+            "total": 9.729756097560976,
+            "transfer": 8.590051098780489,
+            "other_handling": 0.24224949024390244,
+            "verification": 0.8974555085365854
+          }
+        },
+        "difference_ms": {
+          "total": 0.3984914605586347,
+          "transfer": 0.2716815964385688,
+          "other_handling": 0.06536704293711085,
+          "verification": 0.06144282118295541
+        }
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "ML-DSA-44",
+        "token_bytes": 4095,
+        "chunks": 2,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 849
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 423.1670238747944
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 9.1
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 13.6
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 9.404946996466432,
+            "transfer": 8.395997220259128,
+            "other_handling": 0.271424863368669,
+            "verification": 0.7375249128386336
+          }
+        },
+        "difference_ms": null
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "token_bytes": 11353,
+        "chunks": 3,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 743
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 370.27808232831654
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 10.4
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 15.8
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 10.75127860026918,
+            "transfer": 9.90351401076716,
+            "other_handling": 0.30238962987886947,
+            "verification": 0.5453749596231494
+          }
+        },
+        "difference_ms": null
+      },
+      {
+        "client": "browser",
+        "concurrency": 4,
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "token_bytes": 23662,
+        "chunks": 6,
+        "delivered": {
+          "cookie": false,
+          "split": true
+        },
+        "verified": {
+          "cookie": 0,
+          "split": 611
+        },
+        "failed": {
+          "cookie": 0,
+          "split": 0
+        },
+        "throughput_rps": {
+          "cookie": 0.0,
+          "split": 304.0708669254504
+        },
+        "median_ms": {
+          "cookie": null,
+          "split": 12.7
+        },
+        "p95_ms": {
+          "cookie": null,
+          "split": 18.7
+        },
+        "mean_ms": {
+          "cookie": null,
+          "split": {
+            "total": 13.053355155482816,
+            "transfer": 11.52458120130933,
+            "other_handling": 0.35308206055646485,
+            "verification": 1.1756918936170213
+          }
+        },
+        "difference_ms": null
+      }
+    ],
+    "network_model": [
+      {
+        "algorithm": "RS256",
+        "request_bytes": {
+          "cookie": 1350,
+          "split": 1354
+        },
+        "extra_bytes": 4,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.00032000000000000084
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.0032000000000000917
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.03199999999999825
+          }
+        ]
+      },
+      {
+        "algorithm": "ES256",
+        "request_bytes": {
+          "cookie": 1094,
+          "split": 1098
+        },
+        "extra_bytes": 4,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.00032000000000000084
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.0031999999999999806
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.032000000000001805
+          }
+        ]
+      },
+      {
+        "algorithm": "EdDSA",
+        "request_bytes": {
+          "cookie": 1094,
+          "split": 1098
+        },
+        "extra_bytes": 4,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.00032000000000000084
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.0031999999999999806
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.032000000000001805
+          }
+        ]
+      },
+      {
+        "algorithm": "ML-DSA-44",
+        "request_bytes": {
+          "cookie": 4241,
+          "split": 4255
+        },
+        "extra_bytes": 14,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.0011199999999999544
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.011199999999999655
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.11200000000000188
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128s",
+        "request_bytes": {
+          "cookie": 11499,
+          "split": 11523
+        },
+        "extra_bytes": 24,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.0019200000000001438
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.019199999999999662
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.19199999999999307
+          }
+        ]
+      },
+      {
+        "algorithm": "SLH-DSA-SHA2-128f",
+        "request_bytes": {
+          "cookie": 23808,
+          "split": 23862
+        },
+        "extra_bytes": 54,
+        "modeled": [
+          {
+            "uplink_mbps": 100,
+            "rtt_ms": 10,
+            "extra_ms": 0.0043199999999998795
+          },
+          {
+            "uplink_mbps": 10,
+            "rtt_ms": 50,
+            "extra_ms": 0.043199999999998795
+          },
+          {
+            "uplink_mbps": 1,
+            "rtt_ms": 100,
+            "extra_ms": 0.43200000000001637
+          }
+        ]
+      }
+    ]
+  },
+  "evidence": {
+    "limits": {
+      "default": {
+        "logs": {
+          "app.log": "limits-default/logs/app.log.gz",
+          "browser.log": "limits-default/logs/browser.log.gz",
+          "proxy-access.log": "limits-default/logs/proxy-access.log.gz",
+          "proxy-error.log": "limits-default/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "limits-default/nginx.conf"
+      },
+      "raised": {
+        "logs": {
+          "app.log": "limits-raised/logs/app.log.gz",
+          "browser.log": "limits-raised/logs/browser.log.gz",
+          "proxy-access.log": "limits-raised/logs/proxy-access.log.gz",
+          "proxy-error.log": "limits-raised/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "limits-raised/nginx.conf"
+      }
+    },
+    "latency": {
+      "cookie": {
+        "load": "latency-cookie/load.json",
+        "raw": "latency-cookie/raw.csv.gz",
+        "logs": {
+          "app.log": "latency-cookie/logs/app.log.gz",
+          "browser.log": "latency-cookie/logs/browser.log.gz",
+          "proxy-access.log": "latency-cookie/logs/proxy-access.log.gz",
+          "proxy-error.log": "latency-cookie/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "latency-cookie/nginx.conf"
+      },
+      "split": {
+        "load": "latency-split/load.json",
+        "raw": "latency-split/raw.csv.gz",
+        "logs": {
+          "app.log": "latency-split/logs/app.log.gz",
+          "browser.log": "latency-split/logs/browser.log.gz",
+          "proxy-access.log": "latency-split/logs/proxy-access.log.gz",
+          "proxy-error.log": "latency-split/logs/proxy-error.log.gz"
+        },
+        "nginx_conf": "latency-split/nginx.conf"
+      }
+    }
+  }
+}

@@ -41,6 +41,11 @@ LOAD_RUN = "results/load/20261117T035444Z-macos"
 CLAIMS_RUN = "results/claims/20261118T053507Z-macos"
 COOKIES_RUN = "results/cookies/20261118T174416Z-macos"
 REFS_RUN = "results/refs/20261119T051144Z-macos"
+# The same four Sprint 3 commands with the same settings, run on WSL2.
+LOAD_RUN_WSL2 = "results/load/20261124T154922Z-wsl2"
+CLAIMS_RUN_WSL2 = "results/claims/20261124T155152Z-wsl2"
+COOKIES_RUN_WSL2 = "results/cookies/20261124T155455Z-wsl2"
+REFS_RUN_WSL2 = "results/refs/20261124T155742Z-wsl2"
 
 WSL2_SUMMARY = f"{SPRINT1_WSL2}/summary.json"
 WSL2_RUN = f"{SPRINT1_WSL2}/run.json"
@@ -53,12 +58,34 @@ LOAD = f"{LOAD_RUN}/load.json"
 CLAIMS = f"{CLAIMS_RUN}/claims.json"
 COOKIES = f"{COOKIES_RUN}/cookies.json"
 REFS = f"{REFS_RUN}/refs.json"
+LOAD_WSL2 = f"{LOAD_RUN_WSL2}/load.json"
+CLAIMS_WSL2 = f"{CLAIMS_RUN_WSL2}/claims.json"
+COOKIES_WSL2 = f"{COOKIES_RUN_WSL2}/cookies.json"
+REFS_WSL2 = f"{REFS_RUN_WSL2}/refs.json"
 
 SOURCES = (WSL2_SUMMARY, WSL2_RUN, MACOS_SUMMARY, MACOS_RUN, COOKIE_DEFAULT, COOKIE_16K,
-           BEARER_DEFAULT, LOAD, CLAIMS, COOKIES, REFS)
+           BEARER_DEFAULT, LOAD, CLAIMS, COOKIES, REFS, LOAD_WSL2, CLAIMS_WSL2, COOKIES_WSL2,
+           REFS_WSL2)
+# Each platform's Sprint 3 files, in table order: the measured tables have a row per platform.
+PLATFORM_RUNS = (
+    ("macOS", {"load": LOAD, "claims": CLAIMS, "cookies": COOKIES, "refs": REFS}),
+    ("WSL2", {"load": LOAD_WSL2, "claims": CLAIMS_WSL2, "cookies": COOKIES_WSL2,
+              "refs": REFS_WSL2}),
+)
 
 # The Sources table: task, run directory, the JSON file that dates the run, and the run's files
 # relative to its directory.
+LOAD_FILES = ("load.json", "raw.csv.gz", "nginx.conf")
+CLAIMS_FILES = ("claims.json", "latency-oidc/load.json", "latency-oidc/raw.csv.gz",
+                "latency-essential/load.json", "latency-essential/raw.csv.gz",
+                "limits/nginx.conf")
+COOKIES_FILES = ("cookies.json", "latency-cookie/load.json", "latency-cookie/raw.csv.gz",
+                 "latency-split/load.json", "latency-split/raw.csv.gz",
+                 "limits-default/nginx.conf", "limits-raised/nginx.conf")
+REFS_FILES = ("refs.json", "latency-jwt/load.json", "latency-jwt/raw.csv.gz",
+              "latency-ref-memory/load.json", "latency-ref-memory/raw.csv.gz",
+              "latency-ref-remote/load.json", "latency-ref-remote/raw.csv.gz",
+              "limits/nginx.conf", "behavior/nginx.conf")
 SOURCE_ROWS = (
     ("Sprint 1 benchmark (S1-06)", SPRINT1_WSL2, WSL2_RUN,
      ("summary.json", "run.json", "raw.csv")),
@@ -70,19 +97,14 @@ SOURCE_ROWS = (
      ("sweep.json", "nginx.conf")),
     ("Sprint 2 Bearer sweep, bearer-default (S2-05)", f"{SWEEPS}/bearer-default", BEARER_DEFAULT,
      ("sweep.json", "nginx.conf")),
-    ("End-to-end load (S3-01)", LOAD_RUN, LOAD, ("load.json", "raw.csv.gz", "nginx.conf")),
-    ("Smaller claim sets (S3-02)", CLAIMS_RUN, CLAIMS,
-     ("claims.json", "latency-oidc/load.json", "latency-oidc/raw.csv.gz",
-      "latency-essential/load.json", "latency-essential/raw.csv.gz", "limits/nginx.conf")),
-    ("Cookie splitting (S3-02)", COOKIES_RUN, COOKIES,
-     ("cookies.json", "latency-cookie/load.json", "latency-cookie/raw.csv.gz",
-      "latency-split/load.json", "latency-split/raw.csv.gz", "limits-default/nginx.conf",
-      "limits-raised/nginx.conf")),
-    ("Reference tokens (S3-02)", REFS_RUN, REFS,
-     ("refs.json", "latency-jwt/load.json", "latency-jwt/raw.csv.gz",
-      "latency-ref-memory/load.json", "latency-ref-memory/raw.csv.gz",
-      "latency-ref-remote/load.json", "latency-ref-remote/raw.csv.gz", "limits/nginx.conf",
-      "behavior/nginx.conf")),
+    ("End-to-end load (S3-01)", LOAD_RUN, LOAD, LOAD_FILES),
+    ("End-to-end load (S3-01)", LOAD_RUN_WSL2, LOAD_WSL2, LOAD_FILES),
+    ("Smaller claim sets (S3-02)", CLAIMS_RUN, CLAIMS, CLAIMS_FILES),
+    ("Smaller claim sets (S3-02)", CLAIMS_RUN_WSL2, CLAIMS_WSL2, CLAIMS_FILES),
+    ("Cookie splitting (S3-02)", COOKIES_RUN, COOKIES, COOKIES_FILES),
+    ("Cookie splitting (S3-02)", COOKIES_RUN_WSL2, COOKIES_WSL2, COOKIES_FILES),
+    ("Reference tokens (S3-02)", REFS_RUN, REFS, REFS_FILES),
+    ("Reference tokens (S3-02)", REFS_RUN_WSL2, REFS_WSL2, REFS_FILES),
 )
 # Result directories that group runs; a run's label is its path below one of them.
 RESULT_GROUPS = ("transport", "load", "claims", "cookies", "refs")
@@ -213,6 +235,19 @@ def flags(settings: dict) -> str:
                      if settings.get(key) is not None)
 
 
+def same_on_both(data: dict, kind: str, field: str = "settings"):
+    """A field of the macOS run of kind (load, claims, cookies, refs), checked to equal WSL2's.
+
+    The measured tables compare the two platforms, so the runs must share their settings;
+    raises ValueError naming the field when they differ.
+    """
+    (_, macos), (_, wsl2) = PLATFORM_RUNS
+    value = data[macos[kind]][field]
+    if data[wsl2[kind]][field] != value:
+        raise ValueError(f"{field} differ between {macos[kind]} and {wsl2[kind]}")
+    return value
+
+
 # --- Inputs ------------------------------------------------------------------------------------
 
 
@@ -242,7 +277,9 @@ def sources_table(data: dict) -> str:
         f"{link(MACOS_RUN)} from macOS; Sprint 2's {link(COOKIE_DEFAULT, 'cookie-default')}, "
         f"{link(COOKIE_16K, 'cookie-16k')}, and {link(BEARER_DEFAULT, 'bearer-default')} "
         f"`sweep.json` from WSL2; and Sprint 3's {link(LOAD)}, {link(CLAIMS)}, "
-        f"{link(COOKIES)}, and {link(REFS)} from macOS. Each JSON file's `settings` "
+        f"{link(COOKIES)}, and {link(REFS)} from macOS and {link(LOAD_WSL2)}, "
+        f"{link(CLAIMS_WSL2)}, {link(COOKIES_WSL2)}, and {link(REFS_WSL2)} from WSL2, run with "
+        "the same settings. Each JSON file's `settings` "
         "(`run.json`'s for Sprint 1) holds the run's settings, `raw.csv` and `raw.csv.gz` hold "
         "the raw measurements, and the logs are in each run directory (gzip-compressed; "
         "Sprint 1 has none).")
@@ -284,12 +321,12 @@ def sprint1_table(data: dict) -> str:
 
 
 def end_to_end_table(data: dict) -> str:
-    """S3-01's token cells: latency, throughput, and the split of the difference from ES256."""
-    load = data[LOAD]
-    settings = load["settings"]
-    comparisons = by_key(load["comparisons"], "client", "concurrency", "algorithm")
+    """S3-01's token cells on each platform: latency, throughput, and the split of the
+    difference from ES256."""
+    settings = same_on_both(data, "load")
     paragraph = (
-        f"S3-01's end-to-end measurements from {link(LOAD)}, recorded on macOS over loopback: "
+        f"S3-01's end-to-end measurements from {link(LOAD)} (macOS) and {link(LOAD_WSL2)} "
+        "(WSL2), each recorded over loopback on its own machine: "
         "closed loops of authenticated `GET /api/token/verify` requests through nginx to "
         f"waitress, with claims `{settings['claims']}`, transport `{settings['transport']}`, "
         f"{settings['duration']:g} s measured after {settings['warmup']:g} s of warm-up per "
@@ -297,68 +334,85 @@ def end_to_end_table(data: dict) -> str:
         "milliseconds, with nearest-rank p95. The last three columns are the mean's "
         f"difference from {settings['reference']}'s token cell of the same client and "
         "concurrency, and its split into token size and verification (`comparisons`).")
-    columns = (("Client", False), ("Concurrency", True), ("Configuration", False),
-               ("Token bytes", True), ("Median (ms)", True), ("p95 (ms)", True),
-               ("Mean (ms)", True), ("Throughput (req/s)", True), ("Mean vs ES256 (ms)", True),
-               ("Token size (ms)", True), ("Verification (ms)", True))
+    columns = (("Platform", False), ("Client", False), ("Concurrency", True),
+               ("Configuration", False), ("Token bytes", True), ("Median (ms)", True),
+               ("p95 (ms)", True), ("Mean (ms)", True), ("Throughput (req/s)", True),
+               ("Mean vs ES256 (ms)", True), ("Token size (ms)", True),
+               ("Verification (ms)", True))
     rows = []
-    for cell in load["results"]:
-        if cell["variant"] != "token":
-            continue
-        total = cell["latency"]["total"]
-        compared = comparisons.get((cell["client"], cell["concurrency"], cell["algorithm"]))
-        difference = (compared or {}).get("difference_ms") or {}
-        rows.append([client(cell["client"]), str(cell["concurrency"]), cell["algorithm"],
-                     count(cell["token_bytes"]), ms(total["median_ms"]), ms(total["p95_ms"]),
-                     ms(total["mean_ms"]), rps(cell["throughput_rps"]),
-                     or_dash(difference.get("total"), ms_change),
-                     or_dash(difference.get("token_size"), ms_change),
-                     or_dash(difference.get("verification"), ms_change)])
+    for platform, files in PLATFORM_RUNS:
+        load = data[files["load"]]
+        comparisons = by_key(load["comparisons"], "client", "concurrency", "algorithm")
+        for cell in load["results"]:
+            if cell["variant"] != "token":
+                continue
+            total = cell["latency"]["total"]
+            compared = comparisons.get((cell["client"], cell["concurrency"], cell["algorithm"]))
+            difference = (compared or {}).get("difference_ms") or {}
+            rows.append([platform, client(cell["client"]), str(cell["concurrency"]),
+                         cell["algorithm"], count(cell["token_bytes"]), ms(total["median_ms"]),
+                         ms(total["p95_ms"]), ms(total["mean_ms"]), rps(cell["throughput_rps"]),
+                         or_dash(difference.get("total"), ms_change),
+                         or_dash(difference.get("token_size"), ms_change),
+                         or_dash(difference.get("verification"), ms_change)])
     return section("End-to-end latency and throughput (S3-01)", paragraph, columns, rows)
 
 
 def default_limits_table(data: dict) -> str:
-    """Each configuration and carrier at the documented defaults, with and without mitigation."""
+    """Each platform, configuration, and carrier at the documented defaults, with and without
+    mitigation."""
     claims, cookies, refs = data[CLAIMS], data[COOKIES], data[REFS]
-    jwt = by_key(claims["limits"]["results"], "algorithm", "transport", "claims")
-    split_default = by_key(cookies["limits"]["default"]["results"], "algorithm", "transport")
-    split_raised = by_key(cookies["limits"]["raised"]["results"], "algorithm", "transport")
-    reference = by_key(refs["limits"]["results"], "algorithm", "transport")
     raised = cookies["limits"]["raised"]
+    if {key: data[COOKIES_WSL2]["limits"]["raised"].get(key)
+            for key in ("header_buffers", "proxy_buffers")} != {
+            key: raised.get(key) for key in ("header_buffers", "proxy_buffers")}:
+        raise ValueError(f"limits.raised buffers differ between {COOKIES} and {COOKIES_WSL2}")
     paragraph = (
-        "Measured on macOS: Chromium sent each OIDC and essential token, its split cookies, "
+        "Measured on macOS and on WSL2, each on its own machine: Chromium sent each OIDC and "
+        "essential token, its split cookies, "
         "and its reference token once through nginx to the application, at the documented "
         "default limits, with the production cookie attributes "
-        f"`{claims['limits']['cookie_attributes']}`. Only the split column with nginx buffers "
+        f"`{claims['limits']['cookie_attributes']}`. The documented defaults are each "
+        "platform's own: nginx's `proxy_buffer_size` is one memory page, 16 KiB on macOS and "
+        "4 KiB on WSL2. Only the split column with nginx buffers "
         f"{raised['header_buffers']} raises a limit (cookies.json `limits.raised`: "
         f"{flags(raised)}). The JWT columns are from {link(CLAIMS)} `limits.results`, the "
         f"split columns from {link(COOKIES)} `limits.default` and `limits.raised` (cookie "
-        f"rows only), and the reference column from {link(REFS)} `limits.results`, a "
+        f"rows only), and the reference column from {link(REFS)} `limits.results`, and the "
+        f"WSL2 rows from {link(CLAIMS_WSL2)}, {link(COOKIES_WSL2)}, and {link(REFS_WSL2)}; a "
         f"{refs['format']['reference_bytes']}-byte reference in a `jwt_ref` cookie or a Bearer "
         "header with the memory store.")
-    columns = (("Configuration", False), ("Carrier", False), ("OIDC token bytes", True),
-               ("JWT, OIDC claims", False), ("JWT, essential claims", False),
-               ("Split cookies", False),
+    columns = (("Platform", False), ("Configuration", False), ("Carrier", False),
+               ("OIDC token bytes", True), ("JWT, OIDC claims", False),
+               ("JWT, essential claims", False), ("Split cookies", False),
                (f"Split cookies, nginx buffers {raised['header_buffers']}", False),
                ("Reference token", False))
     rows = []
-    for size in claims["sizes"]:
-        name = size["algorithm"]
-        for transport, carrier in CARRIERS:
-            is_cookie = transport == "cookie"
-            rows.append([name, carrier, count(size["token_bytes"]["oidc"]),
-                         outcome(jwt.get((name, transport, "oidc"))),
-                         outcome(jwt.get((name, transport, "essential"))),
-                         outcome(split_default.get((name, "split"))) if is_cookie else DASH,
-                         outcome(split_raised.get((name, "split"))) if is_cookie else DASH,
-                         outcome(reference.get((name, transport)))])
-    return section("Size limits at the documented defaults (macOS, measured)", paragraph,
+    for platform, files in PLATFORM_RUNS:
+        claims, cookies, refs = (data[files[kind]] for kind in ("claims", "cookies", "refs"))
+        jwt = by_key(claims["limits"]["results"], "algorithm", "transport", "claims")
+        split_default = by_key(cookies["limits"]["default"]["results"], "algorithm",
+                               "transport")
+        split_raised = by_key(cookies["limits"]["raised"]["results"], "algorithm", "transport")
+        reference = by_key(refs["limits"]["results"], "algorithm", "transport")
+        for size in claims["sizes"]:
+            name = size["algorithm"]
+            for transport, carrier in CARRIERS:
+                is_cookie = transport == "cookie"
+                rows.append([platform, name, carrier, count(size["token_bytes"]["oidc"]),
+                             outcome(jwt.get((name, transport, "oidc"))),
+                             outcome(jwt.get((name, transport, "essential"))),
+                             outcome(split_default.get((name, "split"))) if is_cookie else DASH,
+                             outcome(split_raised.get((name, "split"))) if is_cookie else DASH,
+                             outcome(reference.get((name, transport)))])
+    return section("Size limits at the documented defaults (measured)", paragraph,
                    columns, rows)
 
 
 def boundaries_table(data: dict) -> str:
     """Headroom of the OIDC and essential tokens at each Sprint 2 boundary, derived."""
     claims = data[CLAIMS]
+    same_on_both(data, "claims", "sizes")
     sizes = by_key(claims["sizes"], "algorithm")
     boundaries = claims["boundaries"]
     sweeps = ", ".join(link(entry["source"], f"{entry['name']} sweep.json")
@@ -367,7 +421,8 @@ def boundaries_table(data: dict) -> str:
         "These verdicts are derived, not measured: each Sprint 2 boundary is the largest token "
         f"that verified in that committed WSL2 sweep ({sweeps}), as {link(CLAIMS)} `boundaries` "
         "records it, "
-        "and the token sizes are claims.json `sizes`. Headroom is the boundary minus the "
+        "and the token sizes are claims.json `sizes`, identical in the macOS and WSL2 runs. "
+        "Headroom is the boundary minus the "
         "token's bytes, so a negative value means the token does not fit. Moved at names the "
         "boundaries where the essential claims fit and the OIDC claims do not.")
     columns = [("Configuration", False), ("OIDC token bytes", True),
@@ -397,13 +452,18 @@ def boundaries_table(data: dict) -> str:
                    columns, rows)
 
 
-def latency_rows(data: dict) -> list[tuple[dict, dict | None, dict | None]]:
-    """claims.json's latency rows, each with the cookies.json and refs.json row it matches."""
+def latency_rows(data: dict, files: dict | None = None
+                 ) -> list[tuple[dict, dict | None, dict | None]]:
+    """claims.json's latency rows, each with the cookies.json and refs.json row it matches.
+
+    files names one platform's runs (a PLATFORM_RUNS mapping); the default is macOS's.
+    """
+    files = files or PLATFORM_RUNS[0][1]
     keys = ("client", "concurrency", "algorithm")
-    cookies = by_key(data[COOKIES]["latency"]["rows"], *keys)
-    refs = by_key(data[REFS]["latency"]["rows"], *keys)
+    cookies = by_key(data[files["cookies"]]["latency"]["rows"], *keys)
+    refs = by_key(data[files["refs"]]["latency"]["rows"], *keys)
     matched = []
-    for row in data[CLAIMS]["latency"]["rows"]:
+    for row in data[files["claims"]]["latency"]["rows"]:
         key = tuple(row[name] for name in keys)
         matched.append((row, cookies.get(key), refs.get(key)))
     return matched
@@ -415,9 +475,10 @@ def row_labels(row: dict) -> list[str]:
 
 
 def run_settings(data: dict) -> str:
-    """Each mitigation file's stack options, read from its settings."""
-    return "; ".join(f"{PurePosixPath(name).name} {flags(data[name]['settings'])}"
-                     for name in (CLAIMS, COOKIES, REFS))
+    """Each mitigation file's stack options, read from its settings (the same on both
+    platforms)."""
+    return "; ".join(f"{kind}.json {flags(same_on_both(data, kind))}"
+                     for kind in ("claims", "cookies", "refs"))
 
 
 def mitigation_latency_table(data: dict) -> str:
@@ -429,17 +490,22 @@ def mitigation_latency_table(data: dict) -> str:
         "value means faster with the mitigation: essential minus OIDC claims, both in a Bearer "
         f"header ({link(CLAIMS)}); split cookies minus one `jwt` cookie ({link(COOKIES)}); and "
         "a Bearer reference minus a Bearer JWT, with the reference store in the application's "
-        f"memory or in a separate process ({link(REFS)}), all from `latency.rows`. Every run "
-        "was on macOS over loopback with the S3-01 workload and OIDC tokens; the stack "
+        f"memory or in a separate process ({link(REFS)}), all from `latency.rows`, and the WSL2 "
+        f"rows from {link(CLAIMS_WSL2)}, {link(COOKIES_WSL2)}, and {link(REFS_WSL2)}. Every run "
+        "was on macOS or WSL2 over loopback, each on its own machine, with the S3-01 workload "
+        "and OIDC tokens; the stack "
         f"options, from each JSON's `settings`: {run_settings(data)}. Not delivered means "
         "Chromium refused the single cookie, so its baseline sent no request.")
-    columns = (("Client", False), ("Concurrency", True), ("Configuration", False),
-               ("Essential vs OIDC claims (ms)", True), ("Split vs single cookie (ms)", True),
+    columns = (("Platform", False), ("Client", False), ("Concurrency", True),
+               ("Configuration", False), ("Essential vs OIDC claims (ms)", True),
+               ("Split vs single cookie (ms)", True),
                ("Reference (memory store) vs Bearer JWT (ms)", True),
                ("Reference (remote store) vs Bearer JWT (ms)", True))
     rows = []
-    for claims, cookies, refs in latency_rows(data):
-        cells = row_labels(claims)
+    matched = [(platform, row) for platform, files in PLATFORM_RUNS
+               for row in latency_rows(data, files)]
+    for platform, (claims, cookies, refs) in matched:
+        cells = [platform, *row_labels(claims)]
         cells.append(or_dash((claims["difference_ms"] or {}).get("total"), ms_change))
         if cookies is None:
             cells.append(DASH)
@@ -472,20 +538,25 @@ def mitigation_throughput_table(data: dict) -> str:
     configuration."""
     paragraph = (
         "Verified requests per second of each run's measured phase, for the whole closed "
-        f"loop, from `latency.rows` in {link(CLAIMS)}, {link(COOKIES)}, and {link(REFS)}: the "
-        "same runs as the latency table, measured on macOS over loopback. Not delivered means "
+        f"loop, from `latency.rows` in {link(CLAIMS)}, {link(COOKIES)}, and {link(REFS)} "
+        f"(macOS) and {link(CLAIMS_WSL2)}, {link(COOKIES_WSL2)}, and {link(REFS_WSL2)} (WSL2): "
+        "the same runs as the latency table, each over loopback on its own machine. Throughput "
+        "compares within a platform, not across: the two machines differ in CPU, operating "
+        "system, and virtualization. Not delivered means "
         "Chromium refused the single cookie and that run sent no request.")
-    columns = (("Client", False), ("Concurrency", True), ("Configuration", False),
-               ("OIDC claims (req/s)", True), ("Essential claims (req/s)", True),
+    columns = (("Platform", False), ("Client", False), ("Concurrency", True),
+               ("Configuration", False), ("OIDC claims (req/s)", True),
+               ("Essential claims (req/s)", True),
                ("Single cookie (req/s)", True), ("Split cookies (req/s)", True),
                ("Bearer JWT (req/s)", True), ("Reference, memory store (req/s)", True),
                ("Reference, remote store (req/s)", True))
     rows = []
-    for claims, cookies, refs in latency_rows(data):
-        rows.append([*row_labels(claims), throughput(claims, "oidc"),
-                     throughput(claims, "essential"), throughput(cookies, "cookie"),
-                     throughput(cookies, "split"), throughput(refs, "jwt"),
-                     throughput(refs, "ref_memory"), throughput(refs, "ref_remote")])
+    for platform, files in PLATFORM_RUNS:
+        for claims, cookies, refs in latency_rows(data, files):
+            rows.append([platform, *row_labels(claims), throughput(claims, "oidc"),
+                         throughput(claims, "essential"), throughput(cookies, "cookie"),
+                         throughput(cookies, "split"), throughput(refs, "jwt"),
+                         throughput(refs, "ref_memory"), throughput(refs, "ref_remote")])
     return section("Throughput of each mitigation", paragraph, columns, rows)
 
 
@@ -510,7 +581,7 @@ def network_table(data: dict) -> str:
     paragraph = (
         "These figures are calculated, not measured: the modeled upload time of the direct "
         "client's request header block on each illustrative uplink profile, minus its "
-        "baseline's, from the "
+        "baseline's, from the macOS runs' "
         f"`network_model` of {link(LOAD)} (each token against {reference}'s, minimal claims) "
         f"and the `latency.network_model` of {link(CLAIMS)}, {link(COOKIES)}, and {link(REFS)} "
         "(OIDC claims). A positive value means more upload time. The model assumes a new or "
@@ -548,11 +619,12 @@ def network_table(data: dict) -> str:
 TABLES = (
     (sources_table, SOURCES),
     (sprint1_table, (WSL2_SUMMARY, MACOS_SUMMARY)),
-    (end_to_end_table, (LOAD,)),
-    (default_limits_table, (CLAIMS, COOKIES, REFS)),
-    (boundaries_table, (CLAIMS,)),
-    (mitigation_latency_table, (CLAIMS, COOKIES, REFS)),
-    (mitigation_throughput_table, (CLAIMS, COOKIES, REFS)),
+    (end_to_end_table, (LOAD, LOAD_WSL2)),
+    (default_limits_table, (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2)),
+    (boundaries_table, (CLAIMS, CLAIMS_WSL2)),
+    (mitigation_latency_table, (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2)),
+    (mitigation_throughput_table, (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2,
+                                   REFS_WSL2)),
     (network_table, (LOAD, CLAIMS, COOKIES, REFS)),
 )
 
