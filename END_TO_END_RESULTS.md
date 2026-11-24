@@ -215,7 +215,7 @@ The same `make load` was recorded on WSL2 (Ubuntu 24.04.4 on x86_64, 8 logical C
 
 - **Absolute times are not comparable across the machines.** WSL2's latencies were several times the Mac's (ES256 through http.client at concurrency 1: a mean of 1.346 ms against 0.195 ms), and it completed 45,709 measured requests in the same cells against the Mac's 315,293, at least 356 per cell. Each platform is compared only with its own ES256 baseline.
 - **Its same-size noise is larger.** EdDSA's mean against ES256's, whose token is the same size, was -0.082 ms from http.client at concurrency 1 and -0.864 ms from Chromium at concurrency 4. Differences of that size are not attributed on WSL2, which covers every classical and ML-DSA-44 difference (ML-DSA-44: -0.063 ms from http.client at concurrency 1).
-- **SLH-DSA-SHA2-128f's cost holds.** It took +1.164 ms over ES256 from http.client at concurrency 1 (+0.476 ms token size, +0.689 ms verification) and +2.792 ms from Chromium at concurrency 4, well above the noise, as on the Mac (+0.496 ms at concurrency 1). SLH-DSA-SHA2-128s took +0.248 ms, within the concurrency 4 noise but above the concurrency 1 noise.
+- **SLH-DSA-SHA2-128f's cost holds on WSL2.** It took +1.164 ms over ES256 from http.client at concurrency 1 (+0.476 ms token size, +0.689 ms verification) and +2.792 ms from Chromium at concurrency 4, well above the noise, as on the Mac (+0.496 ms at concurrency 1). SLH-DSA-SHA2-128s took +0.248 ms, within the concurrency 4 noise but above the concurrency 1 noise.
 
 ## Reproduce
 
