@@ -7,6 +7,7 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 | Machine | Run | Files |
 | --- | --- | --- |
 | Apple M5 Pro (macOS) | [`20261117T035444Z-macos`](results/load/20261117T035444Z-macos/) | [load.json](results/load/20261117T035444Z-macos/load.json), [raw.csv.gz](results/load/20261117T035444Z-macos/raw.csv.gz), [logs](results/load/20261117T035444Z-macos/logs/), [nginx.conf](results/load/20261117T035444Z-macos/nginx.conf) |
+| x86_64, 8 logical CPUs (WSL2) | [`20261124T154922Z-wsl2`](results/load/20261124T154922Z-wsl2/) | [load.json](results/load/20261124T154922Z-wsl2/load.json), [raw.csv.gz](results/load/20261124T154922Z-wsl2/raw.csv.gz), [logs](results/load/20261124T154922Z-wsl2/logs/), [nginx.conf](results/load/20261124T154922Z-wsl2/nginx.conf) |
 
 `load.json` has the settings, the workload, the environment, every cell's counts and latency components, the comparisons with ES256, and the network model. `raw.csv.gz` has all 315,293 measured requests with their timings in nanoseconds, and every summary here can be recomputed from it. The logs are gzip-compressed (`gzip -dc`); every verified request's nonce is in `proxy-access.log.gz` and `app.log.gz`, and no log, `load.json`, or `raw.csv.gz` contains a token.
 
@@ -208,6 +209,14 @@ Each profile column is the modeled upload time of the configuration's request mi
 
 On every profile, the modeled transfer difference is larger than the measured verification difference: by 12× for SLH-DSA-SHA2-128s and 45× for SLH-DSA-SHA2-128f on the fastest profile, and by three orders of magnitude or more on the slowest. SLH-DSA-SHA2-128f's 23,078-byte request no longer fits in the initial window, so it also costs a full extra round trip. ML-DSA-44's 3,147 extra bytes add 0.25–25 ms against 0.004 ms of extra verification. For these profiles, this answers transport question 4: transfer matters more than verification for every post-quantum configuration. On a connection whose congestion window has already grown, the extra round trip disappears, but the serialization time does not.
 
+## WSL2 run
+
+The same `make load` was recorded on WSL2 (Ubuntu 24.04.4 on x86_64, 8 logical CPUs, 4 KiB memory pages) on November 24, 2026 (UTC) at commit `e57ed91`, with identical `settings`. The sections above describe the Mac run; the WSL2 run's every cell is in the [end-to-end table of RECOMMENDATIONS.md](RECOMMENDATIONS.md#end-to-end-latency-and-throughput-s3-01), next to the Mac's, generated from [its load.json](results/load/20261124T154922Z-wsl2/load.json).
+
+- **Absolute times are not comparable across the machines.** WSL2's latencies were several times the Mac's (ES256 through http.client at concurrency 1: a mean of 1.346 ms against 0.195 ms), and it completed 45,709 measured requests in the same cells against the Mac's 315,293, at least 356 per cell. Each platform is compared only with its own ES256 baseline.
+- **Its same-size noise is larger.** EdDSA's mean against ES256's, whose token is the same size, was -0.082 ms from http.client at concurrency 1 and -0.864 ms from Chromium at concurrency 4. Differences of that size are not attributed on WSL2, which covers every classical and ML-DSA-44 difference (ML-DSA-44: -0.063 ms from http.client at concurrency 1).
+- **SLH-DSA-SHA2-128f's cost holds.** It took +1.164 ms over ES256 from http.client at concurrency 1 (+0.476 ms token size, +0.689 ms verification) and +2.792 ms from Chromium at concurrency 4, well above the noise, as on the Mac (+0.496 ms at concurrency 1). SLH-DSA-SHA2-128s took +0.248 ms, within the concurrency 4 noise but above the concurrency 1 noise.
+
 ## Reproduce
 
 From a clean checkout with the environment from [TRANSPORT.md](TRANSPORT.md#setup), and with no other load on the machine (ephemeral ports are shared by every process, so another heavy client can exhaust them during the run):
@@ -225,7 +234,7 @@ The run took about 2.5 minutes. `--output-dir` must not exist yet or be empty. `
 ## Limitations
 
 - **Loopback only.** Every measurement ran over loopback on one machine, so the measured transfer component has no real network bandwidth or round trips in it: it is copying and parsing in the client, nginx, and waitress. The network cost of a token is only calculated, in [Modeled network cost](#modeled-network-cost).
-- **One machine, one run.** These numbers are from one run on the Mac. The WSL2 run has not been done yet. Run-to-run variation was not measured; within this run, EdDSA's differences from ES256, whose token is the same size, show the noise level (under 0.001 ms from http.client at concurrency 1, up to 0.11 ms from Chromium at concurrency 4). Which desktop applications were open was not recorded.
+- **One run per machine.** These numbers are from one run on the Mac; the [WSL2 run](#wsl2-run) was recorded once too, and the two are not compared in absolute terms. Run-to-run variation was not measured; within this run, EdDSA's differences from ES256, whose token is the same size, show the noise level (under 0.001 ms from http.client at concurrency 1, up to 0.11 ms from Chromium at concurrency 4). Which desktop applications were open was not recorded.
 - **Shortened duration.** Each cell measured 2 seconds instead of the default 5, to keep `raw.csv.gz` under 10 MiB. Every cell still had at least 1,770 verified requests.
 - **Not nginx's default upstream connections.** `--upstream-keepalive 64` was needed on macOS and removes nginx's per-request connection to waitress from every request's time, for every configuration alike. Without it, the absolute latencies would be higher, and a sustained run on macOS fails within seconds.
 - **Raised header buffers.** The SLH-DSA tokens reach the application only with `--header-buffers 32k`; at nginx's default limits they are rejected (S2-05).

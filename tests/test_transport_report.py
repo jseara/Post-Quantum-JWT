@@ -62,12 +62,22 @@ SOURCES = (
     "results/claims/20261118T053507Z-macos/claims.json",
     "results/cookies/20261118T174416Z-macos/cookies.json",
     "results/refs/20261119T051144Z-macos/refs.json",
+    "results/load/20261124T154922Z-wsl2/load.json",
+    "results/claims/20261124T155152Z-wsl2/claims.json",
+    "results/cookies/20261124T155455Z-wsl2/cookies.json",
+    "results/refs/20261124T155742Z-wsl2/refs.json",
 )
 (WSL2_SUMMARY, WSL2_RUN, MACOS_SUMMARY, MACOS_RUN, COOKIE_DEFAULT, COOKIE_16K, BEARER_DEFAULT,
- LOAD, CLAIMS, COOKIES, REFS) = SOURCES
+ LOAD, CLAIMS, COOKIES, REFS, LOAD_WSL2, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2) = SOURCES
+# The measured Sprint 3 tables have rows for each platform, in this order.
+PLATFORM_FILES = (("macOS", (LOAD, CLAIMS, COOKIES, REFS)),
+                  ("WSL2", (LOAD_WSL2, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2)))
 MITIGATION_RUNS = ("results/claims/20261118T053507Z-macos",
                    "results/cookies/20261118T174416Z-macos",
-                   "results/refs/20261119T051144Z-macos")
+                   "results/refs/20261119T051144Z-macos",
+                   "results/claims/20261124T155152Z-wsl2",
+                   "results/cookies/20261124T155455Z-wsl2",
+                   "results/refs/20261124T155742Z-wsl2")
 NEW_FILES = {"scripts/transport_report.py", "RECOMMENDATIONS.md", "tests/test_transport_report.py"}
 CHANGED_FILES = {"PROGRESS.md", "README.md"}
 PINNED_PATHS = ("scripts", "tests", "results", "transport", "fixtures", "requirements.txt",
@@ -92,29 +102,34 @@ SOURCE_ROWS = (
     ("Sprint 2 Bearer sweep, bearer-default (S2-05)",
      "results/transport/20261113T074114Z-wsl2/bearer-default",
      "20261113T074114Z-wsl2/bearer-default", "sweep.json", "recorded_utc", SWEEP_FILES),
-    ("End-to-end load (S3-01)", "results/load/20261117T035444Z-macos", "20261117T035444Z-macos",
-     "load.json", "started_utc", ("load.json", "raw.csv.gz", "nginx.conf")),
-    ("Smaller claim sets (S3-02)", "results/claims/20261118T053507Z-macos",
-     "20261118T053507Z-macos", "claims.json", "started_utc",
-     ("claims.json", "latency-oidc/load.json", "latency-oidc/raw.csv.gz",
-      "latency-essential/load.json", "latency-essential/raw.csv.gz", "limits/nginx.conf")),
-    ("Cookie splitting (S3-02)", "results/cookies/20261118T174416Z-macos",
-     "20261118T174416Z-macos", "cookies.json", "started_utc",
-     ("cookies.json", "latency-cookie/load.json", "latency-cookie/raw.csv.gz",
-      "latency-split/load.json", "latency-split/raw.csv.gz", "limits-default/nginx.conf",
-      "limits-raised/nginx.conf")),
-    ("Reference tokens (S3-02)", "results/refs/20261119T051144Z-macos", "20261119T051144Z-macos",
-     "refs.json", "started_utc",
-     ("refs.json", "latency-jwt/load.json", "latency-jwt/raw.csv.gz",
-      "latency-ref-memory/load.json", "latency-ref-memory/raw.csv.gz",
-      "latency-ref-remote/load.json", "latency-ref-remote/raw.csv.gz", "limits/nginx.conf",
-      "behavior/nginx.conf")),
+    *(row for name in ("load/20261117T035444Z-macos", "load/20261124T154922Z-wsl2")
+      for row in [("End-to-end load (S3-01)", f"results/{name}", name.split("/")[1],
+                   "load.json", "started_utc", ("load.json", "raw.csv.gz", "nginx.conf"))]),
+    *(row for name in ("claims/20261118T053507Z-macos", "claims/20261124T155152Z-wsl2")
+      for row in [("Smaller claim sets (S3-02)", f"results/{name}", name.split("/")[1],
+                   "claims.json", "started_utc",
+                   ("claims.json", "latency-oidc/load.json", "latency-oidc/raw.csv.gz",
+                    "latency-essential/load.json", "latency-essential/raw.csv.gz",
+                    "limits/nginx.conf"))]),
+    *(row for name in ("cookies/20261118T174416Z-macos", "cookies/20261124T155455Z-wsl2")
+      for row in [("Cookie splitting (S3-02)", f"results/{name}", name.split("/")[1],
+                   "cookies.json", "started_utc",
+                   ("cookies.json", "latency-cookie/load.json", "latency-cookie/raw.csv.gz",
+                    "latency-split/load.json", "latency-split/raw.csv.gz",
+                    "limits-default/nginx.conf", "limits-raised/nginx.conf"))]),
+    *(row for name in ("refs/20261119T051144Z-macos", "refs/20261124T155742Z-wsl2")
+      for row in [("Reference tokens (S3-02)", f"results/{name}", name.split("/")[1],
+                   "refs.json", "started_utc",
+                   ("refs.json", "latency-jwt/load.json", "latency-jwt/raw.csv.gz",
+                    "latency-ref-memory/load.json", "latency-ref-memory/raw.csv.gz",
+                    "latency-ref-remote/load.json", "latency-ref-remote/raw.csv.gz",
+                    "limits/nginx.conf", "behavior/nginx.conf"))]),
 )
 
 SOURCES_HEADING = "Sources"
 SPRINT1_HEADING = "Signing and verification (Sprint 1)"
 END_TO_END_HEADING = "End-to-end latency and throughput (S3-01)"
-DEFAULTS_HEADING = "Size limits at the documented defaults (macOS, measured)"
+DEFAULTS_HEADING = "Size limits at the documented defaults (measured)"
 BOUNDARIES_HEADING = "Size limits against Sprint 2's boundaries (WSL2, derived)"
 LATENCY_HEADING = "Latency of each mitigation"
 THROUGHPUT_HEADING = "Throughput of each mitigation"
@@ -126,13 +141,13 @@ SOURCES_COLUMNS = ("Task", "Platform", "Run", "Date (UTC)", "Commit", "Files")
 SPRINT1_COLUMNS = ("Configuration", "Signature bytes", "JWT bytes", "Sign median, WSL2 (ms)",
                    "Sign median, macOS (ms)", "Verify median, WSL2 (ms)",
                    "Verify median, macOS (ms)")
-END_TO_END_COLUMNS = ("Client", "Concurrency", "Configuration", "Token bytes", "Median (ms)",
+END_TO_END_COLUMNS = ("Platform", "Client", "Concurrency", "Configuration", "Token bytes", "Median (ms)",
                       "p95 (ms)", "Mean (ms)", "Throughput (req/s)", "Mean vs ES256 (ms)",
                       "Token size (ms)", "Verification (ms)")
-LATENCY_COLUMNS = ("Client", "Concurrency", "Configuration", "Essential vs OIDC claims (ms)",
+LATENCY_COLUMNS = ("Platform", "Client", "Concurrency", "Configuration", "Essential vs OIDC claims (ms)",
                    "Split vs single cookie (ms)", "Reference (memory store) vs Bearer JWT (ms)",
                    "Reference (remote store) vs Bearer JWT (ms)")
-THROUGHPUT_COLUMNS = ("Client", "Concurrency", "Configuration", "OIDC claims (req/s)",
+THROUGHPUT_COLUMNS = ("Platform", "Client", "Concurrency", "Configuration", "OIDC claims (req/s)",
                       "Essential claims (req/s)", "Single cookie (req/s)",
                       "Split cookies (req/s)", "Bearer JWT (req/s)",
                       "Reference, memory store (req/s)", "Reference, remote store (req/s)")
@@ -378,8 +393,15 @@ def expected_sprint1() -> list[list[str]]:
 
 
 def expected_end_to_end() -> list[list[str]]:
-    """R7's rows."""
-    load = data(LOAD)
+    """R7's rows, macOS's then WSL2's."""
+    rows = []
+    for platform, (load_path, *_) in PLATFORM_FILES:
+        rows += [[platform, *row] for row in end_to_end_rows(data(load_path))]
+    return rows
+
+
+def end_to_end_rows(load: dict) -> list[list[str]]:
+    """One platform's R7 rows, without the Platform cell."""
     rows = []
     for result in load["results"]:
         if result["variant"] != "token":
@@ -400,14 +422,21 @@ def expected_end_to_end() -> list[list[str]]:
 def defaults_header() -> str:
     """R8's header, with the raised buffers from cookies.json."""
     raised = data(COOKIES)["limits"]["raised"]["header_buffers"]
-    return header("Configuration", "Carrier", "OIDC token bytes", "JWT, OIDC claims",
+    return header("Platform", "Configuration", "Carrier", "OIDC token bytes", "JWT, OIDC claims",
                   "JWT, essential claims", "Split cookies",
                   f"Split cookies, nginx buffers {raised}", "Reference token")
 
 
 def expected_defaults() -> list[list[str]]:
-    """R8's rows."""
-    claims, cookies, refs = data(CLAIMS), data(COOKIES), data(REFS)
+    """R8's rows, macOS's then WSL2's."""
+    rows = []
+    for platform, (_, *paths) in PLATFORM_FILES:
+        rows += [[platform, *row] for row in defaults_rows(*(data(path) for path in paths))]
+    return rows
+
+
+def defaults_rows(claims: dict, cookies: dict, refs: dict) -> list[list[str]]:
+    """One platform's R8 rows, without the Platform cell."""
     rows = []
     for size in claims["sizes"]:
         name = size["algorithm"]
@@ -456,11 +485,13 @@ def expected_boundaries() -> list[list[str]]:
     return rows
 
 
-def mitigation_rows() -> list[tuple[dict, dict | None, dict | None]]:
+def mitigation_rows(paths: tuple[str, str, str] = (CLAIMS, COOKIES, REFS)
+                    ) -> list[tuple[dict, dict | None, dict | None]]:
     """claims.json's latency rows with the cookies.json and refs.json rows that match them."""
-    cookies, refs = data(COOKIES)["latency"]["rows"], data(REFS)["latency"]["rows"]
+    claims_path, cookies_path, refs_path = paths
+    cookies, refs = data(cookies_path)["latency"]["rows"], data(refs_path)["latency"]["rows"]
     matched = []
-    for row in data(CLAIMS)["latency"]["rows"]:
+    for row in data(claims_path)["latency"]["rows"]:
         key = {"client": row["client"], "concurrency": row["concurrency"],
                "algorithm": row["algorithm"]}
         matched.append((row, find(cookies, **key), find(refs, **key)))
@@ -472,10 +503,16 @@ def row_labels(row: dict) -> list[str]:
     return [CLIENTS[row["client"]], str(row["concurrency"]), row["algorithm"]]
 
 
+def platform_mitigation_rows() -> list[tuple[str, tuple[dict, dict | None, dict | None]]]:
+    """Each platform's mitigation rows, macOS's then WSL2's, with the platform's name."""
+    return [(platform, matched) for platform, (_, *paths) in PLATFORM_FILES
+            for matched in mitigation_rows(tuple(paths))]
+
+
 def expected_latency() -> list[list[str]]:
     """R10's rows."""
     rows = []
-    for claims, cookies, refs in mitigation_rows():
+    for platform, (claims, cookies, refs) in platform_mitigation_rows():
         claim_diff = claims.get("difference_ms")
         cells = [diff(claim_diff["total"]) if claim_diff else "not delivered"]
         if cookies is None:
@@ -489,7 +526,7 @@ def expected_latency() -> list[list[str]]:
                 continue
             ref_diff = (refs.get("difference_ms") or {}).get(run)
             cells.append(diff(ref_diff["total"]) if ref_diff else "not delivered")
-        rows.append([*row_labels(claims), *cells])
+        rows.append([platform, *row_labels(claims), *cells])
     return rows
 
 
@@ -504,10 +541,10 @@ def throughput_cells(row: dict | None, sides: tuple[str, ...]) -> list[str]:
 
 def expected_throughput() -> list[list[str]]:
     """R11's rows."""
-    return [[*row_labels(claims), *throughput_cells(claims, ("oidc", "essential")),
+    return [[platform, *row_labels(claims), *throughput_cells(claims, ("oidc", "essential")),
              *throughput_cells(cookies, ("cookie", "split")),
              *throughput_cells(refs, ("jwt", "ref_memory", "ref_remote"))]
-            for claims, cookies, refs in mitigation_rows()]
+            for platform, (claims, cookies, refs) in platform_mitigation_rows()]
 
 
 def network_header() -> str:
@@ -1064,12 +1101,13 @@ class GeneratedTablesTests(unittest.TestCase):
         paragraph, header_line, rows = self.part(END_TO_END_HEADING)
         self.assertEqual(header_line, header(*END_TO_END_COLUMNS))
         expected = expected_end_to_end()
-        self.assertEqual(len(expected), 24)
+        self.assertEqual(len(expected), 48)
         self.check_rows(END_TO_END_HEADING, rows, expected)
-        self.check_links(END_TO_END_HEADING, paragraph, (LOAD,))
+        self.check_links(END_TO_END_HEADING, paragraph, (LOAD, LOAD_WSL2))
         settings = data(LOAD)["settings"]
+        self.assertEqual(data(LOAD_WSL2)["settings"], settings)
         self.check_terms(END_TO_END_HEADING, paragraph,
-                         ("macOS", settings["claims"], settings["transport"],
+                         ("macOS", "WSL2", settings["claims"], settings["transport"],
                           f"{settings['duration']:g} s", f"{settings['warmup']:g} s",
                           f"--header-buffers {settings['header_buffers']}",
                           f"--upstream-keepalive {settings['upstream_keepalive']}"))
@@ -1079,9 +1117,11 @@ class GeneratedTablesTests(unittest.TestCase):
         paragraph, header_line, rows = self.part(DEFAULTS_HEADING)
         self.assertEqual(header_line, defaults_header())
         self.check_rows(DEFAULTS_HEADING, rows, expected_defaults())
-        self.check_links(DEFAULTS_HEADING, paragraph, (CLAIMS, COOKIES, REFS))
+        self.check_links(DEFAULTS_HEADING, paragraph,
+                         (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2))
         raised = data(COOKIES)["limits"]["raised"]["header_buffers"]
-        self.check_terms(DEFAULTS_HEADING, paragraph, ("macOS", "Chromium", raised))
+        self.check_terms(DEFAULTS_HEADING, paragraph,
+                         ("macOS", "WSL2", "Chromium", raised, "16 KiB", "4 KiB"))
         self.check_terms(DEFAULTS_HEADING, paragraph, ("default",), lowered=True)
         attributes = data(CLAIMS)["limits"]["cookie_attributes"]
         self.assertTrue("production" in paragraph.lower() or attributes in paragraph, paragraph)
@@ -1100,17 +1140,18 @@ class GeneratedTablesTests(unittest.TestCase):
         paragraph, header_line, rows = self.part(LATENCY_HEADING)
         self.assertEqual(header_line, header(*LATENCY_COLUMNS))
         expected = expected_latency()
-        self.assertEqual(len(expected), 24)
+        self.assertEqual(len(expected), 48)
         self.assertTrue(any("not delivered" in row for row in expected))
         self.check_rows(LATENCY_HEADING, rows, expected)
-        self.check_links(LATENCY_HEADING, paragraph, (CLAIMS, COOKIES, REFS))
+        self.check_links(LATENCY_HEADING, paragraph,
+                         (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2))
         flags = set()
-        for path in (CLAIMS, COOKIES, REFS):
+        for path in (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2):
             settings = data(path)["settings"]
             flags |= {f"--header-buffers {settings['header_buffers']}",
                       f"--upstream-keepalive {settings['upstream_keepalive']}"}
         flags.add(f"--proxy-buffers {data(COOKIES)['settings']['proxy_buffers']}")
-        self.check_terms(LATENCY_HEADING, paragraph, ("macOS", *sorted(flags)))
+        self.check_terms(LATENCY_HEADING, paragraph, ("macOS", "WSL2", *sorted(flags)))
         self.check_terms(LATENCY_HEADING, paragraph, ("mean", "negative", "faster", "loopback"),
                          lowered=True)
 
@@ -1118,11 +1159,12 @@ class GeneratedTablesTests(unittest.TestCase):
         paragraph, header_line, rows = self.part(THROUGHPUT_HEADING)
         self.assertEqual(header_line, header(*THROUGHPUT_COLUMNS))
         expected = expected_throughput()
-        self.assertEqual(len(expected), 24)
+        self.assertEqual(len(expected), 48)
         self.assertTrue(any("not delivered" in row for row in expected))
         self.check_rows(THROUGHPUT_HEADING, rows, expected)
-        self.check_links(THROUGHPUT_HEADING, paragraph, (CLAIMS, COOKIES, REFS))
-        self.check_terms(THROUGHPUT_HEADING, paragraph, ("macOS",))
+        self.check_links(THROUGHPUT_HEADING, paragraph,
+                         (CLAIMS, COOKIES, REFS, CLAIMS_WSL2, COOKIES_WSL2, REFS_WSL2))
+        self.check_terms(THROUGHPUT_HEADING, paragraph, ("macOS", "WSL2"))
         self.check_terms(THROUGHPUT_HEADING, paragraph, ("loopback",), lowered=True)
 
     def test_network_table(self):
@@ -1178,7 +1220,8 @@ class GeneratedTablesTests(unittest.TestCase):
                         LATENCY_HEADING: expected_latency(),
                         THROUGHPUT_HEADING: expected_throughput(),
                         NETWORK_HEADING: expected_network()}
-        latency = expected[LATENCY_HEADING]
+        # Only the macOS files were changed, so count its rows.
+        latency = [row for row in expected[LATENCY_HEADING] if row[0] == "macOS"]
         self.assertEqual(sum(row.count(DASH) for row in latency), 3)
         self.assertEqual(sum(row.count("not delivered") for row in latency), 7)
         for heading, rows in expected.items():
@@ -1573,8 +1616,10 @@ class RecommendationsDocTests(unittest.TestCase):
                 if "mbit/s" in lowered:
                     self.assertIn("calculated", lowered)
                 if "wsl2" in lowered:
+                    # Sprint 3 was also measured on WSL2, so "measured" labels a WSL2 figure.
                     self.assertTrue(any(term in lowered for term in
-                                        ("derived", "not", "sprint 1", "sprint 2")))
+                                        ("derived", "not", "sprint 1", "sprint 2",
+                                         "measured")))
                 if "firefox" in lowered or "safari" in lowered:
                     self.assertRegex(lowered, r"\bnot\b")
                 if "https" in lowered or "http/2" in lowered:
