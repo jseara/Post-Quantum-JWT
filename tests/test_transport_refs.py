@@ -371,6 +371,34 @@ def git_show(path: str, commit: str = BASE_COMMIT) -> str | None:
     return git("show", f"{commit}:{path}")
 
 
+# ---- Later WSL2 reruns -------------------------------------------------------------------
+# The Sprint 3 commands were later rerun on WSL2 with the same settings. Those reruns may add
+# results/<group>/<YYYYMMDDTHHMMSSZ>-wsl2/ run directories that BASE_COMMIT did not have, and
+# may update the lines of the documents that mention WSL2; everything else these checks freeze
+# stays frozen, including every run that existed at BASE_COMMIT.
+WSL2_RUN = re.compile(r"\d{8}T\d{6}Z-wsl2")
+
+
+def added_wsl2_run(path: str) -> bool:
+    """Whether a repository path is inside a -wsl2 run directory that BASE_COMMIT did not have."""
+    parts = path.split("/")
+    if len(parts) < 3 or parts[0] != "results" or not WSL2_RUN.fullmatch(parts[2]):
+        return False
+    listing = git("ls-tree", "--name-only", f"{BASE_COMMIT}:results/{parts[1]}") or ""
+    return parts[2] not in listing.split()
+
+
+def without_added_wsl2_runs(names: set[str], listing: str) -> set[str]:
+    """Run directory names, without -wsl2 runs that are not in BASE_COMMIT's listing."""
+    return {name for name in names
+            if not (WSL2_RUN.fullmatch(name) and name not in listing.split())}
+
+
+def without_wsl2_lines(text: str | None) -> list[str]:
+    """A document's non-blank lines that do not mention WSL2."""
+    return [line for line in (text or "").splitlines() if line.strip() and "WSL2" not in line]
+
+
 def base_checkout(directory: str) -> Path | None:
     """Extract scripts/, transport/, and fixtures/ as of BASE_COMMIT; None when unavailable."""
     try:
@@ -2637,7 +2665,8 @@ class CommittedRunTests(RefsCase):
                                          "results/refs/<YYYYMMDDTHHMMSSZ>-macos/")
 
     def test_exactly_one_run(self):
-        runs = sorted(visible_names(REFS_RESULTS))
+        # A later WSL2 rerun of make refs may be added beside the macOS run.
+        runs = sorted(without_added_wsl2_runs(visible_names(REFS_RESULTS), ""))
         self.assertEqual(len(runs), 1, runs)
         self.assertRegex(runs[0], RUN_NAME)
         tracked = git("ls-files", "--", "results/refs")
@@ -2782,7 +2811,9 @@ class MitigationDocTests(unittest.TestCase):
             with self.subTest(section=title):
                 new = section(self.text, title)
                 self.assertIsNotNone(new)
-                self.assertEqual(new.rstrip(), section(before, title).rstrip())
+                # Except the lines a later WSL2 rerun updates (see added_wsl2_run).
+                self.assertEqual(without_wsl2_lines(new),
+                                 without_wsl2_lines(section(before, title)))
 
     def test_section_introduction(self):
         intro = self.section_intro()
@@ -3106,8 +3137,9 @@ class ProgressTests(unittest.TestCase):
             return [line for line in text.splitlines() if line.startswith("**Done when:**")]
         self.assertEqual(done_when(after), done_when(before))
         # Later Sprint 3 items (S3-03, S3-04) update their own sections, so only the text
-        # before S3-02 stays frozen.
-        self.assertEqual(after.split("\n### S3-02", 1)[0], before.split("\n### S3-02", 1)[0])
+        # before S3-02 stays frozen, except the lines a later WSL2 rerun updates.
+        self.assertEqual(without_wsl2_lines(after.split("\n### S3-02", 1)[0]),
+                         without_wsl2_lines(before.split("\n### S3-02", 1)[0]))
         old, new = section(before, "S3-02", 3), section(after, "S3-02", 3)
         changed = [line for line in new.splitlines() if line not in old.splitlines()]
         self.assertTrue(all(line.startswith(("**Status:**", "- [x] Reference tokens:"))
@@ -3181,12 +3213,16 @@ class UnchangedTests(unittest.TestCase):
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt",
                  "transport/static/index.html", "transport/setup.sh", "fixtures",
-                 "END_TO_END_RESULTS.md", "RESULTS.md", "results/load",
+                 "RESULTS.md", "results/load",
                  "results/claims", "results/cookies", ":(glob)results/2026110*/**", *tests]
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
                                      *paths)).split()
-        self.assertEqual(changed + untracked, [])
+        # A later WSL2 rerun may add -wsl2 runs and update END_TO_END_RESULTS.md's lines that
+        # mention WSL2 (see added_wsl2_run); its other lines stay as they were.
+        self.assertEqual([path for path in changed + untracked if not added_wsl2_run(path)], [])
+        self.assertEqual(without_wsl2_lines(read_text(REPO / "END_TO_END_RESULTS.md")),
+                         without_wsl2_lines(git_show("END_TO_END_RESULTS.md")))
 
     def test_no_new_run_outside_results_refs(self):
         for directory in ("results/load", "results/claims", "results/cookies",
@@ -3196,8 +3232,9 @@ class UnchangedTests(unittest.TestCase):
                 on_disk = {path.name for path in (REPO / directory).iterdir() if path.is_dir()}
                 if directory == "results/transport":  # S3-04 adds its HTTPS and HTTP/2 runs here.
                     self.assertLessEqual(set(listing.split()), on_disk)
-                else:
-                    self.assertEqual(on_disk, set(listing.split()))
+                else:  # A later WSL2 rerun may add -wsl2 runs (see added_wsl2_run).
+                    self.assertEqual(without_added_wsl2_runs(on_disk, listing),
+                                     set(listing.split()))
 
     def test_template_keeps_its_limits(self):
         template = (REPO / "transport" / "nginx.conf.template").read_text(encoding="utf-8")

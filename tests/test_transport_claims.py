@@ -290,6 +290,34 @@ def git_show(path: str, commit: str = BASE_COMMIT) -> str | None:
     return git("show", f"{commit}:{path}")
 
 
+# ---- Later WSL2 reruns -------------------------------------------------------------------
+# The Sprint 3 commands were later rerun on WSL2 with the same settings. Those reruns may add
+# results/<group>/<YYYYMMDDTHHMMSSZ>-wsl2/ run directories that BASE_COMMIT did not have, and
+# may update the lines of the documents that mention WSL2; everything else these checks freeze
+# stays frozen, including every run that existed at BASE_COMMIT.
+WSL2_RUN = re.compile(r"\d{8}T\d{6}Z-wsl2")
+
+
+def added_wsl2_run(path: str) -> bool:
+    """Whether a repository path is inside a -wsl2 run directory that BASE_COMMIT did not have."""
+    parts = path.split("/")
+    if len(parts) < 3 or parts[0] != "results" or not WSL2_RUN.fullmatch(parts[2]):
+        return False
+    listing = git("ls-tree", "--name-only", f"{BASE_COMMIT}:results/{parts[1]}") or ""
+    return parts[2] not in listing.split()
+
+
+def without_added_wsl2_runs(names: set[str], listing: str) -> set[str]:
+    """Run directory names, without -wsl2 runs that are not in BASE_COMMIT's listing."""
+    return {name for name in names
+            if not (WSL2_RUN.fullmatch(name) and name not in listing.split())}
+
+
+def without_wsl2_lines(text: str | None) -> list[str]:
+    """A document's non-blank lines that do not mention WSL2."""
+    return [line for line in (text or "").splitlines() if line.strip() and "WSL2" not in line]
+
+
 def private_names() -> list[str]:
     """This machine's host name and user name, which no result may contain."""
     names = {socket.gethostname(), socket.gethostname().split(".")[0]}
@@ -2006,8 +2034,9 @@ class ProgressTests(unittest.TestCase):
             return [line for line in text.splitlines() if line.startswith("**Done when:**")]
         self.assertEqual(done_when(after), done_when(before))
         # Later Sprint 3 items (S3-03, S3-04) update their own sections, so only the text
-        # before S3-02 stays frozen.
-        self.assertEqual(after.split("\n### S3-02", 1)[0], before.split("\n### S3-02", 1)[0])
+        # before S3-02 stays frozen, except the lines a later WSL2 rerun updates.
+        self.assertEqual(without_wsl2_lines(after.split("\n### S3-02", 1)[0]),
+                         without_wsl2_lines(before.split("\n### S3-02", 1)[0]))
 
 
 class ReadmeTests(unittest.TestCase):
@@ -2058,20 +2087,24 @@ class UnchangedTests(unittest.TestCase):
         # S3-04 adds HTTPS and HTTP/2 rendering and new sweep runs, so the nginx template and
         # results/transport are not frozen here; test_template_keeps_its_limits still checks
         # the template's limits.
+        # A later WSL2 rerun may add -wsl2 runs and update END_TO_END_RESULTS.md's lines that
+        # mention WSL2 (see added_wsl2_run); its other lines stay as they were.
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt",
-                 "fixtures/claims.json", "fixtures/claims_oidc.json",
-                 "END_TO_END_RESULTS.md", "results/load",
+                 "fixtures/claims.json", "fixtures/claims_oidc.json", "results/load",
                  ":(glob)results/2026110*/**", *tests]
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
                                      *paths)).split()
-        self.assertEqual(changed + untracked, [])
+        self.assertEqual([path for path in changed + untracked if not added_wsl2_run(path)], [])
+        self.assertEqual(without_wsl2_lines(read_text(REPO / "END_TO_END_RESULTS.md")),
+                         without_wsl2_lines(git_show("END_TO_END_RESULTS.md")))
 
     def test_no_new_load_run(self):
         listing = self.require(git("ls-tree", "--name-only", f"{BASE_COMMIT}:results/load"))
         on_disk = {path.name for path in (REPO / "results" / "load").iterdir() if path.is_dir()}
-        self.assertEqual(on_disk, set(listing.split()))
+        # A later WSL2 rerun of make load may be added (see added_wsl2_run).
+        self.assertEqual(without_added_wsl2_runs(on_disk, listing), set(listing.split()))
 
     def test_template_keeps_its_limits(self):
         template = (REPO / "transport" / "nginx.conf.template").read_text(encoding="utf-8")
