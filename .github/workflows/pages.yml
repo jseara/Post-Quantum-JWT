@@ -33,10 +33,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,9 +43,22 @@ jobs:
       - name: Set up Pages
         uses: actions/configure-pages@v5
       - name: Upload the page
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: transport/static
+
+  # Deploy in a separate job, as GitHub's other Pages starters do. Deploying in the
+  # same job, right after the upload, can look the artifact up before it is listed
+  # and fail with 'No artifacts named "github-pages"' (actions/deploy-pages#451).
+  # If a deployment does fail, use "Re-run failed jobs": it reruns only this job,
+  # while rerunning the upload adds a second artifact that the deploy refuses.
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

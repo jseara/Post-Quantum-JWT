@@ -231,6 +231,14 @@ class WorkflowTests(unittest.TestCase):
         for permission in ("pages: write", "id-token: write", "contents: read"):
             self.assertIn(permission, text)
 
+    def test_deploy_runs_in_its_own_job_after_the_upload(self):
+        # Uploading and deploying in one job can miss the artifact (actions/deploy-pages#451).
+        text = WORKFLOW.read_text(encoding="utf-8")
+        build, deploy = text.index("\n  build:\n"), text.index("\n  deploy:\n")
+        self.assertLess(build, text.index("actions/upload-pages-artifact@v5"), deploy)
+        self.assertLess(deploy, text.index("actions/deploy-pages@v5"))
+        self.assertIn("    needs: build\n", text[deploy:])
+
 
 class OnlyThePage(BaseHTTPRequestHandler):
     """Serve the test page at / on loopback, like the stack, and 404 everything else."""
