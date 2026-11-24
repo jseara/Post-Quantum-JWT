@@ -14,6 +14,8 @@ Sprint 3's comparison and recommendations (S3-03) are in [RECOMMENDATIONS.md](RE
 
 S3-04 repeats Sprint 2's cookie and Bearer sweeps over HTTPS and HTTP/2 with a per-run self-signed certificate and experiment key, and compares every boundary with the plain-HTTP runs in [TRANSPORT_RESULTS.md](TRANSPORT_RESULTS.md#https-and-http2-s3-04): TLS moved nothing, while over HTTP/2 nginx's header limit counts HPACK-encoded bytes, so Chromium's Bearer tokens get further at the defaults.
 
+The browser test page ([transport/static/index.html](transport/static/index.html)) also works without the stack: on GitHub Pages, or opened from disk, it is read-only, and its buttons replay the committed results and show the comparison tables. [TRANSPORT.md](TRANSPORT.md#the-test-pages-read-only-mode) explains the mode and the Pages workflow.
+
 ## Make shortcuts
 
 The [Makefile](Makefile) wraps the common commands; run `make` for the list. With the environment active (`conda activate crypto`), or with `TRANSPORT_ENV` set as in [TRANSPORT.md](TRANSPORT.md#setup):

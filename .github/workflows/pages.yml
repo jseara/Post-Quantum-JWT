@@ -1,0 +1,54 @@
+# Publishes the browser test page (transport/static/index.html) as the
+# GitHub Pages site, so the site opens on the page instead of the README.
+#
+# One-time setup: in the repository's Settings > Pages, set Source to
+# "GitHub Actions".
+#
+# Pages serves static files only, with no test stack behind them, so the page
+# opens in its read-only mode: its buttons replay the committed results that
+# scripts/transport_pages.py embeds in it. The job checks that block against
+# the committed results before publishing.
+name: Deploy the test page to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "transport/static/**"
+      - "results/**"
+      - "scripts/transport_pages.py"
+      - "scripts/transport_report.py"
+      - ".github/workflows/pages.yml"
+  # Run it by hand from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a run in progress is allowed to finish.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check the page's recorded results are up to date
+        run: python3 scripts/transport_pages.py --check
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: transport/static
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

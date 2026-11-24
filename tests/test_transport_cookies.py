@@ -2374,10 +2374,11 @@ class UnchangedTests(unittest.TestCase):
         self.assertTrue(tests)
         # S3-04 adds HTTPS and HTTP/2 rendering and new sweep runs, so the nginx template and
         # results/transport are not frozen here; test_template_keeps_its_limits still checks
-        # the template's limits.
+        # the template's limits. The test page gained a read-only mode later
+        # (tests/test_transport_pages.py checks it), so it is not frozen here either.
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt",
-                 "transport/static/index.html", "transport/setup.sh", "fixtures/claims.json",
+                 "transport/setup.sh", "fixtures/claims.json",
                  "fixtures/claims_oidc.json", "fixtures/claims_essential.json",
                  "END_TO_END_RESULTS.md", "RESULTS.md", "results/load",
                  "results/claims", ":(glob)results/2026110*/**", *tests]

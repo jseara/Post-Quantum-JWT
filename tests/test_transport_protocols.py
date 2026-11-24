@@ -2435,10 +2435,14 @@ class UnchangedTests(unittest.TestCase):
 
     def test_pinned_files_existing_tests_and_earlier_results_unchanged(self):
         tests = self.require(git("ls-tree", "--name-only", BASE_COMMIT, "tests/")).split()
+        # The test page gained a read-only mode later (tests/test_transport_pages.py checks
+        # it), so it is not frozen here, and these two tests stopped freezing it.
+        later = {"tests/test_transport_cookies.py", "tests/test_transport_refs.py"}
+        tests = [path for path in tests if path not in later]
         self.assertTrue(tests)
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt", "transport/setup.sh",
-                 "transport/static/index.html", "transport/nginx.conf.template", "fixtures",
+                 "transport/nginx.conf.template", "fixtures",
                  "scripts/transport_app.py", "scripts/transport_load.py",
                  "scripts/transport_claims.py", "scripts/transport_cookies.py",
                  "scripts/transport_refs.py", "scripts/transport_report.py", "RESULTS.md",
