@@ -107,6 +107,8 @@
   <h1>Post-quantum JWT transport lab</h1>
   <p class="sub" id="intro">Issue and verify JWTs signed with classical and post-quantum algorithms, and see
     which layer breaks when they get big. Every button sends a real request from this browser.</p>
+  <p class="sub">The project's overview and setup steps are in its
+    <a id="readme" href="https://github.com/jseara/Post-Quantum-JWT#readme">README</a>.</p>
   <div class="notice" id="notice" hidden><b>Read-only: recorded results.</b> This copy of the
     page has no test stack behind it, so the buttons replay what the committed runs recorded,
     and no request is sent. For live requests, run <code>make serve</code> in a clone of the
@@ -2687,6 +2689,10 @@ async function run(button, task) {
 
 renderCards();
 if (READ_ONLY) renderRecorded();
+// The README link follows the repository a github.io page is served from, or the checkout's own
+// README when the page is opened from disk; otherwise it keeps its GitHub address.
+if (REPO_URL) $("#readme").href = `${REPO_URL}#readme`;
+else if (location.protocol === "file:") $("#readme").href = "../../README.md";
 const handlers = READ_ONLY ? replays : actions;
 $("#cards").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-action]");

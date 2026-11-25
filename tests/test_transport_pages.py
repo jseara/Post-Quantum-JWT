@@ -336,6 +336,8 @@ class BrowserTests(unittest.TestCase):
         url = PAGE.as_uri()
         page, errors, requests = self.open(url)
         self.assertTrue(page.is_visible("#notice"))
+        self.assertEqual(page.eval_on_selector("#readme", "a => a.href"),
+                         (REPO / "README.md").as_uri())
         self.assertTrue(page.is_visible("#recorded-results"))
         self.assertEqual(page.locator("#tables table").count(), 9)
         self.assertTrue(page.is_disabled("#which"))
@@ -361,6 +363,8 @@ class BrowserTests(unittest.TestCase):
         url = "https://example-owner.github.io/CIS628Project/"
         page, errors, requests = self.open(url, route_pages=True)
         self.assertTrue(page.is_visible("#notice"))
+        self.assertEqual(page.get_attribute("#readme", "href"),
+                         "https://github.com/example-owner/CIS628Project#readme")
         self.click(page, "ML-DSA-44", "bearer")
         link = page.get_attribute("#log .entry .req a", "href")
         self.assertEqual(link, "https://github.com/example-owner/CIS628Project/blob/main/"
@@ -376,6 +380,8 @@ class BrowserTests(unittest.TestCase):
     def test_on_loopback_it_stays_live_and_fetches_nothing_on_load(self):
         page, errors, requests = self.open(self.loopback)
         self.assertFalse(page.is_visible("#notice"))
+        self.assertEqual(page.get_attribute("#readme", "href"),
+                         "https://github.com/jseara/Post-Quantum-JWT#readme")
         self.assertFalse(page.is_visible("#recorded-results"))
         self.assertFalse(page.is_disabled("#which"))
         self.assertIn("Every button sends a real request", page.text_content("#intro"))
