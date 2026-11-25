@@ -4,14 +4,14 @@ First comparison of all six JWT signature configurations, run with identical set
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| WSL2 (x86_64) | [`20261103T181323053798Z`](results/20261103T181323053798Z/) | [summary.json](results/20261103T181323053798Z/summary.json), [raw.csv](results/20261103T181323053798Z/raw.csv), [run.json](results/20261103T181323053798Z/run.json) |
-| Apple M5 Pro (arm64) | [`20261103T213538864472Z`](results/20261103T213538864472Z/) | [summary.json](results/20261103T213538864472Z/summary.json), [raw.csv](results/20261103T213538864472Z/raw.csv), [run.json](results/20261103T213538864472Z/run.json) |
+| WSL2 (x86_64) | [`20261103T181323053798Z`](20261103T181323053798Z/) | [summary.json](20261103T181323053798Z/summary.json), [raw.csv](20261103T181323053798Z/raw.csv), [run.json](20261103T181323053798Z/run.json) |
+| Apple M5 Pro (arm64) | [`20261103T213538864472Z`](20261103T213538864472Z/) | [summary.json](20261103T213538864472Z/summary.json), [raw.csv](20261103T213538864472Z/raw.csv), [run.json](20261103T213538864472Z/run.json) |
 
 `summary.json` has sizes, medians, and p95 for each algorithm; `raw.csv` has all 12,000 measured operations in nanoseconds; `run.json` has the settings and environment.
 
 ## Results
 
-Default claims fixture ([fixtures/claims.json](fixtures/claims.json)): 63-byte payload. Both runs used 1,000 measured iterations and 100 warm-up iterations per algorithm; the Apple Silicon run reused the WSL2 run's `run.json` with `--settings`. Times are in milliseconds. p95 uses the nearest-rank method. Signature and JWT sizes were identical on both machines.
+Default claims fixture ([fixtures/claims.json](../fixtures/claims.json)): 63-byte payload. Both runs used 1,000 measured iterations and 100 warm-up iterations per algorithm; the Apple Silicon run reused the WSL2 run's `run.json` with `--settings`. Times are in milliseconds. p95 uses the nearest-rank method. Signature and JWT sizes were identical on both machines.
 
 | Algorithm | Standard | Signature bytes | JWT bytes | Sign median, WSL2 | Sign median, M5 Pro | Sign p95, WSL2 | Sign p95, M5 Pro | Verify median, WSL2 | Verify median, M5 Pro | Verify p95, WSL2 | Verify p95, M5 Pro |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -41,7 +41,7 @@ The first four observations use the WSL2 run; the last compares the two machines
 
 ## Reproduce
 
-From a clean checkout (see the [README](README.md) for environment setup):
+From a clean checkout (see the [README](../README.md) for environment setup):
 
 ```bash
 conda activate crypto

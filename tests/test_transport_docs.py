@@ -11,10 +11,11 @@ import unittest
 from urllib.parse import urlsplit
 
 
+from tests.moved_docs import HISTORY, DocPath, moved, repo_file
 REPO = Path(__file__).resolve().parents[1]
 MANIFEST = REPO / "transport" / "stack.json"
-DOC = REPO / "TRANSPORT.md"
-README = REPO / "README.md"
+DOC = moved("TRANSPORT.md")
+README = DocPath(HISTORY)
 SETUP = REPO / "transport" / "setup.sh"
 BASH = shutil.which("bash") or "/bin/bash"
 

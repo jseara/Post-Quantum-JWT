@@ -47,15 +47,17 @@ except Exception:  # Reported by the tests that need it.
     without_tokens = None
 
 
+from tests.moved_docs import (HISTORY, MOVE_EDITED_TESTS, DocPath, changed_moved, moved, repo_file,
+                               split_moved)
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_stack.py"
 APP_SCRIPT = REPO / "scripts" / "transport_app.py"
 MAKEFILE = REPO / "Makefile"
-TRANSPORT_DOC = REPO / "TRANSPORT.md"
-MITIGATION_DOC = REPO / "MITIGATION_RESULTS.md"
-PROGRESS = REPO / "PROGRESS.md"
-README = REPO / "README.md"
-TRANSPORT_RESULTS = REPO / "TRANSPORT_RESULTS.md"
+TRANSPORT_DOC = moved("TRANSPORT.md")
+MITIGATION_DOC = moved("MITIGATION_RESULTS.md")
+PROGRESS = moved("PROGRESS.md")
+README = DocPath(HISTORY)
+TRANSPORT_RESULTS = moved("TRANSPORT_RESULTS.md")
 REFS_RESULTS = REPO / "results" / "refs"
 # The commit reference tokens build on: files that stay unchanged are compared with it.
 BASE_COMMIT = "2129d9958ab810185a3556bc4fb4c62378182231"
@@ -2804,9 +2806,9 @@ class MitigationDocTests(unittest.TestCase):
     def test_links_resolve_and_reach_the_run(self):
         for link in relative_links(self.text):
             with self.subTest(link=link):
-                self.assertTrue((REPO / link.split("#", 1)[0]).exists(), link)
+                self.assertTrue(repo_file(link.split("#", 1)[0]).exists(), link)
         run = self.require_run()
-        resolved = {(REPO / link.split("#", 1)[0]).resolve()
+        resolved = {repo_file(link.split("#", 1)[0]).resolve()
                     for link in relative_links(self.body())}
         wanted = [self.run_dir / "refs.json"]
         for stack in ("limits", "behavior"):
@@ -3152,7 +3154,7 @@ class ReadmeTests(unittest.TestCase):
             self.assertIn(link, links)
         for link in links:
             with self.subTest(link=link):
-                self.assertTrue((REPO / link.split("#", 1)[0]).exists(), link)
+                self.assertTrue(repo_file(link.split("#", 1)[0]).exists(), link)
 
 
 # ---- R25: what stays unchanged ------------------------------------------------------------
@@ -3169,6 +3171,8 @@ class UnchangedTests(unittest.TestCase):
         # The claims and cookie tests were loosened later for S3-03, so they are not frozen here.
         later = {"tests/test_transport_claims.py", "tests/test_transport_cookies.py"}
         tests = [path for path in tests if path not in later]
+        # Tests edited when the documents moved to results/ are not frozen here.
+        tests = [path for path in tests if path not in MOVE_EDITED_TESTS]
         self.assertTrue(tests)
         # S3-04 adds HTTPS and HTTP/2 rendering and new sweep runs, so the nginx template and
         # results/transport are not frozen here; test_template_keeps_its_limits still checks
@@ -3179,7 +3183,10 @@ class UnchangedTests(unittest.TestCase):
                  "transport/setup.sh", "fixtures",
                  "END_TO_END_RESULTS.md", "RESULTS.md", "results/load",
                  "results/claims", "results/cookies", ":(glob)results/2026110*/**", *tests]
+        # The documents moved to results/ later: compare their text with BASE_COMMIT's.
+        paths, documents = split_moved(paths)
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
+        changed += changed_moved(BASE_COMMIT, documents)
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
                                      *paths)).split()
         self.assertEqual(changed + untracked, [])

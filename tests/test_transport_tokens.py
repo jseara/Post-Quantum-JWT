@@ -36,13 +36,14 @@ from scripts.transport_stack import (MANIFEST_PATH, Stack, http_get, installed_v
                                      load_manifest, run_check, start_stack)
 
 
+from tests.moved_docs import HISTORY, DocPath, moved, repo_file
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_stack.py"
 APP_SCRIPT = REPO / "scripts" / "transport_app.py"
 MANIFEST = REPO / "transport" / "stack.json"
 NGINX_TEMPLATE = REPO / "transport" / "nginx.conf.template"
-DOC = REPO / "TRANSPORT.md"
-PROGRESS = REPO / "PROGRESS.md"
+DOC = moved("TRANSPORT.md")
+PROGRESS = moved("PROGRESS.md")
 CLAIMS = json.loads((REPO / "fixtures" / "claims.json").read_text(encoding="utf-8"))
 NAMES = [adapter.name for adapter in ADAPTER_LIST]
 SLH_DSA = ("SLH-DSA-SHA2-128s", "SLH-DSA-SHA2-128f")

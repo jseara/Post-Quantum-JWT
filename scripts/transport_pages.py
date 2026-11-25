@@ -12,7 +12,7 @@ files only:
 - Sprint 1's sign and verify medians on macOS and WSL2;
 - the largest token each carrier verified over HTTP/1.1 (Sprint 2, WSL2) and over HTTPS and
   HTTP/2 (S3-04, macOS);
-- RECOMMENDATIONS.md's eight comparison tables, from scripts/transport_report.py, plus a table of
+- results/RECOMMENDATIONS.md's eight comparison tables, from scripts/transport_report.py, plus a table of
   S3-04's limits by protocol.
 
 The data goes into the page as JSON between two marker lines, so the page stays one file that

@@ -30,11 +30,12 @@ except Exception as error:  # Before S3-03's generator is built: tests fail, not
     transport_report, REPORT_IMPORT_ERROR = None, error
 
 
+from tests.moved_docs import HISTORY, DocPath, moved, repo_file
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_report.py"
-DOC = REPO / "RECOMMENDATIONS.md"
-PROGRESS = REPO / "PROGRESS.md"
-README = REPO / "README.md"
+DOC = moved("RECOMMENDATIONS.md")
+PROGRESS = moved("PROGRESS.md")
+README = DocPath(HISTORY)
 # The commit S3-03 builds on (acd5439 plus the prep commit that loosened the reference-token
 # module check): files that stay unchanged are compared with it.
 BASE_COMMIT = "4b2e39facd2e193a1f2f3c48a20104155283a55d"
@@ -184,6 +185,11 @@ def report() -> str:
     return module().report_markdown()
 
 
+def doc_report() -> str:
+    """report(), with its links relative to the document's folder, as --write writes it."""
+    return module().relative_to_doc(report(), DOC)
+
+
 # ---- general helpers ---------------------------------------------------------------------
 
 def read_text(path: Path) -> str:
@@ -230,7 +236,8 @@ def scratch_repo(root: Path, skip: str | None = None, corrupt: str | None = None
     if corrupt:
         (root / corrupt).write_text('{"truncated": ', encoding="utf-8")
     if DOC.is_file():
-        shutil.copyfile(DOC, root / "RECOMMENDATIONS.md")
+        (root / "results").mkdir(exist_ok=True)
+        shutil.copyfile(DOC, root / "results" / "RECOMMENDATIONS.md")
     return root
 
 
@@ -759,7 +766,7 @@ class ModuleTests(unittest.TestCase):
     def test_constants(self):
         report_module = module()
         self.assertEqual(report_module.REPO, REPO)
-        self.assertEqual(report_module.DOC, REPO / "RECOMMENDATIONS.md")
+        self.assertEqual(report_module.DOC, moved("RECOMMENDATIONS.md"))
         self.assertEqual(report_module.BEGIN_MARKER, BEGIN_MARKER)
         self.assertEqual(report_module.END_MARKER, END_MARKER)
         self.assertIsInstance(report_module.SOURCES, tuple)
@@ -960,7 +967,7 @@ class BlockShapeTests(unittest.TestCase):
 
     def test_doc_holds_the_current_block(self):
         text = require_file(DOC).decode("utf-8")
-        self.assertIn(f"{BEGIN_MARKER}\n{report()}{END_MARKER}\n", text)
+        self.assertIn(f"{BEGIN_MARKER}\n{doc_report()}{END_MARKER}\n", text)
 
 
 # ---- R4-R12: the generated tables --------------------------------------------------------
@@ -1128,7 +1135,8 @@ class GeneratedTablesTests(unittest.TestCase):
         self.assertEqual(len(expected), 24)
         self.check_rows(NETWORK_HEADING, rows, expected)
         self.check_links(NETWORK_HEADING, paragraph, (LOAD, CLAIMS, COOKIES, REFS))
-        self.assertIn("END_TO_END_RESULTS.md#modeled-network-cost", relative_links(paragraph))
+        self.assertIn("results/END_TO_END_RESULTS.md#modeled-network-cost",
+                      relative_links(paragraph))
         self.check_terms(NETWORK_HEADING, paragraph, ("14,600", "TCP", "TLS", "HTTP/2"))
         self.check_terms(NETWORK_HEADING, paragraph,
                          ("calculated, not measured", "positive", "upload", "idle"),
@@ -1257,7 +1265,7 @@ class CliTests(unittest.TestCase):
             path.write_bytes((changed_before + stale_block + changed_after).encode("utf-8"))
             result = run_cli("--write", "--doc", path)
             self.assertEqual(result.returncode, 0, stderr_of(result))
-            expected = (changed_before + report() + changed_after).encode("utf-8")
+            expected = (changed_before + doc_report() + changed_after).encode("utf-8")
             self.assertEqual(path.read_bytes(), expected)
             result = run_cli("--write", "--doc", path)
             self.assertEqual(result.returncode, 0, stderr_of(result))
@@ -1323,14 +1331,14 @@ class CliTests(unittest.TestCase):
                 with self.subTest(kind=kind, source=path, option=option), \
                         tempfile.TemporaryDirectory() as directory:
                     root = scratch_repo(Path(directory), skip=skip, corrupt=corrupt)
-                    doc = (root / "RECOMMENDATIONS.md").read_bytes()
+                    doc = (root / "results" / "RECOMMENDATIONS.md").read_bytes()
                     result = run_cli(*option, cwd=root,
                                      script=root / "scripts" / "transport_report.py")
                     self.assertError(result, path)
                     error_lines = [line for line in stderr_of(result).splitlines()
                                    if line.startswith("Error: ")]
                     self.assertTrue(any(path in line for line in error_lines), error_lines)
-                    self.assertEqual((root / "RECOMMENDATIONS.md").read_bytes(), doc)
+                    self.assertEqual((root / "results" / "RECOMMENDATIONS.md").read_bytes(), doc)
 
     def test_main_returns_exit_codes(self):
         main = module().main
@@ -1587,7 +1595,7 @@ class RecommendationsDocTests(unittest.TestCase):
         targets = relative_links(body)
         self.assertIn("TRANSPORT.md#setup", targets)
         self.assertIn("END_TO_END_RESULTS.md#reproduce", targets)
-        mitigation = read_text(REPO / "MITIGATION_RESULTS.md")
+        mitigation = read_text(moved("MITIGATION_RESULTS.md"))
         reproduce = [heading for heading in sorted(slugs(mitigation))
                      if re.fullmatch(r"reproduce(?:-\d+)?", heading)]
         self.assertTrue(reproduce)
@@ -1624,11 +1632,11 @@ class RecommendationsDocTests(unittest.TestCase):
             with self.subTest(link=target):
                 path, _, anchor = target.partition("#")
                 if path:
-                    self.assertTrue((REPO / path).exists(), target)
+                    self.assertTrue(repo_file(path).exists(), target)
                 if anchor:
                     if path:
                         self.assertTrue(path.endswith(".md"), target)
-                        anchors = slugs(read_text(REPO / path))
+                        anchors = slugs(read_text(repo_file(path)))
                     else:
                         anchors = own
                     self.assertIn(anchor, anchors)

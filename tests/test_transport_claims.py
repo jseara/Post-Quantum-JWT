@@ -43,13 +43,15 @@ except Exception as error:  # Before S3-02 is built: the tests that need it fail
     transport_claims, CLAIMS_IMPORT_ERROR = None, error
 
 
+from tests.moved_docs import (HISTORY, MOVE_EDITED_TESTS, DocPath, changed_moved, moved, repo_file,
+                               split_moved)
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_stack.py"
 MAKEFILE = REPO / "Makefile"
-TRANSPORT_DOC = REPO / "TRANSPORT.md"
-MITIGATION_DOC = REPO / "MITIGATION_RESULTS.md"
-PROGRESS = REPO / "PROGRESS.md"
-README = REPO / "README.md"
+TRANSPORT_DOC = moved("TRANSPORT.md")
+MITIGATION_DOC = moved("MITIGATION_RESULTS.md")
+PROGRESS = moved("PROGRESS.md")
+README = DocPath(HISTORY)
 CLAIMS_RESULTS = REPO / "results" / "claims"
 # The commit S3-02 builds on (S3-01): files that stay unchanged are compared with it.
 BASE_COMMIT = "455828d0f63f8a138590a0fac32f1a83ea51c07f"
@@ -1788,9 +1790,9 @@ class MitigationDocTests(unittest.TestCase):
         links = relative_links(self.text)
         for link in links:
             with self.subTest(link=link):
-                self.assertTrue((REPO / link.split("#", 1)[0]).exists(), link)
+                self.assertTrue(repo_file(link.split("#", 1)[0]).exists(), link)
         self.require_run()
-        resolved = {(REPO / link.split("#", 1)[0]).resolve() for link in links}
+        resolved = {repo_file(link.split("#", 1)[0]).resolve() for link in links}
         wanted = [self.run_dir / "claims.json", self.run_dir / "limits" / "nginx.conf",
                   *(self.run_dir / "limits" / "logs" / f"{name}.gz" for name in LIMIT_LOGS),
                   *(REPO / SPRINT2_RUN / name / "sweep.json" for name in BOUNDARY_NAMES)]
@@ -2054,6 +2056,8 @@ class UnchangedTests(unittest.TestCase):
 
     def test_pinned_files_results_and_tests_unchanged(self):
         tests = self.require(git("ls-tree", "--name-only", BASE_COMMIT, "tests/")).split()
+        # Tests edited when the documents moved to results/ are not frozen here.
+        tests = [path for path in tests if path not in MOVE_EDITED_TESTS]
         self.assertTrue(tests)
         # S3-04 adds HTTPS and HTTP/2 rendering and new sweep runs, so the nginx template and
         # results/transport are not frozen here; test_template_keeps_its_limits still checks
@@ -2063,7 +2067,10 @@ class UnchangedTests(unittest.TestCase):
                  "fixtures/claims.json", "fixtures/claims_oidc.json",
                  "END_TO_END_RESULTS.md", "results/load",
                  ":(glob)results/2026110*/**", *tests]
+        # The documents moved to results/ later: compare their text with BASE_COMMIT's.
+        paths, documents = split_moved(paths)
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
+        changed += changed_moved(BASE_COMMIT, documents)
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
                                      *paths)).split()
         self.assertEqual(changed + untracked, [])
@@ -2093,7 +2100,7 @@ class UnchangedTests(unittest.TestCase):
         # S3-04 adds its HTTPS and HTTP/2 results to TRANSPORT_RESULTS.md, so only the link
         # to MITIGATION_RESULTS.md is checked here.
         before = self.require(git_show("TRANSPORT_RESULTS.md")).splitlines()
-        after = (REPO / "TRANSPORT_RESULTS.md").read_text(encoding="utf-8").splitlines()
+        after = (moved("TRANSPORT_RESULTS.md")).read_text(encoding="utf-8").splitlines()
         added = [line for line in after if line not in before]
         self.assertTrue(any("MITIGATION_RESULTS.md" in line for line in added), added)
 

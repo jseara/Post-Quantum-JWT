@@ -240,6 +240,38 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("    needs: build\n", text[deploy:])
 
 
+class DocumentLinkTests(unittest.TestCase):
+    """README.md stays at the root; every other document lives in results/."""
+
+    def test_only_readme_and_agents_at_the_root(self):
+        self.assertEqual(sorted(path.name for path in REPO.glob("*.md")),
+                         ["AGENTS.md", "README.md"])
+
+    def test_relative_links_resolve_from_each_document(self):
+        documents = [REPO / "README.md", *sorted((REPO / "results").glob("*.md"))]
+        self.assertIn(REPO / "results" / "HISTORY.md", documents)
+        for document in documents:
+            fenced = False
+            for line in document.read_text(encoding="utf-8").splitlines():
+                if line.lstrip().startswith("```"):
+                    fenced = not fenced
+                if fenced:
+                    continue
+                for target in re.findall(r"\]\(([^)\s]+)\)", line):
+                    path = target.split("#", 1)[0]
+                    if not path or re.match(r"(?:[a-z][a-z0-9+.-]*:|/)", path, re.IGNORECASE):
+                        continue
+                    with self.subTest(document=document.name, link=target):
+                        self.assertTrue((document.parent / path).exists(), target)
+
+    def test_readme_points_at_the_moved_documents(self):
+        text = (REPO / "README.md").read_text(encoding="utf-8")
+        for target in ("results/TRANSPORT.md", "results/HISTORY.md",
+                       "results/RECOMMENDATIONS.md", "transport/setup.sh"):
+            with self.subTest(target=target):
+                self.assertIn(target, text)
+
+
 class OnlyThePage(BaseHTTPRequestHandler):
     """Serve the test page at / on loopback, like the stack, and 404 everything else."""
 

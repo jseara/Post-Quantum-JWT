@@ -18,14 +18,14 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| Apple M5 Pro (macOS) | [`20261118T053507Z-macos`](results/claims/20261118T053507Z-macos/) | [claims.json](results/claims/20261118T053507Z-macos/claims.json) |
+| Apple M5 Pro (macOS) | [`20261118T053507Z-macos`](claims/20261118T053507Z-macos/) | [claims.json](claims/20261118T053507Z-macos/claims.json) |
 
 | Phase | Evidence |
 | --- | --- |
-| Size limits, at the documented defaults | [nginx.conf](results/claims/20261118T053507Z-macos/limits/nginx.conf), [app.log.gz](results/claims/20261118T053507Z-macos/limits/logs/app.log.gz), [browser.log.gz](results/claims/20261118T053507Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](results/claims/20261118T053507Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](results/claims/20261118T053507Z-macos/limits/logs/proxy-error.log.gz) |
-| Latency, OIDC claims | [load.json](results/claims/20261118T053507Z-macos/latency-oidc/load.json), [raw.csv.gz](results/claims/20261118T053507Z-macos/latency-oidc/raw.csv.gz), [logs](results/claims/20261118T053507Z-macos/latency-oidc/logs/), [nginx.conf](results/claims/20261118T053507Z-macos/latency-oidc/nginx.conf) |
-| Latency, essential claims | [load.json](results/claims/20261118T053507Z-macos/latency-essential/load.json), [raw.csv.gz](results/claims/20261118T053507Z-macos/latency-essential/raw.csv.gz), [logs](results/claims/20261118T053507Z-macos/latency-essential/logs/), [nginx.conf](results/claims/20261118T053507Z-macos/latency-essential/nginx.conf) |
-| Sprint 2 boundaries (WSL2, committed earlier) | [cookie-default/sweep.json](results/transport/20261113T074114Z-wsl2/cookie-default/sweep.json), [cookie-16k/sweep.json](results/transport/20261113T074114Z-wsl2/cookie-16k/sweep.json), [bearer-default/sweep.json](results/transport/20261113T074114Z-wsl2/bearer-default/sweep.json) |
+| Size limits, at the documented defaults | [nginx.conf](claims/20261118T053507Z-macos/limits/nginx.conf), [app.log.gz](claims/20261118T053507Z-macos/limits/logs/app.log.gz), [browser.log.gz](claims/20261118T053507Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](claims/20261118T053507Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](claims/20261118T053507Z-macos/limits/logs/proxy-error.log.gz) |
+| Latency, OIDC claims | [load.json](claims/20261118T053507Z-macos/latency-oidc/load.json), [raw.csv.gz](claims/20261118T053507Z-macos/latency-oidc/raw.csv.gz), [logs](claims/20261118T053507Z-macos/latency-oidc/logs/), [nginx.conf](claims/20261118T053507Z-macos/latency-oidc/nginx.conf) |
+| Latency, essential claims | [load.json](claims/20261118T053507Z-macos/latency-essential/load.json), [raw.csv.gz](claims/20261118T053507Z-macos/latency-essential/raw.csv.gz), [logs](claims/20261118T053507Z-macos/latency-essential/logs/), [nginx.conf](claims/20261118T053507Z-macos/latency-essential/nginx.conf) |
+| Sprint 2 boundaries (WSL2, committed earlier) | [cookie-default/sweep.json](transport/20261113T074114Z-wsl2/cookie-default/sweep.json), [cookie-16k/sweep.json](transport/20261113T074114Z-wsl2/cookie-16k/sweep.json), [bearer-default/sweep.json](transport/20261113T074114Z-wsl2/bearer-default/sweep.json) |
 
 `claims.json` holds the settings, the environment, the claim sets, the token sizes, the derived Sprint 2 verdicts, every size-limit pair with its evidence and nonces, and the latency comparison; each latency directory is exactly what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `claims.json`, both `load.json` and `raw.csv.gz` files, and every `app.log.gz` and `proxy-access.log.gz` hold no token. The size-limits phase's `browser.log.gz` holds the tokens Chromium sent and received, and its `proxy-error.log.gz` holds nginx's own truncated prefix of each of the four rejected Bearer header lines.
 
@@ -35,9 +35,9 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 | Claim set | Fixture | Claims | Payload bytes |
 | --- | --- | ---: | ---: |
-| `minimal` (Sprint 1, a floor) | [fixtures/claims.json](fixtures/claims.json) | 3 | 63 |
-| `oidc` (typical OpenID Connect ID token) | [fixtures/claims_oidc.json](fixtures/claims_oidc.json) | 22 | 618 |
-| `essential` | [fixtures/claims_essential.json](fixtures/claims_essential.json) | 5 | 137 |
+| `minimal` (Sprint 1, a floor) | [fixtures/claims.json](../fixtures/claims.json) | 3 | 63 |
+| `oidc` (typical OpenID Connect ID token) | [fixtures/claims_oidc.json](../fixtures/claims_oidc.json) | 22 | 618 |
+| `essential` | [fixtures/claims_essential.json](../fixtures/claims_essential.json) | 5 | 137 |
 
 The essential set keeps `iss` (issuer), `sub` (subject), `aud` (audience), `exp` (expiry), and `iat` (issued at): the five ID Token claims that [OpenID Connect Core 1.0 §2](https://openid.net/specs/openid-connect-core-1_0.html#IDToken) marks REQUIRED. They are what a relying party needs to validate the token on its own: who issued it, about whom, for which client, and until when. Their values are copied from the `oidc` fixture, so the two payloads differ only in the dropped claims, and payload bytes are the compact JSON that `scripts/token_sizing.payload_bytes` counts.
 
@@ -62,7 +62,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 
 **Derived from Sprint 2's WSL2 measurements.** These verdicts were not measured by this run: each Sprint 2 boundary is the largest token that verified in that committed WSL2 sweep (the largest `largest_verified_token_bytes` in its `sweep.json`), and each configuration's OIDC and essential token is compared with it. A byte limit does not depend on what the bytes encode, so a token of the same size meets the same limit. Headroom is the boundary minus the token's bytes; a negative headroom means it does not fit.
 
-**cookie-default: 3,915 bytes** (nginx's 4 KiB response buffer on WSL2, which the `Set-Cookie` response header block must fit; [sweep.json](results/transport/20261113T074114Z-wsl2/cookie-default/sweep.json))
+**cookie-default: 3,915 bytes** (nginx's 4 KiB response buffer on WSL2, which the `Set-Cookie` response header block must fit; [sweep.json](transport/20261113T074114Z-wsl2/cookie-default/sweep.json))
 
 | Configuration | OIDC token | OIDC headroom | OIDC fits | Essential token | Essential headroom | Essential fits | Moved |
 | --- | ---: | ---: | --- | ---: | ---: | --- | --- |
@@ -73,7 +73,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 | SLH-DSA-SHA2-128s | 11,353 | -7,438 | no | 10,712 | -6,797 | no | no |
 | SLH-DSA-SHA2-128f | 23,662 | -19,747 | no | 23,021 | -19,106 | no | no |
 
-**cookie-16k: 4,093 bytes** (Chromium's 4,096 bytes of cookie name + value, reached once nginx's buffers are raised to the Mac's 16k; [sweep.json](results/transport/20261113T074114Z-wsl2/cookie-16k/sweep.json))
+**cookie-16k: 4,093 bytes** (Chromium's 4,096 bytes of cookie name + value, reached once nginx's buffers are raised to the Mac's 16k; [sweep.json](transport/20261113T074114Z-wsl2/cookie-16k/sweep.json))
 
 | Configuration | OIDC token | OIDC headroom | OIDC fits | Essential token | Essential headroom | Essential fits | Moved |
 | --- | ---: | ---: | --- | ---: | ---: | --- | --- |
@@ -84,7 +84,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 | SLH-DSA-SHA2-128s | 11,353 | -7,260 | no | 10,712 | -6,619 | no | no |
 | SLH-DSA-SHA2-128f | 23,662 | -19,569 | no | 23,021 | -18,928 | no | no |
 
-**bearer-default: 8,168 bytes** (nginx's 8,192-byte request header line, `large_client_header_buffers 4 8k`; [sweep.json](results/transport/20261113T074114Z-wsl2/bearer-default/sweep.json))
+**bearer-default: 8,168 bytes** (nginx's 8,192-byte request header line, `large_client_header_buffers 4 8k`; [sweep.json](transport/20261113T074114Z-wsl2/bearer-default/sweep.json))
 
 | Configuration | OIDC token | OIDC headroom | OIDC fits | Essential token | Essential headroom | Essential fits | Moved |
 | --- | ---: | ---: | --- | ---: | ---: | --- | --- |
@@ -95,7 +95,7 @@ The shrink is the same 641 bytes for every configuration because the header and 
 | SLH-DSA-SHA2-128s | 11,353 | -3,185 | no | 10,712 | -2,544 | no | no |
 | SLH-DSA-SHA2-128f | 23,662 | -15,494 | no | 23,021 | -14,853 | no | no |
 
-**Measured on this Mac at the documented default limits.** One stack with no raised limit (its [nginx.conf](results/claims/20261118T053507Z-macos/limits/nginx.conf) has no `Not a default` line) and headless Chromium sent each configuration's OIDC and essential token once as a `jwt` cookie with production attributes (`Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600`) and once as an `Authorization: Bearer` header, and named the rejecting layer of each rejected pair from every layer's log. Every one of the 24 tokens also verified when sent straight to the application.
+**Measured on this Mac at the documented default limits.** One stack with no raised limit (its [nginx.conf](claims/20261118T053507Z-macos/limits/nginx.conf) has no `Not a default` line) and headless Chromium sent each configuration's OIDC and essential token once as a `jwt` cookie with production attributes (`Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=3600`) and once as an `Authorization: Bearer` header, and named the rejecting layer of each rejected pair from every layer's log. Every one of the 24 tokens also verified when sent straight to the application.
 
 | Configuration | Transport | OIDC token | OIDC outcome | Essential token | Essential outcome | Moved |
 | --- | --- | ---: | --- | ---: | --- | --- |
@@ -308,14 +308,14 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| Apple M5 Pro (macOS) | [`20261118T174416Z-macos`](results/cookies/20261118T174416Z-macos/) | [cookies.json](results/cookies/20261118T174416Z-macos/cookies.json) |
+| Apple M5 Pro (macOS) | [`20261118T174416Z-macos`](cookies/20261118T174416Z-macos/) | [cookies.json](cookies/20261118T174416Z-macos/cookies.json) |
 
 | Phase | Evidence |
 | --- | --- |
-| Size limits and boundary, at the documented defaults | [nginx.conf](results/cookies/20261118T174416Z-macos/limits-default/nginx.conf), [app.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T174416Z-macos/limits-default/logs/proxy-error.log.gz) |
-| Size limits, probes, and chunk handling, with raised buffers | [nginx.conf](results/cookies/20261118T174416Z-macos/limits-raised/nginx.conf), [app.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/app.log.gz), [browser.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/browser.log.gz), [proxy-access.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/proxy-access.log.gz), [proxy-error.log.gz](results/cookies/20261118T174416Z-macos/limits-raised/logs/proxy-error.log.gz) |
-| Latency, one `jwt` cookie | [load.json](results/cookies/20261118T174416Z-macos/latency-cookie/load.json), [raw.csv.gz](results/cookies/20261118T174416Z-macos/latency-cookie/raw.csv.gz), [logs](results/cookies/20261118T174416Z-macos/latency-cookie/logs/), [nginx.conf](results/cookies/20261118T174416Z-macos/latency-cookie/nginx.conf) |
-| Latency, split cookies | [load.json](results/cookies/20261118T174416Z-macos/latency-split/load.json), [raw.csv.gz](results/cookies/20261118T174416Z-macos/latency-split/raw.csv.gz), [logs](results/cookies/20261118T174416Z-macos/latency-split/logs/), [nginx.conf](results/cookies/20261118T174416Z-macos/latency-split/nginx.conf) |
+| Size limits and boundary, at the documented defaults | [nginx.conf](cookies/20261118T174416Z-macos/limits-default/nginx.conf), [app.log.gz](cookies/20261118T174416Z-macos/limits-default/logs/app.log.gz), [browser.log.gz](cookies/20261118T174416Z-macos/limits-default/logs/browser.log.gz), [proxy-access.log.gz](cookies/20261118T174416Z-macos/limits-default/logs/proxy-access.log.gz), [proxy-error.log.gz](cookies/20261118T174416Z-macos/limits-default/logs/proxy-error.log.gz) |
+| Size limits, probes, and chunk handling, with raised buffers | [nginx.conf](cookies/20261118T174416Z-macos/limits-raised/nginx.conf), [app.log.gz](cookies/20261118T174416Z-macos/limits-raised/logs/app.log.gz), [browser.log.gz](cookies/20261118T174416Z-macos/limits-raised/logs/browser.log.gz), [proxy-access.log.gz](cookies/20261118T174416Z-macos/limits-raised/logs/proxy-access.log.gz), [proxy-error.log.gz](cookies/20261118T174416Z-macos/limits-raised/logs/proxy-error.log.gz) |
+| Latency, one `jwt` cookie | [load.json](cookies/20261118T174416Z-macos/latency-cookie/load.json), [raw.csv.gz](cookies/20261118T174416Z-macos/latency-cookie/raw.csv.gz), [logs](cookies/20261118T174416Z-macos/latency-cookie/logs/), [nginx.conf](cookies/20261118T174416Z-macos/latency-cookie/nginx.conf) |
+| Latency, split cookies | [load.json](cookies/20261118T174416Z-macos/latency-split/load.json), [raw.csv.gz](cookies/20261118T174416Z-macos/latency-split/raw.csv.gz), [logs](cookies/20261118T174416Z-macos/latency-split/logs/), [nginx.conf](cookies/20261118T174416Z-macos/latency-split/nginx.conf) |
 
 `cookies.json` holds the settings, the environment, the chunk format and plan, every size-limit pair, boundary probe, and probe with its bytes, evidence, and nonces, the chunk-handling cases, and the latency comparison; each latency directory is exactly what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `cookies.json`, both `load.json` and `raw.csv.gz` files, and every `app.log.gz` and `proxy-access.log.gz` hold no token, chunk, or cookie value. The two size-limit phases' `browser.log.gz` files hold the tokens and chunks Chromium sent, received, and stored, and `limits-default/logs/proxy-error.log.gz` holds nginx's own truncated prefix of each rejected `Cookie` line.
 
@@ -323,7 +323,7 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 ### Format
 
-The application ([scripts/transport_app.py](scripts/transport_app.py), [Token endpoints](TRANSPORT.md#token-endpoints)) issues a split with `GET /api/token/issue?alg=<name>&delivery=split`, one `Set-Cookie` header per chunk:
+The application ([scripts/transport_app.py](../scripts/transport_app.py), [Token endpoints](TRANSPORT.md#token-endpoints)) issues a split with `GET /api/token/issue?alg=<name>&delivery=split`, one `Set-Cookie` header per chunk:
 
 | Property | Value |
 | --- | --- |
@@ -355,7 +355,7 @@ Against the documented limits (calculated): every split fits Chromium's per-cook
 
 **Measured on this Mac.** Each stack sent each configuration's OIDC token once as a single `jwt` cookie and once split at the default count, both with production attributes, from a new Chromium context through nginx to the application, and named the rejecting layer of each rejected pair from every layer's log (issue, then cookie jar, then verify). Every one of the 24 tokens also verified when its cookie or chunks were sent straight to the application.
 
-**At the documented defaults** (stack `limits-default`; its [nginx.conf](results/cookies/20261118T174416Z-macos/limits-default/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page):
+**At the documented defaults** (stack `limits-default`; its [nginx.conf](cookies/20261118T174416Z-macos/limits-default/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page):
 
 | Configuration | Token | Single cookie | Chunks | Chunks stored | Split cookies | Moved |
 | --- | ---: | --- | ---: | ---: | --- | --- |
@@ -370,7 +370,7 @@ Against the documented limits (calculated): every split fits Chromium's per-cook
 - **Rejected by the proxy (400):** SLH-DSA-SHA2-128s's three chunks were stored, but the verify request's 11,391-byte `Cookie` line is longer than nginx's 8,192-byte line: nginx logged `client sent too long header line` and answered 400, and the request never reached the application.
 - **Rejected by the proxy (502):** SLH-DSA-SHA2-128f's issue response, measured straight from the application, has a 23,864-byte header block as one cookie and 24,263 bytes split, both over nginx's 16 KiB `proxy_buffer_size`: the application answered 200, and nginx logged `upstream sent too big header` and answered 502, so Chromium never saw a chunk.
 
-**With nginx's buffers raised** (stack `limits-raised`; its [nginx.conf](results/cookies/20261118T174416Z-macos/limits-raised/nginx.conf) marks `--header-buffers 32k`, `large_client_header_buffers 4 32k`, and `--proxy-buffers 32k`, `proxy_buffer_size 32k; proxy_buffers 8 32k`, as not defaults):
+**With nginx's buffers raised** (stack `limits-raised`; its [nginx.conf](cookies/20261118T174416Z-macos/limits-raised/nginx.conf) marks `--header-buffers 32k`, `large_client_header_buffers 4 32k`, and `--proxy-buffers 32k`, `proxy_buffer_size 32k; proxy_buffers 8 32k`, as not defaults):
 
 | Configuration | Token | Single cookie | Chunks | Chunks stored | Split cookies | Moved |
 | --- | ---: | --- | ---: | ---: | --- | --- |
@@ -622,15 +622,15 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 | Machine | Run | Files |
 | --- | --- | --- |
-| Apple M5 Pro (macOS) | [`20261119T051144Z-macos`](results/refs/20261119T051144Z-macos/) | [refs.json](results/refs/20261119T051144Z-macos/refs.json) |
+| Apple M5 Pro (macOS) | [`20261119T051144Z-macos`](refs/20261119T051144Z-macos/) | [refs.json](refs/20261119T051144Z-macos/refs.json) |
 
 | Phase | Evidence |
 | --- | --- |
-| Size limits and probes, at the documented defaults, memory store | [nginx.conf](results/refs/20261119T051144Z-macos/limits/nginx.conf), [app.log.gz](results/refs/20261119T051144Z-macos/limits/logs/app.log.gz), [browser.log.gz](results/refs/20261119T051144Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261119T051144Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261119T051144Z-macos/limits/logs/proxy-error.log.gz) |
-| Reference handling, remote store | [nginx.conf](results/refs/20261119T051144Z-macos/behavior/nginx.conf), [app.log.gz](results/refs/20261119T051144Z-macos/behavior/logs/app.log.gz), [proxy-access.log.gz](results/refs/20261119T051144Z-macos/behavior/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261119T051144Z-macos/behavior/logs/proxy-error.log.gz), [store.log.gz](results/refs/20261119T051144Z-macos/behavior/logs/store.log.gz) |
-| Latency, Bearer JWTs | [load.json](results/refs/20261119T051144Z-macos/latency-jwt/load.json), [raw.csv.gz](results/refs/20261119T051144Z-macos/latency-jwt/raw.csv.gz), [app.log.gz](results/refs/20261119T051144Z-macos/latency-jwt/logs/app.log.gz), [browser.log.gz](results/refs/20261119T051144Z-macos/latency-jwt/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261119T051144Z-macos/latency-jwt/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261119T051144Z-macos/latency-jwt/logs/proxy-error.log.gz), [nginx.conf](results/refs/20261119T051144Z-macos/latency-jwt/nginx.conf) |
-| Latency, Bearer references, memory store | [load.json](results/refs/20261119T051144Z-macos/latency-ref-memory/load.json), [raw.csv.gz](results/refs/20261119T051144Z-macos/latency-ref-memory/raw.csv.gz), [app.log.gz](results/refs/20261119T051144Z-macos/latency-ref-memory/logs/app.log.gz), [browser.log.gz](results/refs/20261119T051144Z-macos/latency-ref-memory/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261119T051144Z-macos/latency-ref-memory/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261119T051144Z-macos/latency-ref-memory/logs/proxy-error.log.gz), [nginx.conf](results/refs/20261119T051144Z-macos/latency-ref-memory/nginx.conf) |
-| Latency, Bearer references, remote store | [load.json](results/refs/20261119T051144Z-macos/latency-ref-remote/load.json), [raw.csv.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/raw.csv.gz), [app.log.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/logs/app.log.gz), [browser.log.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/logs/browser.log.gz), [proxy-access.log.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/logs/proxy-access.log.gz), [proxy-error.log.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/logs/proxy-error.log.gz), [store.log.gz](results/refs/20261119T051144Z-macos/latency-ref-remote/logs/store.log.gz), [nginx.conf](results/refs/20261119T051144Z-macos/latency-ref-remote/nginx.conf) |
+| Size limits and probes, at the documented defaults, memory store | [nginx.conf](refs/20261119T051144Z-macos/limits/nginx.conf), [app.log.gz](refs/20261119T051144Z-macos/limits/logs/app.log.gz), [browser.log.gz](refs/20261119T051144Z-macos/limits/logs/browser.log.gz), [proxy-access.log.gz](refs/20261119T051144Z-macos/limits/logs/proxy-access.log.gz), [proxy-error.log.gz](refs/20261119T051144Z-macos/limits/logs/proxy-error.log.gz) |
+| Reference handling, remote store | [nginx.conf](refs/20261119T051144Z-macos/behavior/nginx.conf), [app.log.gz](refs/20261119T051144Z-macos/behavior/logs/app.log.gz), [proxy-access.log.gz](refs/20261119T051144Z-macos/behavior/logs/proxy-access.log.gz), [proxy-error.log.gz](refs/20261119T051144Z-macos/behavior/logs/proxy-error.log.gz), [store.log.gz](refs/20261119T051144Z-macos/behavior/logs/store.log.gz) |
+| Latency, Bearer JWTs | [load.json](refs/20261119T051144Z-macos/latency-jwt/load.json), [raw.csv.gz](refs/20261119T051144Z-macos/latency-jwt/raw.csv.gz), [app.log.gz](refs/20261119T051144Z-macos/latency-jwt/logs/app.log.gz), [browser.log.gz](refs/20261119T051144Z-macos/latency-jwt/logs/browser.log.gz), [proxy-access.log.gz](refs/20261119T051144Z-macos/latency-jwt/logs/proxy-access.log.gz), [proxy-error.log.gz](refs/20261119T051144Z-macos/latency-jwt/logs/proxy-error.log.gz), [nginx.conf](refs/20261119T051144Z-macos/latency-jwt/nginx.conf) |
+| Latency, Bearer references, memory store | [load.json](refs/20261119T051144Z-macos/latency-ref-memory/load.json), [raw.csv.gz](refs/20261119T051144Z-macos/latency-ref-memory/raw.csv.gz), [app.log.gz](refs/20261119T051144Z-macos/latency-ref-memory/logs/app.log.gz), [browser.log.gz](refs/20261119T051144Z-macos/latency-ref-memory/logs/browser.log.gz), [proxy-access.log.gz](refs/20261119T051144Z-macos/latency-ref-memory/logs/proxy-access.log.gz), [proxy-error.log.gz](refs/20261119T051144Z-macos/latency-ref-memory/logs/proxy-error.log.gz), [nginx.conf](refs/20261119T051144Z-macos/latency-ref-memory/nginx.conf) |
+| Latency, Bearer references, remote store | [load.json](refs/20261119T051144Z-macos/latency-ref-remote/load.json), [raw.csv.gz](refs/20261119T051144Z-macos/latency-ref-remote/raw.csv.gz), [app.log.gz](refs/20261119T051144Z-macos/latency-ref-remote/logs/app.log.gz), [browser.log.gz](refs/20261119T051144Z-macos/latency-ref-remote/logs/browser.log.gz), [proxy-access.log.gz](refs/20261119T051144Z-macos/latency-ref-remote/logs/proxy-access.log.gz), [proxy-error.log.gz](refs/20261119T051144Z-macos/latency-ref-remote/logs/proxy-error.log.gz), [store.log.gz](refs/20261119T051144Z-macos/latency-ref-remote/logs/store.log.gz), [nginx.conf](refs/20261119T051144Z-macos/latency-ref-remote/nginx.conf) |
 
 `refs.json` holds the settings, the environment, the reference format, the plan, every size-limit pair and probe with its bytes, evidence, and nonces, the derived JWT verdicts, the handling cases, and the latency comparison; each latency directory is what `load --output-dir` writes. The logs are gzip-compressed (`gzip -dc`). `refs.json`, every `load.json` and `raw.csv.gz`, every `app.log.gz`, `proxy-access.log.gz`, `proxy-error.log.gz`, and `store.log.gz`, and the latency runs' `browser.log.gz` hold no token, reference, or cookie value. Only `limits/logs/browser.log.gz` holds references: the ones Chromium received, stored, and sent.
 
@@ -638,7 +638,7 @@ Every number below comes from one run on the team's Mac (Apple M5 Pro, 18 cores,
 
 ### Format
 
-The application ([scripts/transport_app.py](scripts/transport_app.py), [Token endpoints](TRANSPORT.md#token-endpoints)) issues a reference with `GET /api/token/reference?alg=<name>`, signs and verifies the token exactly as `/api/token/issue` does, and keeps it in its reference store:
+The application ([scripts/transport_app.py](../scripts/transport_app.py), [Token endpoints](TRANSPORT.md#token-endpoints)) issues a reference with `GET /api/token/reference?alg=<name>`, signs and verifies the token exactly as `/api/token/issue` does, and keeps it in its reference store:
 
 | Property | Value |
 | --- | --- |
@@ -667,7 +667,7 @@ The application verifies the signature again after every lookup, as the phantom-
 
 Against the documented limits (calculated): every reference fits all three, while ML-DSA-44's JWT is over the 4,096-byte cookie limit and both SLH-DSA JWTs are over the cookie limit and nginx's 8,192-byte line in both carriers.
 
-**Measured at the documented defaults** (stack `limits`, memory store; its [nginx.conf](results/refs/20261119T051144Z-macos/limits/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page). For each configuration and carrier, a new Chromium context loaded the test page through nginx, `fetch()`ed `/api/token/reference` with OIDC claims and production attributes, read its cookie jar, and `fetch()`ed `/api/token/verify` with the stored `jwt_ref` cookie or an `Authorization: Bearer <reference>` header. The JWT column is **derived, not measured**: it is the outcome the committed claims run measured on this Mac for the same OIDC token and carrier at the same defaults ([results/claims/20261118T053507Z-macos/claims.json](results/claims/20261118T053507Z-macos/claims.json), `limits.jwt` in `refs.json`), so this run sent no JWT that nginx would reject. A pair has **moved** when the JWT was rejected and the reference verified.
+**Measured at the documented defaults** (stack `limits`, memory store; its [nginx.conf](refs/20261119T051144Z-macos/limits/nginx.conf) has no `Not a default` line: `large_client_header_buffers 4 8k`, and a 16 KiB `proxy_buffer_size`, one memory page). For each configuration and carrier, a new Chromium context loaded the test page through nginx, `fetch()`ed `/api/token/reference` with OIDC claims and production attributes, read its cookie jar, and `fetch()`ed `/api/token/verify` with the stored `jwt_ref` cookie or an `Authorization: Bearer <reference>` header. The JWT column is **derived, not measured**: it is the outcome the committed claims run measured on this Mac for the same OIDC token and carrier at the same defaults ([results/claims/20261118T053507Z-macos/claims.json](claims/20261118T053507Z-macos/claims.json), `limits.jwt` in `refs.json`), so this run sent no JWT that nginx would reject. A pair has **moved** when the JWT was rejected and the reference verified.
 
 | Configuration | Carrier | Token | JWT, derived | Reference | Reference header line | Application received | Verified directly | Moved |
 | --- | --- | ---: | --- | --- | ---: | ---: | --- | --- |
@@ -719,7 +719,7 @@ The 300,000-byte token is beyond waitress's 262,144-byte request header limit, t
 | `jwt_without_store` | `Authorization: Bearer` (J) | stopped | 200 | yes | bearer | — | no | yes | — |
 | `issue_without_store` | none: `GET /api/token/reference?alg=ML-DSA-44&delivery=cookie&claims=oidc` | stopped | 503 | no | null | — | no | no | reference store unavailable (as above); no `Set-Cookie` |
 
-Every case got the status the application's rules give it. The store's own log ([store.log.gz](results/refs/20261119T051144Z-macos/behavior/logs/store.log.gz)) has one `POST /get` for each case with a lookup up to `revoked`, and the `POST /revoke` between `expired` and `revoked`; the reference itself travels only in the request body, so no log line holds it. In `store_unavailable`, the application's kept-alive connection to the stopped store failed, it reopened it once, and that was refused, so the lookup was timed and the answer was 503 rather than a 401 that would wrongly call the reference invalid.
+Every case got the status the application's rules give it. The store's own log ([store.log.gz](refs/20261119T051144Z-macos/behavior/logs/store.log.gz)) has one `POST /get` for each case with a lookup up to `revoked`, and the `POST /revoke` between `expired` and `revoked`; the reference itself travels only in the request body, so no log line holds it. In `store_unavailable`, the application's kept-alive connection to the stopped store failed, it reopened it once, and that was refused, so the lookup was timed and the answer was 503 rather than a 401 that would wrongly call the reference invalid.
 
 ### What the design gives up
 
@@ -902,7 +902,7 @@ Saved the results to results/refs/20261119T051144Z-macos
 - **WSL2 was not run.** The `refs` command has not been run on WSL2, so every measurement here is from this Mac. A reference's request and response are small enough for WSL2's 4 KiB `proxy_buffer_size` too, but that is calculated from this run's sizes, not measured.
 - **Loopback only.** Every client, nginx, waitress, and the store process ran on one machine over loopback, so the remote store's lookup is a loopback round trip; across a real network it would add at least one network round trip per request. The network cost of the request is only calculated, with S3-01's assumptions (upload only, no loss, no TLS or HTTP/2 framing) and its illustrative profiles.
 - **One run each, in a fixed order.** Each of the three latency runs ran once, JWTs first, so run-to-run variation was not measured and a drift between runs cannot be told apart from the classical configurations' small differences. EdDSA's difference from ES256 shows the noise within a run.
-- **Derived JWT verdicts.** The JWT column of the size limits is copied from the committed claims run on this Mac ([results/claims/20261118T053507Z-macos/claims.json](results/claims/20261118T053507Z-macos/claims.json)), recorded at another time with the same documented defaults; it was not measured again here, so this run sent no rejected JWT. With `--claims minimal` no claims run applies, and the verdicts and `moved` are null.
+- **Derived JWT verdicts.** The JWT column of the size limits is copied from the committed claims run on this Mac ([results/claims/20261118T053507Z-macos/claims.json](claims/20261118T053507Z-macos/claims.json)), recorded at another time with the same documented defaults; it was not measured again here, so this run sent no rejected JWT. With `--claims minimal` no claims run applies, and the verdicts and `moved` are null.
 - **The stores are experiment stores.** The memory store is per-process: it lives in one application process and is lost with it; the remote store is a single waitress process over loopback HTTP/1.1 with JSON bodies, not a production store such as Redis, which the team excluded. Both keep expired and revoked entries so they can report `expired` and `revoked` apart from `unknown`; a store with its own time to live, such as Redis's `EXPIRE`, would forget an expired reference and could not tell it from an unknown one. Neither store persists, replicates, or bounds its entries.
 - **Re-verification on every request.** The application verifies the JWT's signature after every lookup, so verification stays in every reference measurement. A design that trusts the store or caches verified tokens would save that time (0.049–0.314 ms per request for verification in the JWT run, http.client at concurrency 1); that was not measured.
 - **Chromium only, one browser profile.** Firefox and Safari were not measured.

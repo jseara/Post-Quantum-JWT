@@ -52,12 +52,13 @@ except ImportError as error:  # Before S3-01 is built: the tests that need it fa
     transport_load, LOAD_IMPORT_ERROR = None, error
 
 
+from tests.moved_docs import HISTORY, MOVE_EDITED_TESTS, DocPath, moved, repo_file
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_stack.py"
-TRANSPORT_DOC = REPO / "TRANSPORT.md"
-RESULTS_DOC = REPO / "END_TO_END_RESULTS.md"
-PROGRESS = REPO / "PROGRESS.md"
-README = REPO / "README.md"
+TRANSPORT_DOC = moved("TRANSPORT.md")
+RESULTS_DOC = moved("END_TO_END_RESULTS.md")
+PROGRESS = moved("PROGRESS.md")
+README = DocPath(HISTORY)
 MAKEFILE = REPO / "Makefile"
 LOAD_RESULTS = REPO / "results" / "load"
 # The commit S3-01 builds on; R16's unchanged files and the Sprint 2 application come from it.
@@ -2202,7 +2203,8 @@ class UnchangedTests(unittest.TestCase):
         except (OSError, subprocess.CalledProcessError):
             self.skipTest("BASE_COMMIT is not available in this checkout")
         self.assertTrue(listing)
-        for path in listing:
+        # Tests edited when the documents moved to results/ are not frozen here.
+        for path in [path for path in listing if path not in MOVE_EDITED_TESTS]:
             with self.subTest(path=path):
                 self.assertEqual((REPO / path).read_text(encoding="utf-8"),
                                  self.require(git_show(path)))
@@ -2431,12 +2433,12 @@ class ResultsDocTests(unittest.TestCase):
         self.require_run()
         run_dir = self.run_dir
         links = relative_links(self.text)
-        resolved = {(REPO / link.split("#", 1)[0]).resolve() for link in links}
+        resolved = {repo_file(link.split("#", 1)[0]).resolve() for link in links}
         self.assertIn((run_dir / "load.json").resolve(), resolved)
         self.assertIn((run_dir / "raw.csv.gz").resolve(), resolved)
         for link in links:
             with self.subTest(link=link):
-                self.assertTrue((REPO / link.split("#", 1)[0]).exists(), link)
+                self.assertTrue(repo_file(link.split("#", 1)[0]).exists(), link)
 
     def test_workload(self):
         body = self.section("Workload")

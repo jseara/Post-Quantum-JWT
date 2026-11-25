@@ -50,14 +50,16 @@ except Exception as error:  # Before S3-04's protocols command is built.
     transport_protocols, PROTOCOLS_IMPORT_ERROR = None, error
 
 
+from tests.moved_docs import (HISTORY, MOVE_EDITED_TESTS, DocPath, changed_moved, moved, repo_file,
+                               split_moved)
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "transport_stack.py"
 MAKEFILE = REPO / "Makefile"
-TRANSPORT_DOC = REPO / "TRANSPORT.md"
-TRANSPORT_RESULTS = REPO / "TRANSPORT_RESULTS.md"
-PROGRESS = REPO / "PROGRESS.md"
-README = REPO / "README.md"
-RECOMMENDATIONS = REPO / "RECOMMENDATIONS.md"
+TRANSPORT_DOC = moved("TRANSPORT.md")
+TRANSPORT_RESULTS = moved("TRANSPORT_RESULTS.md")
+PROGRESS = moved("PROGRESS.md")
+README = DocPath(HISTORY)
+RECOMMENDATIONS = moved("RECOMMENDATIONS.md")
 TRANSPORT_RUNS = REPO / "results" / "transport"
 # The commit S3-04 builds on: files that stay unchanged are compared with it.
 BASE_COMMIT = "96c554305fd63c72b0d16d7fcd2695a4ae1d896a"
@@ -197,7 +199,8 @@ def outcome(test: unittest.TestCase, pair: tuple, what: str):
 def read_text(path: Path) -> str:
     """A text file's contents, or "" when it cannot be read."""
     try:
-        return Path(path).read_text(encoding="utf-8", errors="replace")
+        return (path if isinstance(path, DocPath) else Path(path)).read_text(
+            encoding="utf-8", errors="replace")
     except OSError:
         return ""
 
@@ -663,7 +666,7 @@ def check_links_resolve(test: unittest.TestCase, path: Path) -> None:
     for link in relative_links(read_text(path)):
         target, _, anchor = link.partition("#")
         with test.subTest(document=path.name, link=link):
-            test.assertTrue((path.parent / target).exists(), link)
+            test.assertTrue(repo_file(target).exists(), link)
             if target == "TRANSPORT_RESULTS.md" and anchor:
                 test.assertIn(anchor, anchors(TRANSPORT_RESULTS))
 
@@ -2439,24 +2442,32 @@ class UnchangedTests(unittest.TestCase):
         # it), so it is not frozen here, and these two tests stopped freezing it.
         later = {"tests/test_transport_cookies.py", "tests/test_transport_refs.py"}
         tests = [path for path in tests if path not in later]
+        # Tests edited when the documents moved to results/ are not frozen here.
+        tests = [path for path in tests if path not in MOVE_EDITED_TESTS]
         self.assertTrue(tests)
         paths = ["transport/stack.json", "requirements.txt", "transport/requirements.txt",
                  "transport/conda-requirements.txt", "transport/setup.sh",
                  "transport/nginx.conf.template", "fixtures",
                  "scripts/transport_app.py", "scripts/transport_load.py",
                  "scripts/transport_claims.py", "scripts/transport_cookies.py",
-                 "scripts/transport_refs.py", "scripts/transport_report.py", "RESULTS.md",
+                 # transport_report.py was edited to write results/RECOMMENDATIONS.md.
+                 "scripts/transport_refs.py", "RESULTS.md",
                  "END_TO_END_RESULTS.md", "MITIGATION_RESULTS.md", "results/load",
                  "results/claims", "results/cookies", "results/refs",
                  f"results/transport/{SPRINT_2_NAME}", ":(glob)results/2026110*/**", *tests]
+        # The documents moved to results/ later: compare their text with BASE_COMMIT's.
+        paths, documents = split_moved(paths)
         changed = self.require(git("diff", "--name-only", BASE_COMMIT, "--", *paths)).split()
+        changed += changed_moved(BASE_COMMIT, documents)
         untracked = self.require(git("ls-files", "--others", "--exclude-standard", "--",
                                      *paths)).split()
         self.assertEqual(changed + untracked, [])
 
     def test_no_new_results_outside_one_transport_run(self):
         top = set(self.require(git("ls-tree", "--name-only", BASE_COMMIT, "results/")).split())
-        on_disk = {f"results/{name}" for name in visible_names(REPO / "results")}
+        # The documents that moved to results/ later are files beside the run folders.
+        on_disk = {f"results/{name}" for name in visible_names(REPO / "results")
+                   if not name.endswith(".md")}
         self.assertEqual(on_disk, top)
         for directory in ("results/load", "results/claims", "results/cookies", "results/refs"):
             with self.subTest(directory=directory):
